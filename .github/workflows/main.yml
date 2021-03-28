@@ -49,7 +49,7 @@ jobs:
           gcloud run deploy ${{ env.SERVICE_NAME }} \
             --region ${{ env.REGION }} \
             --image "gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA" \
-            --platform "managed"
+            --platform "managed" \
             --quiet
           
       
