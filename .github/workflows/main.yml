@@ -39,7 +39,7 @@ jobs:
       # Builds the project in cloud
       - name: Build
         run: |-
-          gcloud build submit \
+          gcloud builds submit \
           --quiet \
           --tag "gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA"
       
