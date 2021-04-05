@@ -17,7 +17,7 @@ function App({}: AppProps) {
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <p>This will be the MeetMeThere app!</p>
+        <p>This will be the MeetMeThere app!!</p>
         <p>
           Page has been open for <code>{count}</code> seconds.
         </p>
