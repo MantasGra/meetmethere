@@ -1,12 +1,25 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App';
+import { Router } from 'react-router';
+import { Provider } from 'react-redux';
+import { StylesProvider } from '@material-ui/core/styles';
+import { SnackbarProvider } from 'notistack';
+import store from 'src/modules/app/store';
+import history from 'src/modules/app/history';
+
+import App from 'src/modules/app/components/App';
 import './index.css';
 
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+  <Provider store={store}>
+    <Router history={history}>
+      <StylesProvider injectFirst>
+        <SnackbarProvider>
+          <App />
+        </SnackbarProvider>
+      </StylesProvider>
+    </Router>
+  </Provider>,
   document.getElementById('root'),
 );
 
