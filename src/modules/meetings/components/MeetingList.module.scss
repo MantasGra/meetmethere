@@ -1,0 +1,22 @@
+.meetingList {
+  min-width: 500px;
+  width: 80%;
+  margin: auto;
+  margin-top: 10px;
+
+  @media only screen and (max-width: 500px) {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
+.meetingListItem {
+  margin: 10px 0;
+  background-color: rgb(208, 239, 250);
+}
+
+.addButton {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+}

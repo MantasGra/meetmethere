@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import { Router } from 'react-router';
 import { Provider } from 'react-redux';
 import { StylesProvider } from '@material-ui/core/styles';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
+import DateFnsUtils from '@date-io/date-fns';
 import { SnackbarProvider } from 'notistack';
 import store from 'src/modules/app/store';
 import history from 'src/modules/app/history';
@@ -14,9 +16,11 @@ ReactDOM.render(
   <Provider store={store}>
     <Router history={history}>
       <StylesProvider injectFirst>
-        <SnackbarProvider>
-          <App />
-        </SnackbarProvider>
+        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+          <SnackbarProvider>
+            <App />
+          </SnackbarProvider>
+        </MuiPickersUtilsProvider>
       </StylesProvider>
     </Router>
   </Provider>,
