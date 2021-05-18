@@ -1,6 +1,7 @@
 import { combineEpics } from 'redux-observable';
-import { of } from 'rxjs';
+import { forkJoin, of, from } from 'rxjs';
 import { mergeMap, pluck, map, catchError } from 'rxjs/operators';
+import Geocoder from 'src/utils/Geocoder';
 import { fromAxios, ofActionType } from 'src/utils/operators';
 import type { AppEpic } from '../app/epics';
 import { snackbarsEnqueue } from '../snackbars/actions';
@@ -8,6 +9,7 @@ import {
   meetingsAddMeeting,
   meetingsCreateDialogVisibleChangeRequest,
   meetingsCreateMeetingProposal,
+  meetingsLoadMeetingsFail,
   meetingsLoadMeetingsProposal,
   meetingsLoadMeetingsSuccess,
 } from './actions';
@@ -57,24 +59,53 @@ const createMeetingEpic: AppEpic = (action$, _, { axios }) =>
   );
 
 interface ILoadMeetingsResponse {
-  meetings: [IMeeting[], number];
+  meetings: IMeeting[];
+  count: number;
 }
 
 const loadMeetingsEpic: AppEpic = (action$, _, { axios }) =>
   action$.pipe(
     ofActionType(meetingsLoadMeetingsProposal),
-    mergeMap(() =>
+    pluck('payload'),
+    mergeMap(({ page }) =>
       fromAxios<ILoadMeetingsResponse>(axios, {
         url: '/meeting',
         method: 'GET',
-        params: { page: 1 },
+        params: { page },
         withCredentials: true,
       }).pipe(
-        map((response) =>
-          meetingsLoadMeetingsSuccess(response.data.meetings[0]),
-        ),
+        mergeMap((response) => {
+          if (!response.data.meetings.length) {
+            return of(
+              meetingsLoadMeetingsSuccess(
+                response.data.meetings,
+                response.data.count,
+              ),
+            );
+          }
+          return forkJoin(
+            response.data.meetings.map((meeting) => geocodeIfPlaceId$(meeting)),
+          ).pipe(
+            map((meetings) =>
+              meetingsLoadMeetingsSuccess(meetings, response.data.count),
+            ),
+          );
+        }),
+        catchError(() => of(meetingsLoadMeetingsFail())),
       ),
     ),
   );
+
+const geocodeIfPlaceId$ = (meeting: IMeeting) => {
+  if (!meeting.locationId) {
+    return of(meeting);
+  }
+  return from(Geocoder.getPlaceById(meeting.locationId)).pipe(
+    map((locationString) => ({
+      ...meeting,
+      locationString,
+    })),
+  );
+};
 
 export default combineEpics(createMeetingEpic, loadMeetingsEpic);

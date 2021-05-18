@@ -1,8 +1,14 @@
 import React, { useEffect } from 'react';
-import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import {
+  useForm,
+  Controller,
+  useFieldArray,
+  FieldError,
+} from 'react-hook-form';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { DateTimePicker } from '@material-ui/pickers';
+import DateFnsUtils from '@date-io/date-fns';
 import Checkbox from '@material-ui/core/Checkbox';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -36,6 +42,7 @@ const CreateMeetingForm: React.FC = () => {
     setValue,
     getValues,
     handleSubmit,
+    formState: { errors },
   } = useForm<ICreateMeetingForm>({
     defaultValues: {
       dates: [{ startDate: new Date(), endDate: new Date() }],
@@ -58,12 +65,18 @@ const CreateMeetingForm: React.FC = () => {
         name: data.meetingName,
         description: data.description,
         canUsersAddPollEntries: !!data.allowUserPollEntries,
-        startDate: !data.usePoll ? data.dates[0].startDate : null,
-        endDate: !data.usePoll ? data.dates[0].endDate : null,
+        startDate: !data.usePoll ? data.dates[0].startDate.toISOString() : null,
+        endDate: !data.usePoll ? data.dates[0].endDate.toISOString() : null,
         locationId: data.location.place ? data.location.place.place_id : null,
         locationString: !data.location.place ? data.location.input : null,
         isDatesPollActive: !!data.usePoll,
         participantIds: data.members.map((value) => value.id),
+        datesPollEntries: data.usePoll
+          ? data.dates.map((date) => ({
+              startDate: date.startDate.toISOString(),
+              endDate: date.endDate.toISOString(),
+            }))
+          : null,
       }),
     );
   };
@@ -77,7 +90,13 @@ const CreateMeetingForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <TextField
-        inputProps={{ ...register('meetingName') }}
+        inputProps={{
+          ...register('meetingName', {
+            required: 'Required',
+          }),
+        }}
+        helperText={errors.meetingName?.message}
+        error={!!errors.meetingName}
         margin="dense"
         variant="outlined"
         label="Name"
@@ -108,6 +127,12 @@ const CreateMeetingForm: React.FC = () => {
         render={({ field }) => (
           <UserAutocomplete
             {...omit(field, 'value', 'onChange', 'ref')}
+            helperText={
+              (errors.members as FieldError | undefined)?.type === 'validate'
+                ? 'Select at least one member'
+                : undefined
+            }
+            error={!!errors.members}
             realValue={field.value}
             onRealValueChange={(newValue) => field.onChange(newValue)}
           />
@@ -115,6 +140,9 @@ const CreateMeetingForm: React.FC = () => {
         name="members"
         control={control}
         defaultValue={[]}
+        rules={{
+          validate: (value) => !!value.length,
+        }}
       />
       <FormControlLabel
         control={
@@ -151,7 +179,6 @@ const CreateMeetingForm: React.FC = () => {
               render={({ field }) => (
                 <DateTimePicker
                   {...omit(field, 'ref')}
-                  inputRef={field.ref}
                   label="Start Date"
                   margin="dense"
                   disablePast
@@ -160,13 +187,17 @@ const CreateMeetingForm: React.FC = () => {
               )}
               name={`dates.${index}.startDate` as const}
               control={control}
-              defaultValue={item.startDate}
             />
             <Controller
               render={({ field }) => (
                 <DateTimePicker
                   {...omit(field, 'ref')}
-                  inputRef={field.ref}
+                  helperText={
+                    errors.dates?.[index]?.endDate?.type === 'validate'
+                      ? 'End date must be after start date'
+                      : undefined
+                  }
+                  error={!!errors.dates?.[index]?.endDate}
                   margin="dense"
                   label="End Date"
                   disablePast
@@ -175,7 +206,10 @@ const CreateMeetingForm: React.FC = () => {
               )}
               name={`dates.${index}.endDate` as const}
               control={control}
-              defaultValue={item.endDate}
+              rules={{
+                validate: (value) =>
+                  new DateFnsUtils().isAfter(value, item.startDate),
+              }}
             />
             {isMobile && fields.length - 1 !== index && (
               <Divider className={classes.divider} />

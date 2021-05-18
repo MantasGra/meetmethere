@@ -10,13 +10,14 @@ export const meetingsCreateDialogVisibleChangeRequest = createAction(
 interface ICreateMeetingRequest {
   name: string;
   description: string;
-  startDate: Date | null;
-  endDate: Date | null;
+  startDate: string | null;
+  endDate: string | null;
   locationId: string | null;
   locationString: string | null;
   isDatesPollActive: boolean;
   canUsersAddPollEntries: boolean;
   participantIds: number[];
+  datesPollEntries: Array<{ startDate: string; endDate: string }> | null;
 }
 
 export const meetingsCreateMeetingProposal = createAction(
@@ -26,11 +27,18 @@ export const meetingsCreateMeetingProposal = createAction(
 
 export const meetingsLoadMeetingsProposal = createAction(
   'meetings/loadMeetingsProposal',
+  (page: number) => ({ payload: { page } }),
 );
 
 export const meetingsLoadMeetingsSuccess = createAction(
   'meetings/loadMeetingsSuccess',
-  withPayloadType<IMeeting[]>(),
+  (meetings: IMeeting[], meetingCount: number) => ({
+    payload: { meetings, meetingCount },
+  }),
+);
+
+export const meetingsLoadMeetingsFail = createAction(
+  'meetings/loadMeetingsFail',
 );
 
 export const meetingsAddMeeting = createAction(
@@ -43,4 +51,5 @@ export type MeetingsActions =
   | ReturnType<typeof meetingsCreateMeetingProposal>
   | ReturnType<typeof meetingsLoadMeetingsProposal>
   | ReturnType<typeof meetingsLoadMeetingsSuccess>
+  | ReturnType<typeof meetingsLoadMeetingsFail>
   | ReturnType<typeof meetingsAddMeeting>;

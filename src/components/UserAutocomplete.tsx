@@ -21,11 +21,13 @@ interface IOptionsResponse {
   options: IUser[];
 }
 
-interface IPlacesAutocompleteProps<DisableClearable extends boolean | undefined>
+interface IUserAutocompleteProps<DisableClearable extends boolean | undefined>
   extends Omit<
     AutocompleteProps<IUser, true, DisableClearable, false>,
     'renderInput' | 'options'
   > {
+  helperText?: string;
+  error?: boolean;
   realValue: IUser[];
   onRealValueChange: (value: IUser[]) => void;
 }
@@ -33,7 +35,7 @@ interface IPlacesAutocompleteProps<DisableClearable extends boolean | undefined>
 const UserAutocomplete = <
   DisableClearable extends boolean | undefined = undefined
 >(
-  props: IPlacesAutocompleteProps<DisableClearable>,
+  props: IUserAutocompleteProps<DisableClearable>,
 ): JSX.Element => {
   const [open, setOpen] = useState<boolean>(false);
   const [options, setOptions] = useState<IUser[]>([]);
@@ -80,7 +82,7 @@ const UserAutocomplete = <
 
   return (
     <Autocomplete
-      {...omit(props, 'realValue', 'onRealValueChange')}
+      {...omit(props, 'realValue', 'onRealValueChange', 'error', 'helperText')}
       multiple
       open={open}
       onOpen={() => {
@@ -122,6 +124,8 @@ const UserAutocomplete = <
           variant="outlined"
           margin="dense"
           label="Members"
+          helperText={props.helperText}
+          error={props.error}
           InputProps={{
             ...params.InputProps,
             endAdornment: (

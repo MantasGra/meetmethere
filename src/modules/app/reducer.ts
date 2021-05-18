@@ -1,4 +1,4 @@
-import { combineReducers, createReducer } from '@reduxjs/toolkit';
+import { combineReducers, createReducer, Selector } from '@reduxjs/toolkit';
 import { responsiveStateReducer } from 'redux-responsive';
 
 import { appInitSuccess, openMobileMenu } from './actions';
@@ -35,4 +35,5 @@ const rootReducer = combineReducers({
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
+export type AppSelector<R> = Selector<RootState, R>;
 export default rootReducer;

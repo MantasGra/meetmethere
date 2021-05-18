@@ -21,8 +21,10 @@ export interface IAccount {
 }
 
 export interface IUser {
+  id: number;
   name: string;
   lastName: string;
+  color: string;
 }
 
 export interface IFormError {
