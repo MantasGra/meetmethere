@@ -79,7 +79,7 @@ const MeetingList: React.FC<IProps> = ({
             )}
           </>
         ) : (
-          <NoContent text="You have no palnned meetings!" />
+          <NoContent text="You have no planned meetings!" />
         )}
       </div>
     </>

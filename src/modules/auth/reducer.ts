@@ -64,6 +64,7 @@ const authReducer = createReducer(initialState, (builder) =>
     })
     .addCase(authIsDialogRegisterChangeRequest, (state, action) => {
       state.isDialogRegister = action.payload;
+      state.formErrors = {};
     })
     .addCase(authAuthorizeUserRequest, (state, action) => {
       state.account = action.payload;
