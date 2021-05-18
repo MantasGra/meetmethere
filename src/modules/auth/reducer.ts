@@ -8,11 +8,23 @@ import {
   authSwitchToLoginProposal,
   authSwitchToRegisterProposal,
   authLogoutRequest,
+  authSetAuthLoading,
+  authAuthorizeUserProposal,
 } from './actions';
 
 export interface IAccount {
+  name: string;
+  lastName: string;
   email: string;
   createDate: Date;
+  color: string;
+}
+
+export interface IUser {
+  id: number;
+  name: string;
+  lastName: string;
+  color: string;
 }
 
 export interface IFormError {
@@ -23,6 +35,7 @@ export interface IFormError {
 
 interface AuthState {
   account?: IAccount;
+  authLoading: boolean;
   formErrors: IFormError;
   isAuthDialogOpen: boolean;
   isDialogRegister: boolean;
@@ -30,12 +43,19 @@ interface AuthState {
 
 const initialState: AuthState = {
   formErrors: {},
+  authLoading: false,
   isAuthDialogOpen: false,
   isDialogRegister: false,
 };
 
 const authReducer = createReducer(initialState, (builder) =>
   builder
+    .addCase(authAuthorizeUserProposal, (state) => {
+      state.authLoading = true;
+    })
+    .addCase(authSetAuthLoading, (state, action) => {
+      state.authLoading = action.payload;
+    })
     .addCase(authLoginDialogVisibleChangeRequest, (state, action) => {
       if (action.payload) {
         state.isDialogRegister = false;
@@ -47,6 +67,7 @@ const authReducer = createReducer(initialState, (builder) =>
     })
     .addCase(authAuthorizeUserRequest, (state, action) => {
       state.account = action.payload;
+      state.authLoading = false;
     })
     .addCase(authOpenLoginProposal, (state) => {
       state.formErrors = {};

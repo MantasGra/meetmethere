@@ -25,6 +25,8 @@ import { authFormErrorsSelector } from '../selectors';
 import classes from './RegisterForm.module.scss';
 
 export interface IRegisterForm {
+  name: string;
+  lastName: string;
   email: string;
   password: string;
 }
@@ -79,7 +81,51 @@ const RegisterForm: React.FC = () => {
         render={({ field }) => (
           <TextField
             {...field}
-            margin="normal"
+            margin="dense"
+            label="Name"
+            helperText={errors.name?.message}
+            error={!!errors.name}
+            autoComplete="given-name"
+            fullWidth
+          />
+        )}
+        name="name"
+        control={control}
+        defaultValue=""
+        rules={{
+          required: {
+            value: true,
+            message: 'Required',
+          },
+        }}
+      />
+      <Controller
+        render={({ field }) => (
+          <TextField
+            {...field}
+            margin="dense"
+            label="Last Name"
+            helperText={errors.lastName?.message}
+            error={!!errors.lastName}
+            autoComplete="family-name"
+            fullWidth
+          />
+        )}
+        name="lastName"
+        control={control}
+        defaultValue=""
+        rules={{
+          required: {
+            value: true,
+            message: 'Required',
+          },
+        }}
+      />
+      <Controller
+        render={({ field }) => (
+          <TextField
+            {...field}
+            margin="dense"
             label="Email"
             helperText={errors.email?.message}
             error={!!errors.email}
@@ -103,7 +149,7 @@ const RegisterForm: React.FC = () => {
       />
       <Controller
         render={({ field }) => (
-          <FormControl fullWidth error={!!errors.password}>
+          <FormControl fullWidth error={!!errors.password} margin="dense">
             <InputLabel htmlFor="password">Password</InputLabel>
             <Input
               {...field}

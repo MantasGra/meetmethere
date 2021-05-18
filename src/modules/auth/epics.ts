@@ -21,6 +21,7 @@ import {
   authLogoutRequest,
   authLogoutProposal,
   authRegisterSubmitProposal,
+  authSetAuthLoading,
 } from './actions';
 import { isAuthDialogOpenSelector } from './selectors';
 
@@ -67,8 +68,11 @@ const switchToRegisterEpic: AppEpic = (action$, state$, { history }) =>
   );
 
 interface IAuthorizeUserResponse {
+  name: string;
+  lastName: string;
   email: string;
   createDate: Date;
+  color: string;
 }
 
 const authorizeUserEpic: AppEpic = (action$, _, { axios }) =>
@@ -81,7 +85,7 @@ const authorizeUserEpic: AppEpic = (action$, _, { axios }) =>
       }).pipe(
         mergeMap((response) => of(authAuthorizeUserRequest(response.data))),
         catchError(() => {
-          return EMPTY;
+          return of(authSetAuthLoading(false));
         }),
       ),
     ),

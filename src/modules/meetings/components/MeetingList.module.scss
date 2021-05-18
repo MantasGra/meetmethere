@@ -1,0 +1,37 @@
+.meetingList {
+  min-width: 500px;
+  width: 80%;
+  margin: auto;
+  margin-top: 10px;
+
+  @media only screen and (max-width: 500px) {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
+.meetingListItem {
+  margin: 10px 0;
+  background-color: rgb(208, 239, 250);
+}
+
+.meetingListItemContent {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.meetingListItemAvatars {
+  display: flex;
+  flex-direction: row-reverse;
+
+  .listItemAvatar:not(:first-child) {
+    margin-right: -20px;
+  }
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

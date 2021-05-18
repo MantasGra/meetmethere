@@ -12,6 +12,7 @@ module.exports = {
     '@snowpack/plugin-dotenv',
     '@snowpack/plugin-typescript',
     '@snowpack/plugin-sass',
+    'snowpack-svgr-plugin',
   ],
   routes: [
     /* Enable an SPA Fallback in development: */

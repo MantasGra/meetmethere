@@ -7,6 +7,11 @@ import type { IRegisterForm } from './components/RegisterForm';
 export const authAuthorizeUserProposal = createAction(
   'auth/authorizeUserProposal',
 );
+
+export const authSetAuthLoading = createAction(
+  'auth/setAuthLoading',
+  withPayloadType<boolean>(),
+);
 export const authAuthorizeUserRequest = createAction(
   'auth/authorizeUserRequest',
   withPayloadType<IAccount>(),
@@ -43,6 +48,7 @@ export const authLogoutRequest = createAction('auth/logoutRequest');
 
 export type AuthActions =
   | ReturnType<typeof authAuthorizeUserProposal>
+  | ReturnType<typeof authSetAuthLoading>
   | ReturnType<typeof authAuthorizeUserRequest>
   | ReturnType<typeof authLoginDialogVisibleChangeRequest>
   | ReturnType<typeof authIsDialogRegisterChangeRequest>

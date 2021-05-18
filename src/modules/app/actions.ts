@@ -1,6 +1,7 @@
 import { PayloadActionCreator, Action, createAction } from '@reduxjs/toolkit';
 import type { AuthActions } from '../auth/actions';
 import type { SnackbarsActions } from '../snackbars/actions';
+import type { MeetingsActions } from '../meetings/actions';
 
 export const withPayloadType = <T>() => {
   return (t: T): { payload: T } => ({ payload: t });
@@ -20,7 +21,17 @@ export const multipleActionsMatcher = <PAC extends PayloadActionCreator<any>>(
 
 export const appInit = createAction('app/init');
 
+export const appInitSuccess = createAction('app/initSuccess');
+
+export const openMobileMenu = createAction(
+  'app/openMobileMenu',
+  withPayloadType<boolean>(),
+);
+
 export type AppActions =
   | ReturnType<typeof appInit>
+  | ReturnType<typeof appInitSuccess>
+  | ReturnType<typeof openMobileMenu>
   | AuthActions
-  | SnackbarsActions;
+  | SnackbarsActions
+  | MeetingsActions;

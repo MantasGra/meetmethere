@@ -3,20 +3,27 @@ import Button from '@material-ui/core/Button';
 import Popover from '@material-ui/core/Popover';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import AccountCircle from '@material-ui/icons/AccountCircle';
+import Typography from '@material-ui/core/Typography';
 
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+import AccountAvatar from './AccountAvatar';
 import { authOpenLoginProposal, authLogoutProposal } from '../actions';
-import { accountEmailSelector, isUserLoggedInSelector } from '../selectors';
+import {
+  accountAvatarDataSelector,
+  accountEmailSelector,
+  accountFullNameSelector,
+  isUserLoggedInSelector,
+} from '../selectors';
 
 import classes from './AccountInfo.module.scss';
-import { Typography } from '@material-ui/core';
 
 const AccountInfo: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
   const isUserLoggedIn = useAppSelector(isUserLoggedInSelector);
   const accountEmail = useAppSelector(accountEmailSelector);
+  const accountFullName = useAppSelector(accountFullNameSelector);
+  const accountAvatarData = useAppSelector(accountAvatarDataSelector);
 
   const dispatch = useAppDispatch();
 
@@ -43,7 +50,10 @@ const AccountInfo: React.FC = () => {
   return isUserLoggedIn ? (
     <>
       <IconButton edge="end" color="inherit" onClick={onAccountClick}>
-        <AccountCircle />
+        <AccountAvatar
+          initials={accountAvatarData.accountInitials}
+          color={accountAvatarData.color}
+        />
       </IconButton>
       <Popover
         id={id}
@@ -53,7 +63,10 @@ const AccountInfo: React.FC = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         <div className={classes.accountInfoPopoverContainer}>
-          <Typography gutterBottom>{accountEmail}</Typography>
+          <Typography>{accountFullName}</Typography>
+          <Typography variant="body2" gutterBottom>
+            {accountEmail}
+          </Typography>
           <Divider />
           <Button fullWidth size="small" onClick={onLogoutClick}>
             Logout
