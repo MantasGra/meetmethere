@@ -8,7 +8,8 @@ import {
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { DateTimePicker } from '@material-ui/pickers';
-import DateFnsUtils from '@date-io/date-fns';
+import isAfter from 'date-fns/isAfter';
+import differenceInMinutes from 'date-fns/differenceInMinutes';
 import Checkbox from '@material-ui/core/Checkbox';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -57,6 +58,8 @@ const CreateMeetingForm: React.FC = () => {
 
   const showPollOptions = watch('usePoll', false);
 
+  const description = watch('description', '');
+
   const dispatch = useAppDispatch();
 
   const onSubmit = (data: ICreateMeetingForm) => {
@@ -103,7 +106,8 @@ const CreateMeetingForm: React.FC = () => {
         fullWidth
       />
       <TextField
-        inputProps={{ ...register('description') }}
+        inputProps={{ ...register('description'), maxLength: 255 }}
+        helperText={`${description.length}/255`}
         margin="dense"
         variant="outlined"
         label="Description"
@@ -187,6 +191,7 @@ const CreateMeetingForm: React.FC = () => {
               )}
               name={`dates.${index}.startDate` as const}
               control={control}
+              defaultValue={new Date()}
             />
             <Controller
               render={({ field }) => (
@@ -208,8 +213,10 @@ const CreateMeetingForm: React.FC = () => {
               control={control}
               rules={{
                 validate: (value) =>
-                  new DateFnsUtils().isAfter(value, item.startDate),
+                  isAfter(value, item.startDate) &&
+                  differenceInMinutes(value, item.startDate) > 0,
               }}
+              defaultValue={new Date()}
             />
             {isMobile && fields.length - 1 !== index && (
               <Divider className={classes.divider} />
