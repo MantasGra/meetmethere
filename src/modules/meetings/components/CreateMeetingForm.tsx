@@ -97,6 +97,7 @@ const CreateMeetingForm: React.FC = () => {
           ...register('meetingName', {
             required: 'Required',
           }),
+          maxLength: 100,
         }}
         helperText={errors.meetingName?.message}
         error={!!errors.meetingName}

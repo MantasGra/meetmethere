@@ -83,6 +83,7 @@ const LoginForm: React.FC = () => {
             label="Email"
             helperText={errors.email?.message}
             error={!!errors.email}
+            inputProps={{ maxLength: 100 }}
             autoComplete="username"
             fullWidth
           />
@@ -110,6 +111,7 @@ const LoginForm: React.FC = () => {
               id="password"
               type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
+              inputProps={{ maxLength: 100 }}
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton

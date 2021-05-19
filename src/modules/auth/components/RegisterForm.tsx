@@ -83,6 +83,7 @@ const RegisterForm: React.FC = () => {
             {...field}
             margin="dense"
             label="Name"
+            inputProps={{ maxLength: 100 }}
             helperText={errors.name?.message}
             error={!!errors.name}
             autoComplete="given-name"
@@ -106,6 +107,7 @@ const RegisterForm: React.FC = () => {
             margin="dense"
             label="Last Name"
             helperText={errors.lastName?.message}
+            inputProps={{ maxLength: 100 }}
             error={!!errors.lastName}
             autoComplete="family-name"
             fullWidth
@@ -128,6 +130,7 @@ const RegisterForm: React.FC = () => {
             margin="dense"
             label="Email"
             helperText={errors.email?.message}
+            inputProps={{ maxLength: 100 }}
             error={!!errors.email}
             autoComplete="username"
             fullWidth
@@ -156,6 +159,7 @@ const RegisterForm: React.FC = () => {
               id="password"
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
+              inputProps={{ maxLength: 100 }}
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton
