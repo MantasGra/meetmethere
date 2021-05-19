@@ -56,7 +56,9 @@ const MeetingList: React.FC<IProps> = ({
                   }
                 />
                 <CardContent className={classes.meetingListItemContent}>
-                  <div>{meeting.description}</div>
+                  <div className={classes.description}>
+                    {meeting.description}
+                  </div>
                   <div className={classes.meetingListItemAvatars}>
                     {meeting.participants.map((participant) => (
                       <AccountAvatar
@@ -79,7 +81,7 @@ const MeetingList: React.FC<IProps> = ({
             )}
           </>
         ) : (
-          <NoContent text="You have no palnned meetings!" />
+          <NoContent text="You have no planned meetings!" />
         )}
       </div>
     </>
