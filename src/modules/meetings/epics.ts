@@ -9,9 +9,11 @@ import {
   meetingsAddMeeting,
   meetingsCreateDialogVisibleChangeRequest,
   meetingsCreateMeetingProposal,
+  meetingsLoadMeetingRequest,
   meetingsLoadMeetingsFail,
   meetingsLoadMeetingsProposal,
   meetingsLoadMeetingsSuccess,
+  meetingsLoadMeetingFail,
 } from './actions';
 import type { IMeeting } from './reducer';
 
@@ -108,4 +110,32 @@ const geocodeIfPlaceId$ = (meeting: IMeeting) => {
   );
 };
 
-export default combineEpics(createMeetingEpic, loadMeetingsEpic);
+interface ILoadMeetingResponse {
+  meeting: IMeeting;
+}
+
+const loadMeetingEpic: AppEpic = (action$, _, { axios }) =>
+  action$.pipe(
+    ofActionType(meetingsLoadMeetingRequest),
+    pluck('payload'),
+    mergeMap(({ id }) =>
+      fromAxios<ILoadMeetingResponse>(axios, {
+        url: `/meeting/${id}`,
+        method: 'GET',
+        withCredentials: true,
+      }).pipe(
+        mergeMap((response) =>
+          geocodeIfPlaceId$(response.data.meeting).pipe(
+            map((meeting) => meetingsAddMeeting(meeting)),
+          ),
+        ),
+        catchError(() => of(meetingsLoadMeetingFail())),
+      ),
+    ),
+  );
+
+export default combineEpics(
+  createMeetingEpic,
+  loadMeetingsEpic,
+  loadMeetingEpic,
+);

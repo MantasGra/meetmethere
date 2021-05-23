@@ -1,0 +1,44 @@
+.meetingPageHeader {
+  padding: 20px 45px;
+}
+
+.meetingTitleRow {
+  display: flex;
+  flex-direction: row;
+
+  .meetingTitleText {
+    margin-right: 20px;
+  }
+}
+
+.meetingDateEntry {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 200px;
+}
+
+.meetingInfoRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.meetingLocation {
+  padding: 0 10px;
+
+  .meetingLocationText {
+    padding-left: 5px;
+  }
+}
+
+.meetingMemberList {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .memberListAvatar {
+    margin: 0 5px;
+  }
+}

@@ -14,6 +14,7 @@ import { Routes } from 'src/constants/enums';
 import AppBar from './AppBar';
 import Dialogs from './Dialogs';
 import PlannedMeetingList from 'src/modules/meetings/components/PlannedMeetingList';
+import MeetingPage from 'src/modules/meetings/components/MeetingPage';
 import { useAppSelector } from 'src/hooks/redux';
 import ComingSoon from 'src/components/ComingSoon';
 import { isAppInitializedSelector } from '../selectors';
@@ -59,6 +60,14 @@ const App: React.FC = () => {
             guardSelector={isUserLoggedInSelector}
           >
             <PlannedMeetingList />
+          </ProtectedRoute>
+          <ProtectedRoute
+            path={Routes.MeetingPage}
+            exact
+            loading={isAuthLoading}
+            guardSelector={isUserLoggedInSelector}
+          >
+            <MeetingPage />
           </ProtectedRoute>
           <ProtectedRoute
             path={Routes.History}

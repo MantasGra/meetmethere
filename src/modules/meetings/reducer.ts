@@ -7,6 +7,8 @@ import {
   meetingsLoadMeetingsFail,
   meetingsLoadMeetingsProposal,
   meetingsLoadMeetingsSuccess,
+  meetingsSwitchToTab,
+  meetingsLoadMeetingFail,
 } from './actions';
 
 export enum MeetingStatus {
@@ -16,6 +18,12 @@ export enum MeetingStatus {
   Extended,
   Ended,
   Canceled,
+}
+
+export enum MeetingTabs {
+  Announcements = 0,
+  Activities = 1,
+  Expenses = 2,
 }
 
 export interface IMeeting {
@@ -39,6 +47,8 @@ interface MeetingState {
   plannedMeetings: Record<number, IMeeting>;
   plannedMeetingCount: number;
   plannedMeetingLoadFailed: boolean;
+  activeMeetingTab: MeetingTabs;
+  meetingLoadFailed: boolean;
   isCreateDialogOpen: boolean;
 }
 
@@ -48,6 +58,8 @@ const initialState: MeetingState = {
   plannedMeetings: {},
   plannedMeetingCount: 0,
   plannedMeetingLoadFailed: false,
+  activeMeetingTab: MeetingTabs.Announcements,
+  meetingLoadFailed: false,
   isCreateDialogOpen: false,
 };
 
@@ -63,7 +75,15 @@ const meetingsReducer = createReducer(initialState, (builder) =>
       action.payload.meetings.forEach((meeting) => {
         state.plannedMeetings[meeting.id] = meeting;
         if (!state.plannedMeetingIds.includes(meeting.id)) {
-          state.plannedMeetingIds.push(meeting.id);
+          state.plannedMeetingIds.splice(
+            sortedIndexBy(
+              state.plannedMeetingIds,
+              meeting.id,
+              (id) => state.plannedMeetings[id].startDate,
+            ),
+            0,
+            meeting.id,
+          );
         }
       });
       state.plannedMeetingCount = action.payload.meetingCount;
@@ -75,6 +95,7 @@ const meetingsReducer = createReducer(initialState, (builder) =>
       state.plannedMeetingLoadFailed = true;
     })
     .addCase(meetingsAddMeeting, (state, action) => {
+      state.meetingLoadFailed = false;
       state.plannedMeetings[action.payload.id] = action.payload;
       state.plannedMeetingIds.splice(
         sortedIndexBy(
@@ -85,6 +106,12 @@ const meetingsReducer = createReducer(initialState, (builder) =>
         0,
         action.payload.id,
       );
+    })
+    .addCase(meetingsSwitchToTab, (state, action) => {
+      state.activeMeetingTab = action.payload;
+    })
+    .addCase(meetingsLoadMeetingFail, (state) => {
+      state.meetingLoadFailed = true;
     }),
 );
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { generatePath, useHistory } from 'react-router';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
@@ -12,6 +13,7 @@ import MeetingStatusChip from './MeetingStatusChip';
 
 import classes from './MeetingList.module.scss';
 import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
+import { Routes } from 'src/constants/enums';
 
 interface IProps {
   meetings: IMeeting[];
@@ -25,6 +27,11 @@ const MeetingList: React.FC<IProps> = ({
   lastElementRef,
   loading,
 }) => {
+  const history = useHistory();
+  const openMeetingPage = (id: string) => {
+    history.push(generatePath(Routes.MeetingPage, { id }));
+  };
+
   return (
     <>
       <div className={classes.meetingList}>
@@ -36,6 +43,7 @@ const MeetingList: React.FC<IProps> = ({
                 className={classes.meetingListItem}
                 raised
                 ref={meetings.length - 1 === index ? lastElementRef : undefined}
+                onClick={() => openMeetingPage(meeting.id.toString())}
               >
                 <CardHeader
                   avatar={<EventIcon />}

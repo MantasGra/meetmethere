@@ -13,6 +13,11 @@
 .meetingListItem {
   margin: 10px 0;
   background-color: rgb(208, 239, 250);
+
+  &:hover {
+    background-color: darken(rgb(208, 239, 250), 20%);
+    cursor: pointer;
+  }
 }
 
 .meetingListItemContent {

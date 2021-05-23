@@ -1,6 +1,6 @@
 import { createAction } from '@reduxjs/toolkit';
 import { withPayloadType } from '../app/actions';
-import type { IMeeting } from './reducer';
+import type { IMeeting, MeetingTabs } from './reducer';
 
 export const meetingsCreateDialogVisibleChangeRequest = createAction(
   'meetings/createDialogVisibleChangeRequest',
@@ -46,10 +46,29 @@ export const meetingsAddMeeting = createAction(
   withPayloadType<IMeeting>(),
 );
 
+export const meetingsSwitchToTab = createAction(
+  'meetings/switchToTab',
+  withPayloadType<MeetingTabs>(),
+);
+
+interface ILoadMeetingRequest {
+  id: number;
+}
+
+export const meetingsLoadMeetingRequest = createAction(
+  'meetings/loadMeetingProposal',
+  withPayloadType<ILoadMeetingRequest>(),
+);
+
+export const meetingsLoadMeetingFail = createAction('meetings/loadMeetingFail');
+
 export type MeetingsActions =
   | ReturnType<typeof meetingsCreateDialogVisibleChangeRequest>
   | ReturnType<typeof meetingsCreateMeetingProposal>
   | ReturnType<typeof meetingsLoadMeetingsProposal>
   | ReturnType<typeof meetingsLoadMeetingsSuccess>
   | ReturnType<typeof meetingsLoadMeetingsFail>
-  | ReturnType<typeof meetingsAddMeeting>;
+  | ReturnType<typeof meetingsAddMeeting>
+  | ReturnType<typeof meetingsSwitchToTab>
+  | ReturnType<typeof meetingsLoadMeetingRequest>
+  | ReturnType<typeof meetingsLoadMeetingFail>;
