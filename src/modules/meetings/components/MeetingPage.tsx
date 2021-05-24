@@ -16,9 +16,11 @@ import { meetingsLoadMeetingRequest } from '../actions';
 import { CircularProgress } from '@material-ui/core';
 import NotFound from 'src/components/NotFound';
 import AnnouncementList from '../../announcements/components/AnnouncementList';
-
-import classes from './MeetingPage.module.scss';
 import { announcementsFormDialogMeetingIdChangeRequest } from 'src/modules/announcements/actions';
+import { activitiesFormDialogMeetingIdChangeRequest } from 'src/modules/activitites/actions';
+import ActivityList from '../../activitites/components/ActivityList';
+import classes from './MeetingPage.module.scss';
+import ComingSoon from 'src/components/ComingSoon';
 
 interface IMeetingPageParams {
   id: string;
@@ -37,6 +39,10 @@ const MeetingPage: React.FC = () => {
 
   const onAddAnnouncementClick = () => {
     dispatch(announcementsFormDialogMeetingIdChangeRequest(id));
+  };
+
+  const onAddActivityClick = () => {
+    dispatch(activitiesFormDialogMeetingIdChangeRequest(id));
   };
 
   useEffect(() => {
@@ -64,12 +70,32 @@ const MeetingPage: React.FC = () => {
             Add Announcement
           </Button>
         </div>
-        <div className={classes.announcementList}>
+        <div className={classes.tabContent}>
           <AnnouncementList />
         </div>
       </div>
-      <div hidden={activeTab !== MeetingTabsEnum.Activities}>Activities</div>
-      <div hidden={activeTab !== MeetingTabsEnum.Expenses}>Expenses</div>
+      <div
+        className={classes.tabContainer}
+        hidden={activeTab !== MeetingTabsEnum.Activities}
+      >
+        <div className={classes.addButtonContainer}>
+          <Button
+            className={classes.addButton}
+            startIcon={<AddIcon />}
+            variant="contained"
+            color="primary"
+            onClick={onAddActivityClick}
+          >
+            Add Activity
+          </Button>
+        </div>
+        <div className={classes.tabContent}>
+          <ActivityList />
+        </div>
+      </div>
+      <div hidden={activeTab !== MeetingTabsEnum.Expenses}>
+        <ComingSoon />
+      </div>
     </Paper>
   ) : meetingLoadFailed ? (
     <NotFound text="Meeting not found" />

@@ -37,8 +37,13 @@ const initialState: AnnouncementState = {
 
 const announcementsReducer = createReducer(initialState, (builder) =>
   builder
-    .addCase(announcementsLoadAnnouncementsProposal, (state) => {
+    .addCase(announcementsLoadAnnouncementsProposal, (state, action) => {
       state.announcementsLoading = true;
+      if (action.payload.page === 1) {
+        state.announcements = {};
+        state.announcementIds = [];
+        state.announcementsCount = 0;
+      }
     })
     .addCase(announcementsLoadAnnouncementsSuccess, (state, action) => {
       action.payload.announcements.forEach((announcement) => {

@@ -49,7 +49,7 @@ const AnnouncementForm: React.FC = () => {
       />
       <TextField
         inputProps={{
-          ...register('description', { required: 'Required' }),
+          ...register('description'),
           maxLength: 1000,
         }}
         helperText={`${description.length}/1000`}
