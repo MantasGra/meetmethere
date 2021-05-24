@@ -2,7 +2,10 @@
   min-width: 500px;
   width: 80%;
   margin: auto;
-  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 
   @media only screen and (max-width: 500px) {
     width: 90%;
@@ -12,7 +15,24 @@
 
 .meetingListItem {
   margin: 10px 0;
+  width: 100%;
   background-color: rgb(208, 239, 250);
+
+  &:hover {
+    background-color: darken(rgb(208, 239, 250), 20%);
+    cursor: pointer;
+  }
+}
+
+.meetingListItemHistorical {
+  margin: 10px 0;
+  width: 100%;
+  background-color: rgb(206, 219, 240);
+
+  &:hover {
+    background-color: darken(rgb(206, 219, 240), 20%);
+    cursor: pointer;
+  }
 }
 
 .meetingListItemContent {

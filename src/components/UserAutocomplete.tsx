@@ -26,6 +26,8 @@ interface IUserAutocompleteProps<DisableClearable extends boolean | undefined>
     AutocompleteProps<IUser, true, DisableClearable, false>,
     'renderInput' | 'options'
   > {
+  optionsUrl: string;
+  label?: string;
   helperText?: string;
   error?: boolean;
   realValue: IUser[];
@@ -47,7 +49,7 @@ const UserAutocomplete = <
     return throttle(
       (searchText: string, callback: (results: IUser[]) => void) => {
         axios
-          .get(`${config.backendBaseUrl}/user/selectOptions`, {
+          .get(`${config.backendBaseUrl}${props.optionsUrl}`, {
             params: { searchText },
             withCredentials: true,
           })
@@ -82,7 +84,15 @@ const UserAutocomplete = <
 
   return (
     <Autocomplete
-      {...omit(props, 'realValue', 'onRealValueChange', 'error', 'helperText')}
+      {...omit(
+        props,
+        'realValue',
+        'onRealValueChange',
+        'error',
+        'helperText',
+        'optionsUrl',
+        'label',
+      )}
       multiple
       open={open}
       onOpen={() => {
@@ -123,7 +133,7 @@ const UserAutocomplete = <
           {...params}
           variant="outlined"
           margin="dense"
-          label="Members"
+          label={props.label}
           helperText={props.helperText}
           error={props.error}
           InputProps={{

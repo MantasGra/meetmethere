@@ -6,3 +6,5 @@ export const getDirectionsURL = (
     destination: locationString,
     ...(locationId && { destination_place_id: locationId }),
   }).toString()}`;
+
+export default getDirectionsURL;

@@ -1,10 +1,9 @@
 import React from 'react';
+import { generatePath, useHistory, useLocation } from 'react-router';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import IconButton from '@material-ui/core/IconButton';
-import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import EventIcon from '@material-ui/icons/Event';
 import type { IMeeting } from '../reducer';
 import NoContent from 'src/components/NoContent';
@@ -12,19 +11,31 @@ import MeetingStatusChip from './MeetingStatusChip';
 
 import classes from './MeetingList.module.scss';
 import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
+import { Routes } from 'src/constants/enums';
 
 interface IProps {
   meetings: IMeeting[];
   loading?: boolean;
   error?: string;
   lastElementRef?: (node: Element) => void;
+  typeOfMeeting?: string;
 }
 
 const MeetingList: React.FC<IProps> = ({
   meetings,
   lastElementRef,
   loading,
+  typeOfMeeting,
 }) => {
+  const history = useHistory();
+  const location = useLocation();
+  const openMeetingPage = (id: string) => {
+    history.push(generatePath(Routes.MeetingPage, { id }));
+  };
+  const typeOfMeetingClass =
+    typeOfMeeting == 'planned'
+      ? classes.meetingListItem
+      : classes.meetingListItemHistorical;
   return (
     <>
       <div className={classes.meetingList}>
@@ -33,9 +44,10 @@ const MeetingList: React.FC<IProps> = ({
             {meetings.map((meeting, index) => (
               <Card
                 key={meeting.id}
-                className={classes.meetingListItem}
+                className={typeOfMeetingClass}
                 raised
                 ref={meetings.length - 1 === index ? lastElementRef : undefined}
+                onClick={() => openMeetingPage(meeting.id.toString())}
               >
                 <CardHeader
                   avatar={<EventIcon />}
@@ -49,9 +61,6 @@ const MeetingList: React.FC<IProps> = ({
                   action={
                     <>
                       <MeetingStatusChip meetingStatus={meeting.status} />
-                      <IconButton>
-                        <MoreHorizIcon />
-                      </IconButton>
                     </>
                   }
                 />
@@ -81,7 +90,13 @@ const MeetingList: React.FC<IProps> = ({
             )}
           </>
         ) : (
-          <NoContent text="You have no planned meetings!" />
+          <NoContent
+            text={`You have no ${
+              location.pathname === '/history'
+                ? 'meeting history'
+                : 'planned meetings'
+            }!`}
+          />
         )}
       </div>
     </>

@@ -1,9 +1,6 @@
 import { useRef, useCallback, useState, useEffect } from 'react';
 import type { AppSelector } from 'src/modules/app/reducer';
-import type {
-  ActionCreatorWithoutPayload,
-  ActionCreatorWithPreparedPayload,
-} from '@reduxjs/toolkit';
+import type { ActionCreatorWithoutPayload, Action } from '@reduxjs/toolkit';
 import { useAppDispatch, useAppSelector } from './redux';
 
 interface InfiniteScrollHookReturn<T, E> {
@@ -13,12 +10,12 @@ interface InfiniteScrollHookReturn<T, E> {
   lastElementRef: (node: Element) => void;
 }
 
-export const useInfiniteScroll = <T, E>(
+export const useInfiniteScroll = <T, E, P>(
   isLoadingSelector: AppSelector<boolean>,
   hasMoreSelector: AppSelector<boolean>,
   listSelector: AppSelector<T[]>,
   fetchErrorSelector: AppSelector<E>,
-  fetchAction: ActionCreatorWithPreparedPayload<[number], { page: number }>,
+  fetchAction: (page: number) => Action<P>,
   cancelAction?: ActionCreatorWithoutPayload,
 ): InfiniteScrollHookReturn<T, E> => {
   const loading = useAppSelector(isLoadingSelector);

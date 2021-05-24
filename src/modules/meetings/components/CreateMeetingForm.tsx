@@ -122,6 +122,7 @@ const CreateMeetingForm: React.FC = () => {
             {...omit(field, 'value', 'onChange', 'ref')}
             realValue={field.value}
             onRealValueChange={(newLocation) => field.onChange(newLocation)}
+            variant="outlined"
           />
         )}
         name="location"
@@ -132,6 +133,8 @@ const CreateMeetingForm: React.FC = () => {
         render={({ field }) => (
           <UserAutocomplete
             {...omit(field, 'value', 'onChange', 'ref')}
+            label="Members"
+            optionsUrl="/user/selectOptions"
             helperText={
               (errors.members as FieldError | undefined)?.type === 'validate'
                 ? 'Select at least one member'

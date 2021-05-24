@@ -14,7 +14,7 @@ const configureAppStore = (preloadedState?: RootState) => {
   const config = getConfig();
   const axiosInstance = Axios.create({
     baseURL: config.backendBaseUrl,
-    timeout: 1000,
+    timeout: 100000,
   });
   const epicMiddleware: EpicMiddleware<
     AppActions,

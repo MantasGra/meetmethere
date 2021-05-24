@@ -18,12 +18,16 @@ import MeetingList from './MeetingList';
 import classes from './PlannedMeetingList.module.scss';
 
 const PlannedMeetingList: React.FC = () => {
-  const { loading, list: meetings, lastElementRef } = useInfiniteScroll(
+  const {
+    loading,
+    list: meetings,
+    lastElementRef,
+  } = useInfiniteScroll(
     meetingsPlannedMeetingsLoadingSelector,
     meetingsPlannedMeetingsHasMoreSelector,
     meetingsPlannedSelector,
     meetingsPlannedMeetingLoadFailedSelector,
-    meetingsLoadMeetingsProposal,
+    (page) => meetingsLoadMeetingsProposal(page, 'planned'),
   );
   const dispatch = useAppDispatch();
   const onCreateMeetingClick = () => {
@@ -35,6 +39,7 @@ const PlannedMeetingList: React.FC = () => {
         meetings={meetings}
         lastElementRef={lastElementRef}
         loading={loading}
+        typeOfMeeting={'planned'}
       />
       <Fab
         color="primary"

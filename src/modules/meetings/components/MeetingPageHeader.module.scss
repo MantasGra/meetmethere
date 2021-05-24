@@ -1,0 +1,133 @@
+.meetingPageHeader {
+  padding: 20px 45px;
+}
+
+.meetingTitleRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  .meetingTitleText {
+    margin-right: 20px;
+  }
+
+  .meetingTitle {
+    display: flex;
+  }
+
+  .userParticipationStatus {
+    padding: 0 10px;
+  }
+
+  .statusSelect {
+    width: 150px;
+  }
+}
+
+.meetingDateEntry {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 200px;
+}
+
+.meetingInfoRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.meetingLocation {
+  padding: 0 10px;
+
+  .meetingLocationText {
+    padding-left: 5px;
+  }
+}
+
+.meetingMemberList {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .memberListAvatar {
+    margin: 0 5px;
+  }
+}
+
+.meetingStatusSelect {
+  margin-left: 10px;
+  min-width: 120px;
+}
+
+.meetingDescriptionInput {
+  margin-top: 20px;
+}
+
+.meetingPlaceSelect {
+  min-width: 250px;
+}
+
+.meetingEditButton {
+  position: absolute;
+  top: 65px;
+  right: 10px;
+}
+
+.meetingDateInputs {
+  display: flex;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .meetingPageHeader {
+    padding: 15px;
+  }
+
+  .meetingTitle {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .meetingTitleRow {
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .userParticipationStatus {
+      padding: 10px 0;
+    }
+  }
+
+  .meetingInfoRow {
+    flex-wrap: wrap;
+  }
+
+  .meetingLocation {
+    padding: 0;
+
+    .meetingLocationText {
+      padding-left: 0;
+    }
+  }
+
+  .meetingEditButton {
+    position: fixed;
+    bottom: 20px;
+    right: 10px;
+    top: unset;
+  }
+
+  .meetingStatusSelect {
+    margin-left: 0;
+  }
+
+  .meetingDescriptionInput {
+    margin-top: 10px;
+  }
+
+  .meetingDescription {
+    margin: 10px 0;
+  }
+}

@@ -3,6 +3,7 @@ export const enum Routes {
   Login = '/login',
   Register = '/register',
   Meetings = '/meetings',
+  MeetingPage = '/meetings/:id',
   History = '/history',
   Invitations = '/invitations',
 }

@@ -1,4 +1,8 @@
-import type { Action, PayloadActionCreator } from '@reduxjs/toolkit';
+import type {
+  Action,
+  PayloadActionCreator,
+  ActionCreatorWithPreparedPayload,
+} from '@reduxjs/toolkit';
 import type { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import type Axios from 'axios-observable';
 import { OperatorFunction, Observable, throwError } from 'rxjs';
@@ -6,8 +10,12 @@ import { filter, catchError, mergeMap } from 'rxjs/operators';
 import StatusCodes from 'http-status-codes';
 import { multipleActionsMatcher } from 'src/modules/app/actions';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const ofActionType = <PAC extends PayloadActionCreator<any>>(
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export const ofActionType = <
+  PAC extends
+    | PayloadActionCreator<any>
+    | ActionCreatorWithPreparedPayload<any[], any>
+>(
   actions: PAC | PAC[],
 ): OperatorFunction<Action<unknown>, ReturnType<PAC>> => {
   if (!Array.isArray(actions)) {
@@ -15,6 +23,7 @@ export const ofActionType = <PAC extends PayloadActionCreator<any>>(
   }
   return filter(multipleActionsMatcher(actions));
 };
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 interface IExpiredTokenResponse {
   message: string;
@@ -43,3 +52,10 @@ export const fromAxios = <T>(
     }),
   );
 };
+
+const isNotNullOrUndefined = <T>(input: null | undefined | T): input is T =>
+  input !== null && input !== undefined;
+
+export const filterNotNullOrUndefined = <T>() => (
+  source$: Observable<null | undefined | T>,
+): Observable<T> => source$.pipe(filter(isNotNullOrUndefined));
