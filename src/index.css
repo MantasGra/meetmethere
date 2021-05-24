@@ -21,6 +21,10 @@ html {
   height: 100%;
 }
 
+[hidden] {
+  display: none;
+}
+
 #root {
   height: 100%;
 }

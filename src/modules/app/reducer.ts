@@ -5,6 +5,7 @@ import { appInitSuccess, openMobileMenu } from './actions';
 import authReducer from '../auth/reducer';
 import snackbarsReducer from '../snackbars/reducer';
 import meetingsReducer from '../meetings/reducer';
+import announcementsReducer from '../announcements/reducer';
 
 interface ApplicationState {
   initialized: boolean;
@@ -27,6 +28,7 @@ const appReducer = createReducer(initialState, (buildier) =>
 );
 
 const rootReducer = combineReducers({
+  announcements: announcementsReducer,
   app: appReducer,
   auth: authReducer,
   browser: responsiveStateReducer,
