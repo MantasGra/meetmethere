@@ -27,13 +27,15 @@ export const meetingsCreateMeetingProposal = createAction(
 
 export const meetingsLoadMeetingsProposal = createAction(
   'meetings/loadMeetingsProposal',
-  (page: number) => ({ payload: { page } }),
+  (page: number, typeOfMeeting: string) => ({
+    payload: { page, typeOfMeeting },
+  }),
 );
 
 export const meetingsLoadMeetingsSuccess = createAction(
   'meetings/loadMeetingsSuccess',
-  (meetings: IMeeting[], meetingCount: number) => ({
-    payload: { meetings, meetingCount },
+  (meetings: IMeeting[], meetingCount: number, typeOfMeeting: string) => ({
+    payload: { meetings, meetingCount, typeOfMeeting },
   }),
 );
 
