@@ -60,6 +60,11 @@ export const meetingsLoadMeetingRequest = createAction(
   withPayloadType<ILoadMeetingRequest>(),
 );
 
+export const meetingsMeetingPollDialogVisibleChangeRequest = createAction(
+  'meetings/meetingPollDialogChangeRequest',
+  withPayloadType<number | null>(),
+);
+
 export const meetingsLoadMeetingFail = createAction('meetings/loadMeetingFail');
 
 export type MeetingsActions =
@@ -71,4 +76,5 @@ export type MeetingsActions =
   | ReturnType<typeof meetingsAddMeeting>
   | ReturnType<typeof meetingsSwitchToTab>
   | ReturnType<typeof meetingsLoadMeetingRequest>
-  | ReturnType<typeof meetingsLoadMeetingFail>;
+  | ReturnType<typeof meetingsLoadMeetingFail>
+  | ReturnType<typeof meetingsMeetingPollDialogVisibleChangeRequest>;

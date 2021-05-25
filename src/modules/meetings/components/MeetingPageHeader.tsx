@@ -5,11 +5,11 @@ import Button from '@material-ui/core/Button';
 import MeetingStatusChip from './MeetingStatusChip';
 import getDirectionsURL from 'src/utils/getDirectionsURL';
 import openInNewTab from 'src/utils/openInNewTab';
-import { useAppSelector } from 'src/hooks/redux';
+import { useAppSelector, useAppDispatch } from 'src/hooks/redux';
 import { meetingsMeetingByIdSelector } from '../selectors';
-
-import classes from './MeetingPageHeader.module.scss';
 import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
+import { meetingsMeetingPollDialogVisibleChangeRequest } from '../actions';
+import classes from './MeetingPageHeader.module.scss';
 
 interface IProps {
   id: number;
@@ -20,12 +20,18 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
     meetingsMeetingByIdSelector(state, props.id),
   );
 
+  const dispatch = useAppDispatch();
+
   const onGetDirectionsClick = () => {
     if (meeting.locationString) {
       openInNewTab(
         getDirectionsURL(meeting.locationString, meeting.locationId),
       );
     }
+  };
+
+  const onMeetingPollOpenClick = () => {
+    dispatch(meetingsMeetingPollDialogVisibleChangeRequest(props.id));
   };
 
   return (
@@ -43,18 +49,30 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
       </div>
       <div className={classes.meetingInfoRow}>
         <div>
-          <div className={classes.meetingDateEntry}>
-            <Typography variant="subtitle2">From:</Typography>
-            <Typography variant="subtitle2">
-              {format(new Date(meeting.startDate), 'yyyy-MM-dd HH:mm')}
-            </Typography>
-          </div>
-          <div className={classes.meetingDateEntry}>
-            <Typography variant="subtitle2">To:</Typography>
-            <Typography variant="subtitle2">
-              {format(new Date(meeting.endDate), 'yyyy-MM-dd HH:mm')}
-            </Typography>
-          </div>
+          {meeting.isDatesPollActive ? (
+            <Button
+              color="primary"
+              variant="outlined"
+              onClick={onMeetingPollOpenClick}
+            >
+              Open Dates Poll
+            </Button>
+          ) : (
+            <>
+              <div className={classes.meetingDateEntry}>
+                <Typography variant="subtitle2">From:</Typography>
+                <Typography variant="subtitle2">
+                  {format(new Date(meeting.startDate), 'yyyy-MM-dd HH:mm')}
+                </Typography>
+              </div>
+              <div className={classes.meetingDateEntry}>
+                <Typography variant="subtitle2">To:</Typography>
+                <Typography variant="subtitle2">
+                  {format(new Date(meeting.endDate), 'yyyy-MM-dd HH:mm')}
+                </Typography>
+              </div>
+            </>
+          )}
         </div>
         <div className={classes.meetingLocation}>
           <Typography

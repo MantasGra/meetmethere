@@ -1,5 +1,5 @@
 import type { RootState } from '../app/reducer';
-import type { IMeeting, MeetingTabs } from './reducer';
+import type { IMeeting, MeetingTabs, IMeetingDatesPollEntry } from './reducer';
 
 export const meetingsPlannedSelector = (state: RootState): IMeeting[] =>
   state.meetings.plannedMeetingIds.map(
@@ -38,3 +38,17 @@ export const meetingsMeetingLoadedSelector = (
 
 export const meetingsMeetingLoadFailedSelector = (state: RootState): boolean =>
   state.meetings.meetingLoadFailed;
+
+export const meetingsIsMeetingPollDialogOpenSelector = (
+  state: RootState,
+): boolean => !!state.meetings.meetingPollFormId;
+
+export const meetingsMeetingDatesPollFormIdSelector = (
+  state: RootState,
+): number | null => state.meetings.meetingPollFormId;
+
+export const meetingsDatesPollEntriesSelector = (
+  state: RootState,
+  id: number,
+): IMeetingDatesPollEntry[] =>
+  state.meetings.plannedMeetings[id].meetingDatesPollEntries;
