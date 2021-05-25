@@ -14,51 +14,39 @@ import {
 } from './actions';
 import type { IExpense } from './reducer';
 
-interface ILoadExpensesResponse {
-  expenses: IExpense[];
-  count: number;
-}
-
 const loadExpensesEpic: AppEpic = (action$, _, { axios }) =>
   action$.pipe(
     ofActionType(expensesLoadExpensesProposal),
     pluck('payload'),
     mergeMap(({ page, meetingId }) =>
-      fromAxios<ILoadExpensesResponse>(axios, {
+      fromAxios<IExpense[]>(axios, {
         url: `/meeting/${meetingId}/expenses`,
         method: 'GET',
         params: { page },
         withCredentials: true,
       }).pipe(
         map((response) =>
-          expensesLoadExpensesSuccess(
-            response.data.expenses,
-            response.data.count,
-          ),
+          expensesLoadExpensesSuccess(response.data, response.data.length),
         ),
         catchError(() => of(expensesLoadExpensesFail())),
       ),
     ),
   );
 
-interface ICreateExpenseResponse {
-  createdExpense: IExpense;
-}
-
 const createExpenseEpic: AppEpic = (action$, _, { axios }) =>
   action$.pipe(
     ofActionType(expensesCreateExpenseProposal),
     pluck('payload'),
-    mergeMap(({ announcement, meetingId }) =>
-      fromAxios<ICreateExpenseResponse>(axios, {
+    mergeMap(({ expense, meetingId }) =>
+      fromAxios<IExpense>(axios, {
         url: `/meeting/${meetingId}/expenses`,
         method: 'POST',
-        data: announcement,
+        data: expense,
         withCredentials: true,
       }).pipe(
         mergeMap((response) =>
           of(
-            expensesAddExpense(response.data.createdExpense),
+            expensesAddExpense(response.data),
             expensesFormDialogMeetingIdChangeRequest(null),
             snackbarsEnqueue({
               message: 'Expense created!',

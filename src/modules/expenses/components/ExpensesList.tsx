@@ -1,6 +1,5 @@
 import React from 'react';
 import { useParams } from 'react-router';
-import format from 'date-fns/format';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
@@ -14,7 +13,6 @@ import {
   expensesLoadingSelector,
 } from '../selectors';
 import { expensesLoadExpensesProposal } from '../actions';
-import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
 import classes from './ExpensesList.module.scss';
 
 interface IMeetingPageParams {
@@ -35,41 +33,34 @@ const ExpensesList: React.FC = () => {
     expensesLoadFailedSelector,
     (page) => expensesLoadExpensesProposal(id, page),
   );
-
+  console.log(expenses);
   return expenses.length || loading ? (
     <div className={classes.expenseList}>
       {expenses.map((expense, index) => (
         <Card
           key={expense.id}
-          className={classes.announcementListItem}
+          className={classes.expenseListItem}
           raised
           ref={expenses.length - 1 === index ? lastElementRef : undefined}
         >
           <CardHeader
-            avatar={
-              <AccountAvatar
-                initials={`${expense.createdBy.name.charAt(
-                  0,
-                )}${expense.createdBy.lastName.charAt(0)}`}
-                color={expense.createdBy.color}
-              />
-            }
             title={expense.name}
-            subheader={format(
-              new Date(expense.createDate),
-              'yyyy-MM-dd HH:mm',
-            )}
+            subheader={`Amount: ${expense.amount}`}
           />
           <CardContent>
             <Typography variant="body2" component="p">
               {expense.description}
+            </Typography>
+            <hr />
+            <Typography variant="body2" component="p">
+              For:{expense.users.map((u) => u.name).join(',')}
             </Typography>
           </CardContent>
         </Card>
       ))}
     </div>
   ) : (
-    <NoContent text="This meeting has no announcements yet!" />
+    <NoContent text="This meeting has no expenses yet!" />
   );
 };
 

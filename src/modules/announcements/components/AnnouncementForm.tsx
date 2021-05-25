@@ -4,7 +4,10 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
 import { announcementsFormDialogMeetingIdSelector } from '../selectors';
-import { announcementsCreateAnnouncementProposal, ICreateAnnouncementRequest } from '../actions';
+import {
+  announcementsCreateAnnouncementProposal,
+  ICreateAnnouncementRequest,
+} from '../actions';
 
 import classes from './AnnouncementForm.module.scss';
 

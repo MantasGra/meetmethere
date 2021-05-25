@@ -1,47 +1,45 @@
-import { createReducer } from "@reduxjs/toolkit";
-import { compareDesc } from "date-fns";
-import type { IUser } from "../auth/reducer";
-import type { IMeeting } from "../meetings/reducer";
+import { createReducer } from '@reduxjs/toolkit';
+import { compareDesc } from 'date-fns';
+import type { IUser } from '../auth/reducer';
+import type { IMeeting } from '../meetings/reducer';
 import {
-    expensesLoadExpensesProposal,
-    expensesLoadExpensesFail,
-    expensesLoadExpensesSuccess,
-    expensesAddExpense,
-    expensesCreateExpenseProposal,
-    expensesFormDialogMeetingIdChangeRequest,
+  expensesLoadExpensesProposal,
+  expensesLoadExpensesFail,
+  expensesLoadExpensesSuccess,
+  expensesAddExpense,
+  expensesFormDialogMeetingIdChangeRequest,
 } from './actions';
 
-
 export interface IExpense {
-    id: number;
-    name: string;
-    description: string;
-    amount: number;
-    users: IUser[];
-    createdBy: IUser;
-    meeting: IMeeting;
-    createDate: Date;
-  }
-  
-  interface ExpensesState {
-    expensesLoading: boolean;
-    expensesIds: number[];
-    expenses: Record<number, IExpense>;
-    expensesCount: number;
-    expensesLoadFailed: boolean;
-    formDialogMeetingId: number | null;
-  }
-  
-  const initialState: ExpensesState = {
-    expensesLoading: false,
-    expensesIds: [],
-    expenses: {},
-    expensesCount: 0,
-    expensesLoadFailed: false,
-    formDialogMeetingId: null,
-  };
+  id: number;
+  name: string;
+  description: string;
+  amount: number;
+  users: IUser[];
+  createdBy: IUser;
+  meeting: IMeeting;
+  createDate: Date;
+}
 
-  const expensesReducer = createReducer(initialState, (builder) =>
+interface ExpensesState {
+  expensesLoading: boolean;
+  expensesIds: number[];
+  expenses: Record<number, IExpense>;
+  expensesCount: number;
+  expensesLoadFailed: boolean;
+  formDialogMeetingId: number | null;
+}
+
+const initialState: ExpensesState = {
+  expensesLoading: false,
+  expensesIds: [],
+  expenses: {},
+  expensesCount: 0,
+  expensesLoadFailed: false,
+  formDialogMeetingId: null,
+};
+
+const expensesReducer = createReducer(initialState, (builder) =>
   builder
     .addCase(expensesLoadExpensesProposal, (state, action) => {
       state.expensesLoading = true;
@@ -72,7 +70,7 @@ export interface IExpense {
       state.expensesIds.unshift(action.payload.id);
     })
     .addCase(expensesFormDialogMeetingIdChangeRequest, (state, action) => {
-      console.log(`Changing form id: ${action.payload}`)
+      console.log(`Changing form id: ${action.payload}`);
       state.formDialogMeetingId = action.payload;
     }),
 );

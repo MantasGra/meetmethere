@@ -1,5 +1,5 @@
 import React from 'react';
-import { Controller, FieldError, useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
@@ -8,7 +8,14 @@ import { expensesCreateExpenseProposal } from '../actions';
 import classes from './ExpenseForm.module.scss';
 import type { IExpenseCreateRequest } from '../actions';
 import ExpenseFormUserList from './ExpenseFormUserList';
-import { Typography } from '@material-ui/core';
+import type { IUser } from 'src/modules/auth/reducer';
+
+interface ExpenseCreateRequest {
+  name: string;
+  description: string;
+  amount: number;
+  users: IUser[];
+}
 
 const ExpenseForm: React.FC = () => {
   const {
@@ -17,7 +24,7 @@ const ExpenseForm: React.FC = () => {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<IExpenseCreateRequest>();
+  } = useForm<ExpenseCreateRequest>();
 
   const description = watch('description', '');
 
@@ -25,10 +32,15 @@ const ExpenseForm: React.FC = () => {
 
   const dispatch = useAppDispatch();
 
-  const onSubmit = (data: IExpenseCreateRequest) => {
-    console.log(data);
+  const onSubmit = (data: ExpenseCreateRequest) => {
+    const postData: IExpenseCreateRequest = {
+      name: data.name,
+      description: data.description,
+      amount: data.amount,
+      userIds: data.users.map((u) => u.id),
+    };
     if (meetingId) {
-      dispatch(expensesCreateExpenseProposal(data, meetingId));
+      dispatch(expensesCreateExpenseProposal(postData, meetingId));
     }
   };
 
@@ -44,6 +56,19 @@ const ExpenseForm: React.FC = () => {
         margin="dense"
         variant="outlined"
         label="Title"
+        fullWidth
+      />
+      <TextField
+        inputProps={{
+          ...register('amount', { required: 'Required' }),
+          step: '0.01',
+        }}
+        helperText={errors.name?.message}
+        error={!!errors.name}
+        margin="dense"
+        variant="outlined"
+        label="Amount"
+        type="number"
         fullWidth
       />
       <TextField
@@ -73,15 +98,13 @@ const ExpenseForm: React.FC = () => {
           render={({ field }) => (
             <ExpenseFormUserList
               payeesList={field.value}
-              onPayeesSelectedChange={l => field.onChange(l)}
+              onPayeesSelectedChange={(l) => field.onChange(l)}
               error={
-                !!errors.users
-                  ? 'At least one participant must pay'
-                  : undefined
+                !!errors.users ? 'At least one participant must pay' : undefined
               }
             />
           )}
-            />
+        />
       </div>
       <div className={classes.submitContainer}>
         <Button
