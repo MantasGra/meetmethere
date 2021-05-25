@@ -2,7 +2,7 @@ import { createAction } from '@reduxjs/toolkit';
 import type { IInvitation } from './reducer';
 
 export const invitationsLoadInvitationsProposal = createAction(
-  'invitations/loadInvitationsProposal'
+  'invitations/loadInvitationsProposal',
 );
 
 export const invitationsLoadInvitationsSuccess = createAction(

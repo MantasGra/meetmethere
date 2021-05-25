@@ -20,16 +20,10 @@ const loadInvitationsEpic: AppEpic = (action$, _, { axios }) =>
         method: 'GET',
         withCredentials: true,
       }).pipe(
-        map((response) =>
-          invitationsLoadInvitationsSuccess(
-            response.data,
-          ),
-        ),
+        map((response) => invitationsLoadInvitationsSuccess(response.data)),
         catchError(() => of(invitationsLoadInvitationsFail())),
       ),
     ),
   );
 
-export default combineEpics(
-  loadInvitationsEpic,
-);
+export default combineEpics(loadInvitationsEpic);

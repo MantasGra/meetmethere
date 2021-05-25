@@ -1,10 +1,18 @@
-import { Card, CardContent, CardHeader, CircularProgress } from '@material-ui/core';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CircularProgress,
+} from '@material-ui/core';
 import React, { useEffect } from 'react';
 import NoContent from 'src/components/NoContent';
 import EventIcon from '@material-ui/icons/Event';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
 import { invitationsLoadInvitationsProposal } from '../actions';
-import { invitationsListSelector, invitationsLoadingSelector } from '../selectors';
+import {
+  invitationsListSelector,
+  invitationsLoadingSelector,
+} from '../selectors';
 
 import classes from './InvitationsList.module.scss';
 import { generatePath, useHistory } from 'react-router';
@@ -20,7 +28,7 @@ const InvitationsList: React.FC = () => {
 
   useEffect(() => {
     dispatch(invitationsLoadInvitationsProposal);
-  }, [])
+  }, []);
 
   const history = useHistory();
   const openMeetingPage = (id: string) => {
@@ -31,26 +39,28 @@ const InvitationsList: React.FC = () => {
     <>
       <div className={classes.invitationsList}>
         {loading && (
-              <div className={classes.loading}>
-                <CircularProgress size={140} />
-              </div>
-            )}
+          <div className={classes.loading}>
+            <CircularProgress size={140} />
+          </div>
+        )}
         {invitations.length ? (
           <>
             {invitations.map((invitation, index) => (
               <Card
                 key={invitation.id}
                 className={classes.invitationListItem}
-                onClick={() => openMeetingPage(invitation.meeting.id.toString())}
+                onClick={() =>
+                  openMeetingPage(invitation.meeting.id.toString())
+                }
                 raised
               >
                 <CardHeader
                   avatar={<EventIcon />}
                   title={invitation.meeting.name}
                   titleTypographyProps={{ variant: 'h5' }}
-                  subheader={
-                    new Date(invitation.meeting.startDate).toLocaleString()
-                  }
+                  subheader={new Date(
+                    invitation.meeting.startDate,
+                  ).toLocaleString()}
                   action={
                     <>
                       <Launch />
@@ -61,7 +71,6 @@ const InvitationsList: React.FC = () => {
                   <div className={classes.description}>
                     {invitation.meeting.description}
                   </div>
-                  
                 </CardContent>
               </Card>
             ))}

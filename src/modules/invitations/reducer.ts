@@ -10,7 +10,7 @@ export enum ParticipationStatus {
   Invited = 'invited',
   Maybe = 'maybe',
   Going = 'going',
-  Declined = 'declined'
+  Declined = 'declined',
 }
 
 export interface IInvitation {
@@ -28,7 +28,7 @@ interface InvitationState {
 const initialState: InvitationState = {
   invitations: [],
   invitationsLoading: false,
-  invitationsLoadingFailed: false
+  invitationsLoadingFailed: false,
 };
 
 const invitationsReducer = createReducer(initialState, (builder) =>
@@ -44,7 +44,7 @@ const invitationsReducer = createReducer(initialState, (builder) =>
     .addCase(invitationsLoadInvitationsFail, (state) => {
       state.invitationsLoading = false;
       state.invitationsLoadingFailed = true;
-    })
+    }),
 );
 
 export default invitationsReducer;

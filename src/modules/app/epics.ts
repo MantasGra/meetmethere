@@ -29,7 +29,7 @@ const rootEpic: AppEpic = (action$, store$, dependencies) =>
     meetingEpics,
     announcementEpics,
     activityEpics,
-    invitationEpics
+    invitationEpics,
   )(action$, store$, dependencies).pipe(
     catchError((error, source) => {
       console.error(error);
