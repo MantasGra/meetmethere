@@ -4,14 +4,9 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
 import { announcementsFormDialogMeetingIdSelector } from '../selectors';
-import { announcementsCreateAnnouncementProposal } from '../actions';
+import { announcementsCreateAnnouncementProposal, ICreateAnnouncementRequest } from '../actions';
 
 import classes from './AnnouncementForm.module.scss';
-
-interface IAnnouncementForm {
-  title: string;
-  description: string;
-}
 
 const AnnouncementForm: React.FC = () => {
   const {
@@ -19,7 +14,7 @@ const AnnouncementForm: React.FC = () => {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<IAnnouncementForm>();
+  } = useForm<ICreateAnnouncementRequest>();
 
   const description = watch('description', '');
 
@@ -27,7 +22,7 @@ const AnnouncementForm: React.FC = () => {
 
   const dispatch = useAppDispatch();
 
-  const onSubmit = (data: IAnnouncementForm) => {
+  const onSubmit = (data: ICreateAnnouncementRequest) => {
     if (meetingId) {
       dispatch(announcementsCreateAnnouncementProposal(data, meetingId));
     }

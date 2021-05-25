@@ -17,10 +17,11 @@ import { CircularProgress } from '@material-ui/core';
 import NotFound from 'src/components/NotFound';
 import AnnouncementList from '../../announcements/components/AnnouncementList';
 import { announcementsFormDialogMeetingIdChangeRequest } from 'src/modules/announcements/actions';
+import { expensesFormDialogMeetingIdChangeRequest } from 'src/modules/expenses/actions';
 import { activitiesFormDialogMeetingIdChangeRequest } from 'src/modules/activitites/actions';
-import ActivityList from '../../activitites/components/ActivityList';
 import classes from './MeetingPage.module.scss';
-import ComingSoon from 'src/components/ComingSoon';
+import ExpensesList from 'src/modules/expenses/components/ExpensesList';
+import ActivityList from 'src/modules/activitites/components/ActivityList';
 
 interface IMeetingPageParams {
   id: string;
@@ -43,6 +44,10 @@ const MeetingPage: React.FC = () => {
 
   const onAddActivityClick = () => {
     dispatch(activitiesFormDialogMeetingIdChangeRequest(id));
+  };
+
+  const onAddExpenseClick = () => {
+    dispatch(expensesFormDialogMeetingIdChangeRequest(id));
   };
 
   useEffect(() => {
@@ -94,7 +99,20 @@ const MeetingPage: React.FC = () => {
         </div>
       </div>
       <div hidden={activeTab !== MeetingTabsEnum.Expenses}>
-        <ComingSoon />
+        <div className={classes.addButtonContainer}>
+          <Button
+            className={classes.addButton}
+            startIcon={<AddIcon />}
+            onClick={onAddExpenseClick}
+            variant="contained"
+            color="primary"
+          >
+            Add Expense
+          </Button>
+        </div>
+        <div className={classes.tabContent}>
+          <ExpensesList />
+        </div>
       </div>
     </Paper>
   ) : meetingLoadFailed ? (

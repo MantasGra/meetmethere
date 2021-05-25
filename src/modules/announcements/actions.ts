@@ -23,7 +23,7 @@ export const announcementsFormDialogMeetingIdChangeRequest = createAction(
   withPayloadType<number | null>(),
 );
 
-interface ICreateAnnouncementRequest {
+export interface ICreateAnnouncementRequest {
   title: string;
   description: string;
 }
