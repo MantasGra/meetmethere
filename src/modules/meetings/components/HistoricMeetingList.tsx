@@ -4,10 +4,10 @@ import AddIcon from '@material-ui/icons/Add';
 import { useAppDispatch } from 'src/hooks/redux';
 import { useInfiniteScroll } from 'src/hooks/infiniteScroll';
 import {
-  meetingsPlannedMeetingLoadFailedSelector,
-  meetingsPlannedMeetingsHasMoreSelector,
-  meetingsPlannedMeetingsLoadingSelector,
-  meetingsPlannedSelector,
+  meetingsHistoricMeetingLoadFailedSelector,
+  meetingsHistoricMeetingsHasMoreSelector,
+  meetingsHistoricMeetingsLoadingSelector,
+  meetingsHistoricSelector,
 } from '../selectors';
 import {
   meetingsCreateDialogVisibleChangeRequest,
@@ -15,19 +15,19 @@ import {
 } from '../actions';
 import MeetingList from './MeetingList';
 
-import classes from './PlannedMeetingList.module.scss';
+import classes from './HistoricMeetingList.module.scss';
 
-const PlannedMeetingList: React.FC = () => {
+const HistoricMeetingList: React.FC = () => {
   const {
     loading,
     list: meetings,
     lastElementRef,
   } = useInfiniteScroll(
-    meetingsPlannedMeetingsLoadingSelector,
-    meetingsPlannedMeetingsHasMoreSelector,
-    meetingsPlannedSelector,
-    meetingsPlannedMeetingLoadFailedSelector,
-    (page) => meetingsLoadMeetingsProposal(page, 'planned'),
+    meetingsHistoricMeetingsLoadingSelector,
+    meetingsHistoricMeetingsHasMoreSelector,
+    meetingsHistoricSelector,
+    meetingsHistoricMeetingLoadFailedSelector,
+    (page) => meetingsLoadMeetingsProposal(page, 'historic'),
   );
   const dispatch = useAppDispatch();
   const onCreateMeetingClick = () => {
@@ -39,7 +39,7 @@ const PlannedMeetingList: React.FC = () => {
         meetings={meetings}
         lastElementRef={lastElementRef}
         loading={loading}
-        typeOfMeeting={'planned'}
+        typeOfMeeting={'historic'}
       />
       <Fab
         color="primary"
@@ -52,4 +52,4 @@ const PlannedMeetingList: React.FC = () => {
   );
 };
 
-export default PlannedMeetingList;
+export default HistoricMeetingList;

@@ -69,11 +69,11 @@ const loadMeetingsEpic: AppEpic = (action$, _, { axios }) =>
   action$.pipe(
     ofActionType(meetingsLoadMeetingsProposal),
     pluck('payload'),
-    mergeMap(({ page }) =>
+    mergeMap(({ page, typeOfMeeting }) =>
       fromAxios<ILoadMeetingsResponse>(axios, {
         url: '/meeting',
         method: 'GET',
-        params: { page },
+        params: { page, typeOfMeeting },
         withCredentials: true,
       }).pipe(
         mergeMap((response) => {
@@ -82,6 +82,7 @@ const loadMeetingsEpic: AppEpic = (action$, _, { axios }) =>
               meetingsLoadMeetingsSuccess(
                 response.data.meetings,
                 response.data.count,
+                typeOfMeeting,
               ),
             );
           }
@@ -89,7 +90,11 @@ const loadMeetingsEpic: AppEpic = (action$, _, { axios }) =>
             response.data.meetings.map((meeting) => geocodeIfPlaceId$(meeting)),
           ).pipe(
             map((meetings) =>
-              meetingsLoadMeetingsSuccess(meetings, response.data.count),
+              meetingsLoadMeetingsSuccess(
+                meetings,
+                response.data.count,
+                typeOfMeeting,
+              ),
             ),
           );
         }),

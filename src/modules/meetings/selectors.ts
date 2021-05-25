@@ -19,13 +19,33 @@ export const meetingsPlannedMeetingLoadFailedSelector = (
   state: RootState,
 ): boolean => state.meetings.plannedMeetingLoadFailed;
 
+export const meetingsHistoricSelector = (state: RootState): IMeeting[] =>
+  state.meetings.historicMeetingIds.map(
+    (value) => state.meetings.historicMeetings[value],
+  );
+
+export const meetingsHistoricMeetingsLoadingSelector = (
+  state: RootState,
+): boolean => state.meetings.historicMeetingsLoading;
+
+export const meetingsHistoricMeetingsHasMoreSelector = (
+  state: RootState,
+): boolean =>
+  state.meetings.historicMeetingIds.length <
+  state.meetings.historicMeetingCount;
+
+export const meetingsHistoricMeetingLoadFailedSelector = (
+  state: RootState,
+): boolean => state.meetings.historicMeetingLoadFailed;
+
 export const meetingsIsCreateDialogOpenSelector = (state: RootState): boolean =>
   state.meetings.isCreateDialogOpen;
 
 export const meetingsMeetingByIdSelector = (
   state: RootState,
   id: number,
-): IMeeting => state.meetings.plannedMeetings[id];
+): IMeeting =>
+  state.meetings.plannedMeetings[id] || state.meetings.historicMeetings[id];
 
 export const meetingsActiveMeetingTabSelector = (
   state: RootState,
@@ -34,7 +54,8 @@ export const meetingsActiveMeetingTabSelector = (
 export const meetingsMeetingLoadedSelector = (
   state: RootState,
   id: number,
-): boolean => !!state.meetings.plannedMeetings[id];
+): boolean =>
+  !!state.meetings.plannedMeetings[id] || !!state.meetings.historicMeetings[id];
 
 export const meetingsMeetingLoadFailedSelector = (state: RootState): boolean =>
   state.meetings.meetingLoadFailed;

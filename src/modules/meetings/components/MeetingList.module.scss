@@ -20,6 +20,16 @@
   }
 }
 
+.meetingListItemHistorical {
+  margin: 10px 0;
+  background-color: rgb(206, 219, 240);
+
+  &:hover {
+    background-color: darken(rgb(206, 219, 240), 20%);
+    cursor: pointer;
+  }
+}
+
 .meetingListItemContent {
   display: flex;
   flex-direction: row;
