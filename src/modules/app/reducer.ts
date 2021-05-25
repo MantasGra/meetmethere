@@ -7,6 +7,7 @@ import snackbarsReducer from '../snackbars/reducer';
 import meetingsReducer from '../meetings/reducer';
 import announcementsReducer from '../announcements/reducer';
 import activitiesReducer from '../activitites/reducer';
+import expensesReducer from '../expenses/reducer';
 
 interface ApplicationState {
   initialized: boolean;
@@ -30,6 +31,7 @@ const appReducer = createReducer(initialState, (buildier) =>
 
 const rootReducer = combineReducers({
   announcements: announcementsReducer,
+  expenses: expensesReducer,
   app: appReducer,
   auth: authReducer,
   browser: responsiveStateReducer,
