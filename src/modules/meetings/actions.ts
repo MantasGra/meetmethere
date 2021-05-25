@@ -1,6 +1,6 @@
 import { createAction } from '@reduxjs/toolkit';
 import { withPayloadType } from '../app/actions';
-import type { IMeeting, MeetingTabs } from './reducer';
+import type { IMeeting, IMeetingDatesPollEntry, MeetingTabs } from './reducer';
 
 export const meetingsCreateDialogVisibleChangeRequest = createAction(
   'meetings/createDialogVisibleChangeRequest',
@@ -65,6 +65,19 @@ export const meetingsMeetingPollDialogVisibleChangeRequest = createAction(
   withPayloadType<number | null>(),
 );
 
+export const meetingsMeetingPollDatesResponseChangeRequest = createAction(
+  'meetings/meetingPollDatesResponseChangeRequest',
+  withPayloadType<{
+    votes: Array<{ [id: string]: boolean }>;
+    meetingId: number;
+  }>(),
+);
+
+export const meetingsMeetingPollDatesResponseChangeSuccess = createAction(
+  'meetings/meetingPollDatesResponseChangeSuccess',
+  withPayloadType<{ entries: IMeetingDatesPollEntry[]; meetingId: number }>(),
+);
+
 export const meetingsLoadMeetingFail = createAction('meetings/loadMeetingFail');
 
 export type MeetingsActions =
@@ -77,4 +90,6 @@ export type MeetingsActions =
   | ReturnType<typeof meetingsSwitchToTab>
   | ReturnType<typeof meetingsLoadMeetingRequest>
   | ReturnType<typeof meetingsLoadMeetingFail>
-  | ReturnType<typeof meetingsMeetingPollDialogVisibleChangeRequest>;
+  | ReturnType<typeof meetingsMeetingPollDialogVisibleChangeRequest>
+  | ReturnType<typeof meetingsMeetingPollDatesResponseChangeRequest>
+  | ReturnType<typeof meetingsMeetingPollDatesResponseChangeSuccess>;

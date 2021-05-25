@@ -14,8 +14,11 @@ import {
   meetingsLoadMeetingsProposal,
   meetingsLoadMeetingsSuccess,
   meetingsLoadMeetingFail,
+  meetingsMeetingPollDatesResponseChangeRequest,
+  meetingsMeetingPollDatesResponseChangeSuccess,
+  meetingsMeetingPollDialogVisibleChangeRequest,
 } from './actions';
-import type { IMeeting } from './reducer';
+import type { IMeeting, IMeetingDatesPollEntry } from './reducer';
 
 interface ICreateMeetingResponse {
   createdMeeting: IMeeting;
@@ -49,6 +52,48 @@ const createMeetingEpic: AppEpic = (action$, _, { axios }) =>
           of(
             snackbarsEnqueue({
               message: 'Meeting creation failed!',
+              options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'error',
+              },
+            }),
+          ),
+        ),
+      ),
+    ),
+  );
+
+const addPollResponseEpic: AppEpic = (action$, _, { axios }) =>
+  action$.pipe(
+    ofActionType(meetingsMeetingPollDatesResponseChangeRequest),
+    pluck('payload'),
+    mergeMap(({ votes, meetingId }) =>
+      fromAxios<IMeetingDatesPollEntry[]>(axios, {
+        url: `/meeting/${meetingId}/vote`,
+        method: 'POST',
+        data: { votes },
+        withCredentials: true,
+      }).pipe(
+        mergeMap((response) =>
+          of(
+            meetingsMeetingPollDatesResponseChangeSuccess({
+              entries: response.data,
+              meetingId,
+            }),
+            meetingsMeetingPollDialogVisibleChangeRequest(null),
+            snackbarsEnqueue({
+              message: 'Thank you for your vote!',
+              options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'success',
+              },
+            }),
+          ),
+        ),
+        catchError(() =>
+          of(
+            snackbarsEnqueue({
+              message: 'Voting failed!',
               options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'error',
@@ -138,4 +183,5 @@ export default combineEpics(
   createMeetingEpic,
   loadMeetingsEpic,
   loadMeetingEpic,
+  addPollResponseEpic,
 );

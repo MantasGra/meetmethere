@@ -22,6 +22,10 @@ export const authFormErrorsSelector = (state: RootState): IFormError =>
 export const authLoadingSelector = (state: RootState): boolean =>
   state.auth.authLoading;
 
+export const authCurrentUserIdSelector = (
+  state: RootState,
+): number | undefined => state.auth.account?.id;
+
 interface IAccountAvatarData {
   color: string;
   accountInitials: string;

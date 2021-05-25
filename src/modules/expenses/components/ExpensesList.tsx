@@ -35,10 +35,10 @@ const ExpensesList: React.FC = () => {
     expensesLoadFailedSelector,
     (page) => expensesLoadExpensesProposal(id, page),
   );
-  
+
   const [anchorEl, setAnchorEl] = React.useState(null);
 
-  const handleClick = (event:any) => {
+  const handleClick = (event: any) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -69,7 +69,11 @@ const ExpensesList: React.FC = () => {
               title={expense.name}
               subheader={`Amount: ${expense.amount}`}
               action={
-                <IconButton aria-label="settings" onClick={handleClick} aria-haspopup="true">
+                <IconButton
+                  aria-label="settings"
+                  onClick={handleClick}
+                  aria-haspopup="true"
+                >
                   <MoreVertIcon />
                 </IconButton>
               }
@@ -83,8 +87,7 @@ const ExpensesList: React.FC = () => {
                 For:{expense.users.map((u) => u.name).join(',')}
               </Typography>
             </CardContent>
-          <div>
-          </div>
+            <div></div>
           </Card>
         ))}
       </div>

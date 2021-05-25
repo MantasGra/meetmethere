@@ -10,6 +10,7 @@ import {
   meetingsSwitchToTab,
   meetingsLoadMeetingFail,
   meetingsMeetingPollDialogVisibleChangeRequest,
+  meetingsMeetingPollDatesResponseChangeSuccess,
 } from './actions';
 
 export enum MeetingStatus {
@@ -31,6 +32,7 @@ export interface IMeetingDatesPollEntry {
   id: number;
   startDate: Date;
   endDate: Date;
+  userMeetingDatesPollEntries: Array<{ id: number; user: IUser }>;
 }
 
 export interface IMeeting {
@@ -125,6 +127,10 @@ const meetingsReducer = createReducer(initialState, (builder) =>
     })
     .addCase(meetingsMeetingPollDialogVisibleChangeRequest, (state, action) => {
       state.meetingPollFormId = action.payload;
+    })
+    .addCase(meetingsMeetingPollDatesResponseChangeSuccess, (state, action) => {
+      state.plannedMeetings[action.payload.meetingId].meetingDatesPollEntries =
+        action.payload.entries;
     }),
 );
 
