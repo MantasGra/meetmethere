@@ -32,8 +32,11 @@ export const meetingsMeetingByIdSelector = (
 export const invitationMeetingByIdSelector = (
   state: RootState,
   id: number,
-): IUserInvitation => state.meetings.plannedMeetings[id].participants
-.filter((participant: IUserInvitation) => participant.email === state.auth.account?.email)[0]
+): IUserInvitation =>
+  state.meetings.plannedMeetings[id].participants.filter(
+    (participant: IUserInvitation) =>
+      participant.email === state.auth.account?.email,
+  )[0];
 
 export const meetingsActiveMeetingTabSelector = (
   state: RootState,

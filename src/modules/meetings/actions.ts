@@ -73,14 +73,14 @@ interface IParticipationStatusRequest {
 export const meetingsChangeParticipantStatusProposal = createAction(
   'meetings/changeParticipantStatusProposal',
   withPayloadType<IParticipationStatusRequest>(),
-)
+);
 
 export const meetingsChangeUserParticipationStatus = createAction(
   'meetings/changeUserParticipationStatus',
   (meetingId: number, newStatus: ParticipationStatus, userEmail: string) => ({
     payload: { meetingId, newStatus, userEmail },
   }),
-)
+);
 
 export type MeetingsActions =
   | ReturnType<typeof meetingsCreateDialogVisibleChangeRequest>

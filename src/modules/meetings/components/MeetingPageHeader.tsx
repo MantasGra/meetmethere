@@ -6,7 +6,10 @@ import MeetingStatusChip from './MeetingStatusChip';
 import getDirectionsURL from 'src/utils/getDirectionsURL';
 import openInNewTab from 'src/utils/openInNewTab';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
-import { invitationMeetingByIdSelector, meetingsMeetingByIdSelector } from '../selectors';
+import {
+  invitationMeetingByIdSelector,
+  meetingsMeetingByIdSelector,
+} from '../selectors';
 
 import classes from './MeetingPageHeader.module.scss';
 import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
@@ -26,8 +29,12 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
     meetingsMeetingByIdSelector(state, props.id),
   );
 
-  const invitation = useAppSelector((state) => invitationMeetingByIdSelector(state, props.id));
-  const currentUserEmail = useAppSelector((state) => accountEmailSelector(state));
+  const invitation = useAppSelector((state) =>
+    invitationMeetingByIdSelector(state, props.id),
+  );
+  const currentUserEmail = useAppSelector((state) =>
+    accountEmailSelector(state),
+  );
 
   const onGetDirectionsClick = () => {
     if (meeting.locationString) {
@@ -37,13 +44,17 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
     }
   };
 
-  const onStatusChange = (e: React.ChangeEvent<{ name?: string; value: unknown }>) => {
-    dispatch(meetingsChangeParticipantStatusProposal({
-      status: e.target.value as ParticipationStatus,
-      id: meeting.id,
-      userEmail: currentUserEmail
-    }));
-  }
+  const onStatusChange = (
+    e: React.ChangeEvent<{ name?: string; value: unknown }>,
+  ) => {
+    dispatch(
+      meetingsChangeParticipantStatusProposal({
+        status: e.target.value as ParticipationStatus,
+        id: meeting.id,
+        userEmail: currentUserEmail,
+      }),
+    );
+  };
 
   return (
     <div className={classes.meetingPageHeader}>
@@ -55,23 +66,25 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
           <MeetingStatusChip meetingStatus={meeting.status} />
         </div>
         <div className={classes.userParticipationStatus}>
-        <FormControl variant="outlined" className={classes.statusSelect}>
-          <InputLabel id="demo-simple-select-outlined-label">Status</InputLabel>
-          <Select
-            labelId="demo-simple-select-outlined-label"
-            id="demo-simple-select-outlined"
-            label="Status"
-            value={invitation.userParticipationStatus}
-            onChange={onStatusChange}
-          >
-            <MenuItem value="invited">
-              <em>Invited</em>
-            </MenuItem>
-            <MenuItem value={ParticipationStatus.Going}>Going</MenuItem>
-            <MenuItem value={ParticipationStatus.Maybe}>Maybe</MenuItem>
-            <MenuItem value={ParticipationStatus.Declined}>Declined</MenuItem>
-          </Select>
-        </FormControl>
+          <FormControl variant="outlined" className={classes.statusSelect}>
+            <InputLabel id="demo-simple-select-outlined-label">
+              Status
+            </InputLabel>
+            <Select
+              labelId="demo-simple-select-outlined-label"
+              id="demo-simple-select-outlined"
+              label="Status"
+              value={invitation.userParticipationStatus}
+              onChange={onStatusChange}
+            >
+              <MenuItem value="invited">
+                <em>Invited</em>
+              </MenuItem>
+              <MenuItem value={ParticipationStatus.Going}>Going</MenuItem>
+              <MenuItem value={ParticipationStatus.Maybe}>Maybe</MenuItem>
+              <MenuItem value={ParticipationStatus.Declined}>Declined</MenuItem>
+            </Select>
+          </FormControl>
         </div>
       </div>
       <div>

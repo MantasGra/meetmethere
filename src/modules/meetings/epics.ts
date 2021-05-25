@@ -145,7 +145,7 @@ const changeParticipationStatusEpic: AppEpic = (action$, _, { axios }) =>
         url: `/meeting/${participationStatusData.id}/status`,
         method: 'POST',
         data: {
-          status: participationStatusData.status
+          status: participationStatusData.status,
         },
         withCredentials: true,
       }).pipe(
@@ -154,7 +154,7 @@ const changeParticipationStatusEpic: AppEpic = (action$, _, { axios }) =>
             meetingsChangeUserParticipationStatus(
               participationStatusData.id,
               participationStatusData.status,
-              participationStatusData.userEmail
+              participationStatusData.userEmail,
             ),
             snackbarsEnqueue({
               message: 'Successfully updated participation status!',

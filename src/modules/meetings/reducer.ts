@@ -115,11 +115,13 @@ const meetingsReducer = createReducer(initialState, (builder) =>
       state.meetingLoadFailed = true;
     })
     .addCase(meetingsChangeUserParticipationStatus, (state, action) => {
-      state.plannedMeetings[action.payload.meetingId].participants.map((participant) => {
-        if (participant.email === action.payload.userEmail) {
-          participant.userParticipationStatus = action.payload.newStatus
-        }
-      });
+      state.plannedMeetings[action.payload.meetingId].participants.map(
+        (participant) => {
+          if (participant.email === action.payload.userEmail) {
+            participant.userParticipationStatus = action.payload.newStatus;
+          }
+        },
+      );
     }),
 );
 

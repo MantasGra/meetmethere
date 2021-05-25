@@ -49,8 +49,8 @@ const invitationsReducer = createReducer(initialState, (builder) =>
     .addCase(meetingsChangeUserParticipationStatus, (state, action) => {
       if (action.payload.newStatus !== ParticipationStatus.Invited) {
         state.invitations.filter((invitation) => {
-          invitation.meeting.id !== action.payload.meetingId
-        })
+          invitation.meeting.id !== action.payload.meetingId;
+        });
       }
     }),
 );
