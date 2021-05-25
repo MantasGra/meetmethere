@@ -14,6 +14,8 @@ import {
   meetingsLoadMeetingsProposal,
   meetingsLoadMeetingsSuccess,
   meetingsLoadMeetingFail,
+  meetingsChangeParticipantStatusProposal,
+  meetingsChangeUserParticipationStatus,
 } from './actions';
 import type { IMeeting } from './reducer';
 
@@ -134,8 +136,53 @@ const loadMeetingEpic: AppEpic = (action$, _, { axios }) =>
     ),
   );
 
+const changeParticipationStatusEpic: AppEpic = (action$, _, { axios }) =>
+  action$.pipe(
+    ofActionType(meetingsChangeParticipantStatusProposal),
+    pluck('payload'),
+    mergeMap((participationStatusData) =>
+      fromAxios(axios, {
+        url: `/meeting/${participationStatusData.id}/status`,
+        method: 'POST',
+        data: {
+          status: participationStatusData.status
+        },
+        withCredentials: true,
+      }).pipe(
+        mergeMap((response) =>
+          of(
+            meetingsChangeUserParticipationStatus(
+              participationStatusData.id,
+              participationStatusData.status,
+              participationStatusData.userEmail
+            ),
+            snackbarsEnqueue({
+              message: 'Successfully updated participation status!',
+              options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'success',
+              },
+            }),
+          ),
+        ),
+        catchError(() =>
+          of(
+            snackbarsEnqueue({
+              message: 'Status change error!',
+              options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'error',
+              },
+            }),
+          ),
+        ),
+      ),
+    ),
+  );
+
 export default combineEpics(
   createMeetingEpic,
   loadMeetingsEpic,
   loadMeetingEpic,
+  changeParticipationStatusEpic,
 );

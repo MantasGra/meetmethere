@@ -1,4 +1,5 @@
 import { createReducer } from '@reduxjs/toolkit';
+import type { ParticipationStatus } from '../invitations/reducer';
 import {
   authAuthorizeUserRequest,
   authChangeSubmitErrorRequest,
@@ -23,8 +24,13 @@ export interface IAccount {
 export interface IUser {
   id: number;
   name: string;
+  email: string;
   lastName: string;
   color: string;
+}
+
+export interface IUserInvitation extends IUser {
+  userParticipationStatus: ParticipationStatus;
 }
 
 export interface IFormError {

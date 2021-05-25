@@ -1,4 +1,5 @@
 import { createReducer } from '@reduxjs/toolkit';
+import { meetingsChangeUserParticipationStatus } from '../meetings/actions';
 import type { IMeeting } from '../meetings/reducer';
 import {
   invitationsLoadInvitationsProposal,
@@ -44,6 +45,13 @@ const invitationsReducer = createReducer(initialState, (builder) =>
     .addCase(invitationsLoadInvitationsFail, (state) => {
       state.invitationsLoading = false;
       state.invitationsLoadingFailed = true;
+    })
+    .addCase(meetingsChangeUserParticipationStatus, (state, action) => {
+      if (action.payload.newStatus !== ParticipationStatus.Invited) {
+        state.invitations.filter((invitation) => {
+          invitation.meeting.id !== action.payload.meetingId
+        })
+      }
     }),
 );
 

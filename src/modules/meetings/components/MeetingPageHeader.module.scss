@@ -5,9 +5,19 @@
 .meetingTitleRow {
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
 
   .meetingTitleText {
     margin-right: 20px;
+  }
+  .meetingTitle {
+    display: flex;
+  }
+  .userParticipationStatus {
+    padding: 0 10px;
+  }
+  .statusSelect {
+    width: 150px;
   }
 }
 
