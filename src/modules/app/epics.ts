@@ -12,6 +12,7 @@ import meetingEpics from '../meetings/epics';
 import announcementEpics from '../announcements/epics';
 import activityEpics from '../activitites/epics';
 import expenseEpics from '../expenses/epics';
+import invitationEpics from '../invitations/epics';
 import { authAuthorizeUserProposal } from '../auth/actions';
 
 export type AppEpic = Epic<AppActions, AppActions, RootState, AppDeps>;
@@ -30,6 +31,7 @@ const rootEpic: AppEpic = (action$, store$, dependencies) =>
     announcementEpics,
     expenseEpics,
     activityEpics,
+    invitationEpics,
   )(action$, store$, dependencies).pipe(
     catchError((error, source) => {
       console.error(error);

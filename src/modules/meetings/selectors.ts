@@ -1,4 +1,6 @@
 import type { RootState } from '../app/reducer';
+import type { IUserInvitation } from '../auth/reducer';
+import type { IInvitation } from '../invitations/reducer';
 import type { IMeeting, MeetingTabs, IMeetingDatesPollEntry } from './reducer';
 
 export const meetingsPlannedSelector = (state: RootState): IMeeting[] =>
@@ -46,6 +48,15 @@ export const meetingsMeetingByIdSelector = (
   id: number,
 ): IMeeting =>
   state.meetings.plannedMeetings[id] || state.meetings.historicMeetings[id];
+
+export const invitationMeetingByIdSelector = (
+  state: RootState,
+  id: number,
+): IUserInvitation =>
+  state.meetings.plannedMeetings[id].participants.filter(
+    (participant: IUserInvitation) =>
+      participant.email === state.auth.account?.email,
+  )[0];
 
 export const meetingsActiveMeetingTabSelector = (
   state: RootState,

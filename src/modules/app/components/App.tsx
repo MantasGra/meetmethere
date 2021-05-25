@@ -21,6 +21,7 @@ import ComingSoon from 'src/components/ComingSoon';
 import { isAppInitializedSelector } from '../selectors';
 import Navigation from './Navigation';
 import classes from './App.module.scss';
+import InvitationsList from 'src/modules/invitations/components/InvitationsList';
 
 const App: React.FC = () => {
   const isAuthLoading = useAppSelector(authLoadingSelector);
@@ -84,7 +85,7 @@ const App: React.FC = () => {
             loading={isAuthLoading}
             guardSelector={isUserLoggedInSelector}
           >
-            <ComingSoon />
+            <InvitationsList />
           </ProtectedRoute>
           <Route path={Routes.Home}>
             {isLoggedIn && <Redirect to={Routes.Meetings} />}

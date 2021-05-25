@@ -1,0 +1,36 @@
+.invitationsList {
+  min-width: 500px;
+  // width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+
+  @media only screen and (max-width: 500px) {
+    width: 90%;
+    min-width: unset;
+  }
+}
+
+.invitationListItem {
+  margin: 10px 0;
+  background-color: rgb(250, 242, 208);
+
+  &:hover {
+    background-color: darken(rgb(250, 242, 208), 10%);
+    cursor: pointer;
+  }
+}
+
+.invitationListItemContent {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  .description {
+    max-width: 70%;
+    overflow-wrap: break-word;
+  }
+}

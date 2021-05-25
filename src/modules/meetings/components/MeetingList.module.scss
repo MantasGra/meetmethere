@@ -1,8 +1,11 @@
 .meetingList {
   min-width: 500px;
-  width: 80%;
+  padding-left: 1rem;
+  padding-right: 1rem;
   margin: auto;
-  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
 
   @media only screen and (max-width: 500px) {
     width: 90%;

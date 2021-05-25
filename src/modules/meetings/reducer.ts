@@ -1,6 +1,6 @@
 import { createReducer } from '@reduxjs/toolkit';
 import { sortedIndexBy } from 'lodash';
-import type { IUser } from '../auth/reducer';
+import type { IUser, IUserInvitation } from '../auth/reducer';
 import {
   meetingsAddMeeting,
   meetingsCreateDialogVisibleChangeRequest,
@@ -11,6 +11,7 @@ import {
   meetingsLoadMeetingFail,
   meetingsMeetingPollDialogVisibleChangeRequest,
   meetingsMeetingPollDatesResponseChangeSuccess,
+  meetingsChangeUserParticipationStatus,
 } from './actions';
 
 export enum MeetingStatus {
@@ -47,7 +48,7 @@ export interface IMeeting {
   isDatesPollActive: boolean;
   canUsersAddPollEntries: boolean;
   creator: IUser;
-  participants: IUser[];
+  participants: IUserInvitation[];
   meetingDatesPollEntries: IMeetingDatesPollEntry[];
 }
 
@@ -186,6 +187,15 @@ const meetingsReducer = createReducer(initialState, (builder) =>
     .addCase(meetingsMeetingPollDatesResponseChangeSuccess, (state, action) => {
       state.plannedMeetings[action.payload.meetingId].meetingDatesPollEntries =
         action.payload.entries;
+    })
+    .addCase(meetingsChangeUserParticipationStatus, (state, action) => {
+      state.plannedMeetings[action.payload.meetingId].participants.map(
+        (participant) => {
+          if (participant.email === action.payload.userEmail) {
+            participant.userParticipationStatus = action.payload.newStatus;
+          }
+        },
+      );
     }),
 );
 

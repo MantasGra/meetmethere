@@ -5,6 +5,7 @@ import type { MeetingsActions } from '../meetings/actions';
 import type { AnnouncementsActions } from '../announcements/actions';
 import type { ActivitiesActions } from '../activitites/actions';
 import type { ExpensesActions } from '../expenses/actions';
+import type { InvitationsActions } from '../invitations/actions';
 
 export const withPayloadType = <T>() => {
   return (t: T): { payload: T } => ({ payload: t });
@@ -40,4 +41,5 @@ export type AppActions =
   | MeetingsActions
   | AnnouncementsActions
   | ActivitiesActions
-  | ExpensesActions;
+  | ExpensesActions
+  | InvitationsActions;
