@@ -7,6 +7,7 @@ import snackbarsReducer from '../snackbars/reducer';
 import meetingsReducer from '../meetings/reducer';
 import announcementsReducer from '../announcements/reducer';
 import activitiesReducer from '../activitites/reducer';
+import invitationsReducer from '../invitations/reducer';
 
 interface ApplicationState {
   initialized: boolean;
@@ -36,6 +37,7 @@ const rootReducer = combineReducers({
   snackbars: snackbarsReducer,
   meetings: meetingsReducer,
   activities: activitiesReducer,
+  invitations: invitationsReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
