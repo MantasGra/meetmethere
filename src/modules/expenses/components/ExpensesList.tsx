@@ -48,7 +48,7 @@ const ExpensesList: React.FC = () => {
 
   return expenses.length || loading ? (
     <>
-      <Menu
+      {/* <Menu
         id="simple-menu"
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -56,7 +56,7 @@ const ExpensesList: React.FC = () => {
       >
         <MenuItem>Edit</MenuItem>
         <MenuItem>Delete</MenuItem>
-      </Menu>
+      </Menu> */}
       <div className={classes.expenseList}>
         {expenses.map((expense, index) => (
           <Card
@@ -67,16 +67,16 @@ const ExpensesList: React.FC = () => {
           >
             <CardHeader
               title={expense.name}
-              subheader={`Amount: ${expense.amount}`}
-              action={
-                <IconButton
-                  aria-label="settings"
-                  onClick={handleClick}
-                  aria-haspopup="true"
-                >
-                  <MoreVertIcon />
-                </IconButton>
-              }
+              subheader={`Amount: ${expense.amount || 4}`}
+              // action={
+              //   <IconButton
+              //     aria-label="settings"
+              //     onClick={handleClick}
+              //     aria-haspopup="true"
+              //   >
+              //     <MoreVertIcon />
+              //   </IconButton>
+              // }
             />
             <CardContent>
               <Typography variant="body2" component="p">
@@ -84,7 +84,7 @@ const ExpensesList: React.FC = () => {
               </Typography>
               <hr />
               <Typography variant="body2" component="p">
-                For:{expense.users.map((u) => u.name).join(',')}
+                For: {expense.users.map((u) => u.name).join(', ')}
               </Typography>
             </CardContent>
             <div></div>
