@@ -1,5 +1,5 @@
 import React from 'react';
-import { generatePath, useHistory } from 'react-router';
+import { generatePath, useHistory, useLocation } from 'react-router';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
@@ -28,6 +28,7 @@ const MeetingList: React.FC<IProps> = ({
   typeOfMeeting,
 }) => {
   const history = useHistory();
+  const location = useLocation();
   const openMeetingPage = (id: string) => {
     history.push(generatePath(Routes.MeetingPage, { id }));
   };
@@ -89,7 +90,13 @@ const MeetingList: React.FC<IProps> = ({
             )}
           </>
         ) : (
-          <NoContent text="You have no planned meetings!" />
+          <NoContent
+            text={`You have no ${
+              location.pathname === '/history'
+                ? 'meeting history'
+                : 'planned meetings'
+            }!`}
+          />
         )}
       </div>
     </>

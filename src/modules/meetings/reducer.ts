@@ -92,6 +92,14 @@ const meetingsReducer = createReducer(initialState, (builder) =>
       state.isCreateDialogOpen = action.payload;
     })
     .addCase(meetingsLoadMeetingsProposal, (state, action) => {
+      if (action.payload.page === 1) {
+        state.plannedMeetings = {};
+        state.plannedMeetingCount = 0;
+        state.plannedMeetingIds = [];
+        state.historicMeetingIds = [];
+        state.historicMeetings = {};
+        state.historicMeetingCount = 0;
+      }
       if (action.payload.typeOfMeeting == 'planned') {
         state.plannedMeetingsLoading = true;
       } else {

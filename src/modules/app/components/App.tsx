@@ -17,11 +17,11 @@ import PlannedMeetingList from 'src/modules/meetings/components/PlannedMeetingLi
 import HistoricMeetingList from 'src/modules/meetings/components/HistoricMeetingList';
 import MeetingPage from 'src/modules/meetings/components/MeetingPage';
 import { useAppSelector } from 'src/hooks/redux';
-import ComingSoon from 'src/components/ComingSoon';
 import { isAppInitializedSelector } from '../selectors';
 import Navigation from './Navigation';
 import classes from './App.module.scss';
 import InvitationsList from 'src/modules/invitations/components/InvitationsList';
+import { MeetingIcon } from 'src/icons';
 
 const App: React.FC = () => {
   const isAuthLoading = useAppSelector(authLoadingSelector);
@@ -89,6 +89,18 @@ const App: React.FC = () => {
           </ProtectedRoute>
           <Route path={Routes.Home}>
             {isLoggedIn && <Redirect to={Routes.Meetings} />}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                marginLeft: '50px',
+                marginTop: '100px',
+                width: '100%',
+              }}
+            >
+              <MeetingIcon />
+            </div>
           </Route>
         </Switch>
       </main>
