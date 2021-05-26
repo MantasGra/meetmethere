@@ -68,6 +68,7 @@ const switchToRegisterEpic: AppEpic = (action$, state$, { history }) =>
   );
 
 interface IAuthorizeUserResponse {
+  id: number;
   name: string;
   lastName: string;
   email: string;
