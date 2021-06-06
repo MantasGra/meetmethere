@@ -1,27 +1,52 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import format from 'date-fns/format';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
-import MeetingStatusChip from './MeetingStatusChip';
+import TextField from '@material-ui/core/TextField';
+import FormControl from '@material-ui/core/FormControl';
+import Fab from '@material-ui/core/Fab';
+import EditIcon from '@material-ui/icons/Edit';
+import SaveIcon from '@material-ui/icons/Save';
+import Select from '@material-ui/core/Select';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import PlacesAutocomplete, { IValue } from 'src/components/PlacesAutocomplete';
+import MeetingStatusChip, {
+  MeetingStatusDisplayNames,
+} from './MeetingStatusChip';
 import getDirectionsURL from 'src/utils/getDirectionsURL';
 import openInNewTab from 'src/utils/openInNewTab';
 import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
+import { useForm, Controller } from 'react-hook-form';
 import {
   meetingsMeetingPollDialogVisibleChangeRequest,
   meetingsChangeParticipantStatusProposal,
+  meetingsUpdateMeetingRequest,
+  meetingsEditModeChange,
 } from '../actions';
-import classes from './MeetingPageHeader.module.scss';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
 import {
   invitationMeetingByIdSelector,
+  meetingsIsEditMode,
+  meetingsIsUserCreator,
   meetingsMeetingByIdSelector,
 } from '../selectors';
-import { FormControl, InputLabel, MenuItem, Select } from '@material-ui/core';
 import { ParticipationStatus } from 'src/modules/invitations/reducer';
 import { accountEmailSelector } from 'src/modules/auth/selectors';
+import { invitationsInviteUserDialogOpenRequest } from 'src/modules/invitations/actions';
+import { MeetingStatus } from '../reducer';
+import classes from './MeetingPageHeader.module.scss';
+import { omit } from 'lodash';
 
 interface IProps {
   id: number;
+}
+
+interface IMeetingEditForm {
+  name: string;
+  meetingStatus: MeetingStatus;
+  description: string;
+  location: IValue;
 }
 
 const MeetingPageHeader: React.FC<IProps> = (props) => {
@@ -31,6 +56,13 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
     meetingsMeetingByIdSelector(state, props.id),
   );
 
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+  } = useForm<IMeetingEditForm>();
+
   const invitation = useAppSelector((state) =>
     invitationMeetingByIdSelector(state, props.id),
   );
@@ -38,16 +70,59 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
     accountEmailSelector(state),
   );
 
+  const isEditMode = useAppSelector((state) =>
+    meetingsIsEditMode(state, props.id),
+  );
+
+  const onEditSubmit = (formData: IMeetingEditForm) => {
+    console.log('formData', formData);
+    dispatch(
+      meetingsUpdateMeetingRequest(meeting.id, {
+        name: formData.name,
+        description: formData.description,
+        ...(formData.location.input !== meeting.locationString
+          ? {
+              locationId: formData.location.place
+                ? formData.location.place.place_id
+                : null,
+              locationString: !formData.location.place
+                ? formData.location.input
+                : null,
+            }
+          : {}),
+        status: formData.meetingStatus,
+      }),
+    );
+  };
+
+  useEffect(() => {
+    if (isEditMode) {
+      reset({
+        meetingStatus: meeting.status,
+        name: meeting.name,
+        description: meeting.description,
+        location: { input: meeting.locationString || '', place: null },
+      });
+    }
+  }, [isEditMode]);
+
   const onGetDirectionsClick = () => {
     if (meeting.locationString) {
       openInNewTab(
-        getDirectionsURL(meeting.locationString, meeting.locationId),
+        getDirectionsURL(
+          meeting.locationString,
+          meeting.locationId ? meeting.locationId : undefined,
+        ),
       );
     }
   };
 
   const onMeetingPollOpenClick = () => {
     dispatch(meetingsMeetingPollDialogVisibleChangeRequest(props.id));
+  };
+
+  const onInviteClick = () => {
+    dispatch(invitationsInviteUserDialogOpenRequest(props.id));
   };
   const onStatusChange = (
     e: React.ChangeEvent<{ name?: string; value: unknown }>,
@@ -61,14 +136,93 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
     );
   };
 
+  const isCreatorUser = useAppSelector((state) =>
+    meetingsIsUserCreator(state, props.id),
+  );
+
+  const isHistoricMeeting = [
+    MeetingStatus.Ended,
+    MeetingStatus.Canceled,
+  ].includes(meeting.status);
+
+  const onEditModeClick = () => {
+    dispatch(meetingsEditModeChange(props.id));
+  };
+
   return (
     <div className={classes.meetingPageHeader}>
+      {isCreatorUser && !isHistoricMeeting ? (
+        <Fab
+          color="primary"
+          className={classes.meetingEditButton}
+          onClick={isEditMode ? handleSubmit(onEditSubmit) : onEditModeClick}
+        >
+          {isEditMode ? <SaveIcon /> : <EditIcon />}
+        </Fab>
+      ) : null}
       <div className={classes.meetingTitleRow}>
         <div className={classes.meetingTitle}>
-          <Typography variant="h4" className={classes.meetingTitleText}>
-            {meeting.name}
-          </Typography>
-          <MeetingStatusChip meetingStatus={meeting.status} />
+          {!isEditMode ? (
+            <>
+              <Typography variant="h4" className={classes.meetingTitleText}>
+                {meeting.name}
+              </Typography>
+              <MeetingStatusChip meetingStatus={meeting.status} />
+            </>
+          ) : (
+            <>
+              <TextField
+                inputProps={{
+                  ...register('name', {
+                    required: 'Required',
+                  }),
+                }}
+                label="Name"
+                variant="filled"
+                defaultValue={meeting.name}
+              />
+              <FormControl
+                variant="filled"
+                className={classes.meetingStatusSelect}
+              >
+                <InputLabel id="meetingStatusLabel">Meeting Status</InputLabel>
+                <Controller
+                  render={({ field }) => (
+                    <Select
+                      {...omit(field, 'value', 'onChange', 'ref')}
+                      labelId="meetingStatusLabel"
+                      value={field.value}
+                      onChange={(
+                        event: React.ChangeEvent<{ value: unknown }>,
+                      ) => field.onChange(event.target.value)}
+                    >
+                      <MenuItem value={MeetingStatus.Planned}>
+                        {MeetingStatusDisplayNames[MeetingStatus.Planned]}
+                      </MenuItem>
+                      <MenuItem value={MeetingStatus.Started}>
+                        {MeetingStatusDisplayNames[MeetingStatus.Started]}
+                      </MenuItem>
+                      <MenuItem value={MeetingStatus.Ended}>
+                        {MeetingStatusDisplayNames[MeetingStatus.Ended]}
+                      </MenuItem>
+                      <MenuItem value={MeetingStatus.Postponed}>
+                        {MeetingStatusDisplayNames[MeetingStatus.Postponed]}
+                      </MenuItem>
+                      <MenuItem value={MeetingStatus.Canceled}>
+                        {MeetingStatusDisplayNames[MeetingStatus.Canceled]}
+                      </MenuItem>
+                      <MenuItem value={MeetingStatus.Extended}>
+                        {MeetingStatusDisplayNames[MeetingStatus.Extended]}
+                      </MenuItem>
+                    </Select>
+                  )}
+                  name="meetingStatus"
+                  control={control}
+                  defaultValue={meeting.status}
+                />
+              </FormControl>
+            </>
+          )}
         </div>
         <div className={classes.userParticipationStatus}>
           <FormControl variant="outlined" className={classes.statusSelect}>
@@ -93,9 +247,22 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
         </div>
       </div>
       <div>
-        <Typography variant="body2" color="textSecondary">
-          {meeting.description}
-        </Typography>
+        {!isEditMode ? (
+          <Typography variant="body2" color="textSecondary">
+            {meeting.description}
+          </Typography>
+        ) : (
+          <TextField
+            inputProps={{ ...register('description'), maxLength: 255 }}
+            className={classes.meetingDescriptionInput}
+            multiline
+            label="Description"
+            rows={4}
+            fullWidth
+            defaultValue={meeting.description}
+            variant="filled"
+          />
+        )}
       </div>
       <div className={classes.meetingInfoRow}>
         <div>
@@ -125,13 +292,43 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
           )}
         </div>
         <div className={classes.meetingLocation}>
-          <Typography
-            className={classes.meetingLocationText}
-            variant="subtitle2"
-          >{`Location: ${meeting.locationString}`}</Typography>
-          <Button onClick={onGetDirectionsClick} size="small" color="primary">
-            Get Directions
-          </Button>
+          {!isEditMode ? (
+            <>
+              <Typography
+                className={classes.meetingLocationText}
+                variant="subtitle2"
+              >{`Location: ${meeting.locationString}`}</Typography>
+              <Button
+                onClick={onGetDirectionsClick}
+                size="small"
+                color="primary"
+              >
+                Get Directions
+              </Button>
+            </>
+          ) : (
+            <Controller
+              render={({ field }) => {
+                return (
+                  <PlacesAutocomplete
+                    {...omit(field, 'value', 'onChange', 'ref')}
+                    realValue={field.value}
+                    onRealValueChange={(newLocation) =>
+                      field.onChange(newLocation)
+                    }
+                    variant="filled"
+                    className={classes.meetingPlaceSelect}
+                  />
+                );
+              }}
+              name="location"
+              control={control}
+              defaultValue={{
+                input: meeting.locationString,
+                place: null,
+              }}
+            />
+          )}
         </div>
       </div>
       <div className={classes.meetingMemberList}>
@@ -146,6 +343,9 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
             className={classes.memberListAvatar}
           />
         ))}
+        <Button color="primary" onClick={onInviteClick}>
+          View all
+        </Button>
       </div>
     </div>
   );

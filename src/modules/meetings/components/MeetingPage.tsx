@@ -11,6 +11,7 @@ import {
   meetingsMeetingLoadFailedSelector,
   meetingsActiveMeetingTabSelector,
   meetingsMeetingLoadedSelector,
+  meetingsIsEditMode,
 } from '../selectors';
 import { meetingsLoadMeetingRequest } from '../actions';
 import { CircularProgress } from '@material-ui/core';
@@ -35,6 +36,8 @@ const MeetingPage: React.FC = () => {
     (state) => !isNaN(id) && meetingsMeetingLoadedSelector(state, id),
   );
   const meetingLoadFailed = useAppSelector(meetingsMeetingLoadFailedSelector);
+
+  const isEditMode = useAppSelector((state) => meetingsIsEditMode(state, id));
 
   const dispatch = useAppDispatch();
 
@@ -84,21 +87,26 @@ const MeetingPage: React.FC = () => {
         hidden={activeTab !== MeetingTabsEnum.Activities}
       >
         <div className={classes.addButtonContainer}>
-          <Button
-            className={classes.addButton}
-            startIcon={<AddIcon />}
-            variant="contained"
-            color="primary"
-            onClick={onAddActivityClick}
-          >
-            Add Activity
-          </Button>
+          {isEditMode ? (
+            <Button
+              className={classes.addButton}
+              startIcon={<AddIcon />}
+              variant="contained"
+              color="primary"
+              onClick={onAddActivityClick}
+            >
+              Add Activity
+            </Button>
+          ) : null}
         </div>
         <div className={classes.tabContent}>
           <ActivityList />
         </div>
       </div>
-      <div hidden={activeTab !== MeetingTabsEnum.Expenses}>
+      <div
+        className={classes.tabContainer}
+        hidden={activeTab !== MeetingTabsEnum.Expenses}
+      >
         <div className={classes.addButtonContainer}>
           <Button
             className={classes.addButton}

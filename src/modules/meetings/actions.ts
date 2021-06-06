@@ -1,8 +1,14 @@
 import { createAction } from '@reduxjs/toolkit';
 import { withPayloadType } from '../app/actions';
-import type { IUser } from '../auth/reducer';
+import type { IUserInvitation } from '../auth/reducer';
 import type { ParticipationStatus } from '../invitations/reducer';
-import type { IMeeting, MeetingTabs, IMeetingDatesPollEntry } from './reducer';
+import type {
+  IMeeting,
+  MeetingTabs,
+  IMeetingDatesPollEntry,
+  MeetingStatus,
+  updateRequest,
+} from './reducer';
 
 export const meetingsCreateDialogVisibleChangeRequest = createAction(
   'meetings/createDialogVisibleChangeRequest',
@@ -102,6 +108,51 @@ export const meetingsChangeUserParticipationStatus = createAction(
   }),
 );
 
+export const meetingsAddUsersToMeeting = createAction(
+  'meetings/addUsersToMeeting',
+  (meetingId: number, newUsers: IUserInvitation[]) => ({
+    payload: { meetingId, newUsers },
+  }),
+);
+
+export const meetingsEditModeChange = createAction(
+  'meetings/editModeChange',
+  withPayloadType<number | null>(),
+);
+
+export interface IUpdateMeetingRequest {
+  name: string;
+  description: string;
+  locationId?: string | null;
+  locationString?: string | null;
+  status: MeetingStatus;
+}
+
+export const meetingsUpdateMeetingRequest = createAction(
+  'meetings/updateMeetingRequest',
+  (meetingId: number, data: IUpdateMeetingRequest) => ({
+    payload: {
+      meetingId,
+      data,
+    },
+  }),
+);
+
+export const meetingsModifyMeeting = createAction(
+  'meetings/modifyMeeting',
+  withPayloadType<Partial<IMeeting>>(),
+);
+
+export const meetingsChangeCancelingMeeting = createAction(
+  'meetings/changeCancelingMeeting',
+  withPayloadType<typeof updateRequest.payload | null>(),
+);
+
+export const meetingsRespondToCancelingMeeting = createAction(
+  'meetings/respondToCancelingMeeting',
+  withPayloadType<boolean>(),
+);
+
 export type MeetingsActions =
   | ReturnType<typeof meetingsCreateDialogVisibleChangeRequest>
   | ReturnType<typeof meetingsCreateMeetingProposal>
@@ -116,4 +167,9 @@ export type MeetingsActions =
   | ReturnType<typeof meetingsMeetingPollDatesResponseChangeRequest>
   | ReturnType<typeof meetingsMeetingPollDatesResponseChangeSuccess>
   | ReturnType<typeof meetingsChangeParticipantStatusProposal>
-  | ReturnType<typeof meetingsChangeUserParticipationStatus>;
+  | ReturnType<typeof meetingsChangeUserParticipationStatus>
+  | ReturnType<typeof meetingsAddUsersToMeeting>
+  | ReturnType<typeof meetingsEditModeChange>
+  | ReturnType<typeof meetingsModifyMeeting>
+  | ReturnType<typeof meetingsChangeCancelingMeeting>
+  | ReturnType<typeof meetingsRespondToCancelingMeeting>;

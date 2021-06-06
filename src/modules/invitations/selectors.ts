@@ -6,3 +6,11 @@ export const invitationsListSelector = (state: RootState): IInvitation[] =>
 
 export const invitationsLoadingSelector = (state: RootState): boolean =>
   state.invitations.invitationsLoading;
+
+export const invitationsInviteUserDialogOpenSelector = (
+  state: RootState,
+): boolean => !!state.invitations.inviteUserDialogOpen;
+
+export const invitationsInviteUserDialogMeetingIdSelector = (
+  state: RootState,
+): number | null => state.invitations.inviteUserDialogOpen;

@@ -1,7 +1,12 @@
 import type { RootState } from '../app/reducer';
 import type { IUserInvitation } from '../auth/reducer';
-import type { IInvitation } from '../invitations/reducer';
-import type { IMeeting, MeetingTabs, IMeetingDatesPollEntry } from './reducer';
+import {
+  IMeeting,
+  MeetingTabs,
+  IMeetingDatesPollEntry,
+  MeetingStatus,
+  updateRequest,
+} from './reducer';
 
 export const meetingsPlannedSelector = (state: RootState): IMeeting[] =>
   state.meetings.plannedMeetingIds.map(
@@ -53,7 +58,9 @@ export const invitationMeetingByIdSelector = (
   state: RootState,
   id: number,
 ): IUserInvitation =>
-  state.meetings.plannedMeetings[id].participants.filter(
+  (
+    state.meetings.plannedMeetings[id] || state.meetings.historicMeetings[id]
+  ).participants.filter(
     (participant: IUserInvitation) =>
       participant.email === state.auth.account?.email,
   )[0];
@@ -83,4 +90,48 @@ export const meetingsDatesPollEntriesSelector = (
   state: RootState,
   id: number,
 ): IMeetingDatesPollEntry[] =>
-  state.meetings.plannedMeetings[id].meetingDatesPollEntries;
+  (state.meetings.plannedMeetings[id] || state.meetings.historicMeetings[id])
+    .meetingDatesPollEntries;
+
+export const meetingsMeetingParticipantsSelector = (
+  state: RootState,
+  id: number,
+): IUserInvitation[] =>
+  (state.meetings.plannedMeetings[id] || state.meetings.historicMeetings[id])
+    ?.participants || [];
+
+export const meetingsIsUserCreator = (
+  state: RootState,
+  meetingId: number,
+): boolean =>
+  !!state.auth.account &&
+  (state.meetings.plannedMeetings[meetingId] ||
+    state.meetings.historicMeetings[meetingId]) &&
+  state.auth.account.id ===
+    (
+      state.meetings.plannedMeetings[meetingId] ||
+      state.meetings.historicMeetings[meetingId]
+    )?.creator?.id;
+
+export const meetingsIsEditMode = (
+  state: RootState,
+  meetingId: number,
+): boolean => state.meetings.editMode === meetingId;
+
+export const meetingsIsMeetingHistorical = (
+  state: RootState,
+  meetingId: number,
+): boolean =>
+  [MeetingStatus.Canceled, MeetingStatus.Ended].includes(
+    (
+      state.meetings.plannedMeetings[meetingId] ||
+      state.meetings.historicMeetings[meetingId]
+    )?.status,
+  );
+
+export const meetingsCancelingMeetingSelector = (
+  state: RootState,
+): typeof updateRequest.payload | null => state.meetings.cancelingMeeting;
+
+export const meetingsCancelMeetingDialogIsOpen = (state: RootState): boolean =>
+  !!state.meetings.cancelingMeeting;

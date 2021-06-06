@@ -12,6 +12,11 @@ import {
   meetingsMeetingPollDialogVisibleChangeRequest,
   meetingsMeetingPollDatesResponseChangeSuccess,
   meetingsChangeUserParticipationStatus,
+  meetingsAddUsersToMeeting,
+  meetingsEditModeChange,
+  meetingsModifyMeeting,
+  meetingsUpdateMeetingRequest,
+  meetingsChangeCancelingMeeting,
 } from './actions';
 
 export enum MeetingStatus {
@@ -42,7 +47,7 @@ export interface IMeeting {
   description: string;
   startDate: Date;
   endDate: Date;
-  locationId: string;
+  locationId: string | null;
   locationString: string | null;
   status: MeetingStatus;
   isDatesPollActive: boolean;
@@ -51,6 +56,10 @@ export interface IMeeting {
   participants: IUserInvitation[];
   meetingDatesPollEntries: IMeetingDatesPollEntry[];
 }
+
+export declare const updateRequest: ReturnType<
+  typeof meetingsUpdateMeetingRequest
+>;
 
 interface MeetingState {
   plannedMeetingsLoading: boolean;
@@ -67,6 +76,8 @@ interface MeetingState {
   meetingLoadFailed: boolean;
   isCreateDialogOpen: boolean;
   meetingPollFormId: number | null;
+  editMode: number | null;
+  cancelingMeeting: typeof updateRequest.payload | null;
 }
 
 const initialState: MeetingState = {
@@ -84,6 +95,8 @@ const initialState: MeetingState = {
   meetingLoadFailed: false,
   isCreateDialogOpen: false,
   meetingPollFormId: null,
+  editMode: null,
+  cancelingMeeting: null,
 };
 
 const meetingsReducer = createReducer(initialState, (builder) =>
@@ -204,6 +217,28 @@ const meetingsReducer = createReducer(initialState, (builder) =>
           }
         },
       );
+    })
+    .addCase(meetingsAddUsersToMeeting, (state, action) => {
+      state.plannedMeetings[action.payload.meetingId].participants.push(
+        ...action.payload.newUsers,
+      );
+    })
+    .addCase(meetingsEditModeChange, (state, action) => {
+      state.editMode = action.payload;
+      if (action.payload === null) {
+        state.cancelingMeeting = null;
+      }
+    })
+    .addCase(meetingsModifyMeeting, (state, action) => {
+      if (action.payload.id) {
+        state.plannedMeetings[action.payload.id] = {
+          ...state.plannedMeetings[action.payload.id],
+          ...action.payload,
+        };
+      }
+    })
+    .addCase(meetingsChangeCancelingMeeting, (state, action) => {
+      state.cancelingMeeting = action.payload;
     }),
 );
 

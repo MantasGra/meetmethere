@@ -5,6 +5,7 @@ import {
   invitationsLoadInvitationsProposal,
   invitationsLoadInvitationsSuccess,
   invitationsLoadInvitationsFail,
+  invitationsInviteUserDialogOpenRequest,
 } from './actions';
 
 export enum ParticipationStatus {
@@ -24,12 +25,14 @@ interface InvitationState {
   invitations: IInvitation[];
   invitationsLoading: boolean;
   invitationsLoadingFailed: boolean;
+  inviteUserDialogOpen: number | null;
 }
 
 const initialState: InvitationState = {
   invitations: [],
   invitationsLoading: false,
   invitationsLoadingFailed: false,
+  inviteUserDialogOpen: null,
 };
 
 const invitationsReducer = createReducer(initialState, (builder) =>
@@ -52,6 +55,9 @@ const invitationsReducer = createReducer(initialState, (builder) =>
           invitation.meeting.id !== action.payload.meetingId;
         });
       }
+    })
+    .addCase(invitationsInviteUserDialogOpenRequest, (state, action) => {
+      state.inviteUserDialogOpen = action.payload;
     }),
 );
 

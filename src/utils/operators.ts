@@ -52,3 +52,10 @@ export const fromAxios = <T>(
     }),
   );
 };
+
+const isNotNullOrUndefined = <T>(input: null | undefined | T): input is T =>
+  input !== null && input !== undefined;
+
+export const filterNotNullOrUndefined = <T>() => (
+  source$: Observable<null | undefined | T>,
+): Observable<T> => source$.pipe(filter(isNotNullOrUndefined));

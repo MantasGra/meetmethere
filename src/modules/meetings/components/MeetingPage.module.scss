@@ -1,6 +1,6 @@
 .meetingPageContainer {
   width: 95%;
-  // height: calc(95% - 64px);
+  height: calc(95% - 64px);
   margin: 20px auto 10px;
   background-color: rgba(0, 0, 0, 0.04);
   display: flex;
@@ -39,4 +39,10 @@
 .addButton {
   margin-right: 20px;
   height: 36px;
+}
+
+.meetingEditButton {
+  position: absolute;
+  top: 65px;
+  right: 10px;
 }

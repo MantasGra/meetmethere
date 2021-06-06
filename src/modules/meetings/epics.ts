@@ -1,8 +1,19 @@
 import { combineEpics } from 'redux-observable';
-import { forkJoin, of, from } from 'rxjs';
-import { mergeMap, pluck, map, catchError } from 'rxjs/operators';
+import { forkJoin, of, from, merge } from 'rxjs';
+import {
+  mergeMap,
+  pluck,
+  map,
+  catchError,
+  filter,
+  withLatestFrom,
+} from 'rxjs/operators';
 import Geocoder from 'src/utils/Geocoder';
-import { fromAxios, ofActionType } from 'src/utils/operators';
+import {
+  fromAxios,
+  ofActionType,
+  filterNotNullOrUndefined,
+} from 'src/utils/operators';
 import type { AppEpic } from '../app/epics';
 import { snackbarsEnqueue } from '../snackbars/actions';
 import {
@@ -19,8 +30,15 @@ import {
   meetingsMeetingPollDialogVisibleChangeRequest,
   meetingsChangeParticipantStatusProposal,
   meetingsChangeUserParticipationStatus,
+  meetingsUpdateMeetingRequest,
+  IUpdateMeetingRequest,
+  meetingsModifyMeeting,
+  meetingsEditModeChange,
+  meetingsRespondToCancelingMeeting,
+  meetingsChangeCancelingMeeting,
 } from './actions';
-import type { IMeeting, IMeetingDatesPollEntry } from './reducer';
+import { IMeeting, IMeetingDatesPollEntry, MeetingStatus } from './reducer';
+import { meetingsCancelingMeetingSelector } from './selectors';
 
 interface ICreateMeetingResponse {
   createdMeeting: IMeeting;
@@ -150,7 +168,12 @@ const loadMeetingsEpic: AppEpic = (action$, _, { axios }) =>
     ),
   );
 
-const geocodeIfPlaceId$ = (meeting: IMeeting) => {
+interface IGeocodeMeetingSlice {
+  locationId?: string | null;
+  locationString?: string | null;
+}
+
+const geocodeIfPlaceId$ = <M extends IGeocodeMeetingSlice>(meeting: M) => {
   if (!meeting.locationId) {
     return of(meeting);
   }
@@ -199,7 +222,7 @@ const changeParticipationStatusEpic: AppEpic = (action$, _, { axios }) =>
         },
         withCredentials: true,
       }).pipe(
-        mergeMap((response) =>
+        mergeMap(() =>
           of(
             meetingsChangeUserParticipationStatus(
               participationStatusData.id,
@@ -230,10 +253,91 @@ const changeParticipationStatusEpic: AppEpic = (action$, _, { axios }) =>
     ),
   );
 
+interface IMeetingUpdateResponse extends IUpdateMeetingRequest {
+  id: number;
+}
+
+const updateMeetingEpic: AppEpic = (action$, state$, { axios }) =>
+  merge(
+    action$.pipe(
+      ofActionType(meetingsUpdateMeetingRequest),
+      pluck('payload'),
+      filter(
+        ({ data }) =>
+          ![MeetingStatus.Ended, MeetingStatus.Canceled].includes(data.status),
+      ),
+    ),
+    action$.pipe(
+      ofActionType(meetingsRespondToCancelingMeeting),
+      pluck('payload'),
+      filter((confirmed) => confirmed),
+      withLatestFrom(state$),
+      map(([, state]) => meetingsCancelingMeetingSelector(state)),
+      filterNotNullOrUndefined(),
+    ),
+  ).pipe(
+    mergeMap(({ meetingId, data }) =>
+      fromAxios<IMeetingUpdateResponse>(axios, {
+        url: `/meeting/${meetingId}`,
+        method: 'PATCH',
+        data,
+        withCredentials: true,
+      }).pipe(
+        mergeMap((response) =>
+          geocodeIfPlaceId$(response.data).pipe(
+            mergeMap((meeting) =>
+              of(
+                meetingsModifyMeeting(meeting),
+                meetingsEditModeChange(null),
+                snackbarsEnqueue({
+                  message: 'Meeting updated!',
+                  options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                  },
+                }),
+              ),
+            ),
+          ),
+        ),
+        catchError(() =>
+          of(
+            snackbarsEnqueue({
+              message: 'Something went wrong. Meeting update failed!',
+              options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'error',
+              },
+            }),
+          ),
+        ),
+      ),
+    ),
+  );
+
+const cancelingMeetingEpic: AppEpic = (action$) =>
+  merge(
+    action$.pipe(
+      ofActionType(meetingsRespondToCancelingMeeting),
+      pluck('payload'),
+      filter((confirmed) => !confirmed),
+      map(() => null),
+    ),
+    action$.pipe(
+      ofActionType(meetingsUpdateMeetingRequest),
+      pluck('payload'),
+      filter(({ data }) =>
+        [MeetingStatus.Ended, MeetingStatus.Canceled].includes(data.status),
+      ),
+    ),
+  ).pipe(map((value) => meetingsChangeCancelingMeeting(value)));
+
 export default combineEpics(
   createMeetingEpic,
   loadMeetingsEpic,
   loadMeetingEpic,
   addPollResponseEpic,
   changeParticipationStatusEpic,
+  updateMeetingEpic,
+  cancelingMeetingEpic,
 );

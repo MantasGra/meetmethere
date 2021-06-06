@@ -26,6 +26,8 @@ interface IPlacesAutocompleteProps
   > {
   realValue: IValue;
   onRealValueChange: (value: IValue) => void;
+  variant?: 'outlined' | 'filled' | 'standard';
+  className?: string;
 }
 
 interface IAutoCompleteServiceInstance {
@@ -102,6 +104,7 @@ const PlacesAutocomplete = (props: IPlacesAutocompleteProps): JSX.Element => {
   return (
     <Autocomplete
       {...omit(props, 'realValue', 'onRealValueChange', 'ref')}
+      className={props.className}
       getOptionLabel={(option) =>
         typeof option === 'string' ? option : option.description
       }
@@ -124,12 +127,13 @@ const PlacesAutocomplete = (props: IPlacesAutocompleteProps): JSX.Element => {
           input: newInputValue,
         });
       }}
+      inputValue={props.realValue.input}
       renderInput={(params) => (
         <TextField
           {...params}
           label="Location"
           margin="dense"
-          variant="outlined"
+          variant={props.variant}
           fullWidth
         />
       )}

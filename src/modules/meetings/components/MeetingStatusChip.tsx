@@ -6,7 +6,7 @@ interface IMeetingStatusChipProps {
   meetingStatus: MeetingStatus;
 }
 
-const MeetingStatusDisplayNames = Object.freeze({
+export const MeetingStatusDisplayNames = Object.freeze({
   [MeetingStatus.Planned]: 'Planned',
   [MeetingStatus.Postponed]: 'Postponed',
   [MeetingStatus.Started]: 'Started',
