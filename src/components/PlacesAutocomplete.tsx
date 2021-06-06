@@ -121,11 +121,13 @@ const PlacesAutocomplete = (props: IPlacesAutocompleteProps): JSX.Element => {
         });
         autocompleteSessionToken.current = null;
       }}
-      onInputChange={(_, newInputValue) => {
-        props.onRealValueChange({
-          ...props.realValue,
-          input: newInputValue,
-        });
+      onInputChange={(_, newInputValue, reason) => {
+        if (newInputValue || reason !== 'reset') {
+          props.onRealValueChange({
+            ...props.realValue,
+            input: newInputValue,
+          });
+        }
       }}
       inputValue={props.realValue.input}
       renderInput={(params) => (

@@ -1,24 +1,26 @@
-import React from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
+import React from 'react';
 import CloseableDialogTitle from 'src/components/CloseableDialogTitle';
+import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+import { expensesFormDialogExpenseIdentifierChangeRequest } from '../actions';
+import { expensesFormDialogExpenseIdentifierSelector } from '../selectors';
 import ExpenseForm from './ExpenseForm';
-import { useAppSelector, useAppDispatch } from 'src/hooks/redux';
-import { expensesFormDialogMeetingIdChangeRequest } from '../actions';
-import { expensesIsFormDialogOpenSelector } from '../selectors';
 
 const ExpenseFormDialog: React.FC = () => {
-  const open = useAppSelector(expensesIsFormDialogOpenSelector);
+  const expenseIdentifier = useAppSelector(
+    expensesFormDialogExpenseIdentifierSelector,
+  );
 
   const dispatch = useAppDispatch();
 
   const onClose = () => {
-    dispatch(expensesFormDialogMeetingIdChangeRequest(null));
+    dispatch(expensesFormDialogExpenseIdentifierChangeRequest(null));
   };
   return (
-    <Dialog open={open} maxWidth="sm" fullWidth>
+    <Dialog open={expenseIdentifier?.meetingId != null} maxWidth="sm" fullWidth>
       <CloseableDialogTitle onClose={onClose}>
-        Create Expense
+        {!expenseIdentifier?.expenseId ? 'Create Expense' : 'Edit Expense'}
       </CloseableDialogTitle>
       <DialogContent>
         <ExpenseForm />

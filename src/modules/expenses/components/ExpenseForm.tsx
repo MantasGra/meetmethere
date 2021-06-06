@@ -1,16 +1,31 @@
-import React from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import React, { useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
-import { expensesFormDialogMeetingIdSelector } from '../selectors';
-import { expensesCreateExpenseProposal } from '../actions';
-import classes from './ExpenseForm.module.scss';
-import type { IExpenseCreateRequest } from '../actions';
-import ExpenseFormUserList from './ExpenseFormUserList';
 import type { IUser } from 'src/modules/auth/reducer';
+import {
+  expensesCreateExpenseProposal,
+  expensesEditExpenseProposal,
+  IExpenseCreateRequest,
+  IExpenseEditRequest,
+} from '../actions';
+import {
+  expensesFormDialogExpenseIdentifierSelector,
+  expensesFormDialogExpenseSelector,
+} from '../selectors';
+import classes from './ExpenseForm.module.scss';
+import ExpenseFormUserList from './ExpenseFormUserList';
 
 interface ExpenseCreateRequest {
+  name: string;
+  description: string;
+  amount: number;
+  users: IUser[];
+}
+
+interface ExpenseEditRequest {
+  id: number;
   name: string;
   description: string;
   amount: number;
@@ -24,23 +39,62 @@ const ExpenseForm: React.FC = () => {
     handleSubmit,
     watch,
     formState: { errors },
+    reset,
   } = useForm<ExpenseCreateRequest>();
 
   const description = watch('description', '');
 
-  const meetingId = useAppSelector(expensesFormDialogMeetingIdSelector);
-
+  const expenseIdentifier = useAppSelector(
+    expensesFormDialogExpenseIdentifierSelector,
+  );
+  const expenseToBeEdited = useAppSelector(expensesFormDialogExpenseSelector);
+  const isEditMode =
+    expenseToBeEdited !== null && expenseIdentifier?.expenseId !== null;
   const dispatch = useAppDispatch();
 
-  const onSubmit = (data: ExpenseCreateRequest) => {
+  useEffect(() => {
+    if (!!expenseToBeEdited) {
+      reset({ ...expenseToBeEdited, users: expenseToBeEdited.users });
+    }
+  }, []);
+
+  const submitNewExpense = (data: ExpenseCreateRequest) => {
     const postData: IExpenseCreateRequest = {
       name: data.name,
       description: data.description,
       amount: data.amount,
       userIds: data.users.map((u) => u.id),
     };
-    if (meetingId) {
-      dispatch(expensesCreateExpenseProposal(postData, meetingId));
+    if (expenseIdentifier?.meetingId) {
+      dispatch(
+        expensesCreateExpenseProposal(postData, expenseIdentifier.meetingId),
+      );
+    }
+  };
+
+  const submitEditExpense = (data: ExpenseEditRequest) => {
+    const postData: IExpenseEditRequest = {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      amount: data.amount,
+      userIds: data.users.map((u) => u.id),
+    };
+    if (expenseIdentifier?.meetingId) {
+      dispatch(
+        expensesEditExpenseProposal(postData, expenseIdentifier.meetingId),
+      );
+    }
+  };
+
+  const onSubmit = (data: ExpenseCreateRequest) => {
+    if (expenseToBeEdited !== null && expenseIdentifier?.expenseId !== null) {
+      submitEditExpense({ ...data, id: expenseIdentifier!.expenseId });
+    } else if (
+      expenseToBeEdited == null &&
+      expenseIdentifier?.meetingId !== null
+    ) {
+      submitNewExpense(data);
     }
   };
 
@@ -90,7 +144,9 @@ const ExpenseForm: React.FC = () => {
       <div>
         <Controller
           control={control}
-          defaultValue={[]}
+          defaultValue={
+            !!expenseToBeEdited?.users ? expenseToBeEdited.users : []
+          }
           name="users"
           rules={{
             validate: (value) => value.length !== 0,
@@ -113,7 +169,7 @@ const ExpenseForm: React.FC = () => {
           color="primary"
           className={classes.submitButton}
         >
-          Create
+          {isEditMode ? 'Edit' : 'Create'}
         </Button>
       </div>
     </form>

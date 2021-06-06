@@ -15,3 +15,13 @@ export const activitiesListSelector = (state: RootState): IActivity[] =>
 
 export const activitiesLoadingSelector = (state: RootState): boolean =>
   state.activities.activitesLoading;
+
+export const activitiesIsFormEditSelector = (state: RootState): boolean =>
+  !!state.activities.formDialogActivityId;
+
+export const activitiesEditedActivitySelector = (
+  state: RootState,
+): IActivity | null =>
+  state.activities.formDialogActivityId
+    ? state.activities.activities[state.activities.formDialogActivityId]
+    : null;

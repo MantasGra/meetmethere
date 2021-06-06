@@ -2,6 +2,9 @@ import { createReducer } from '@reduxjs/toolkit';
 import compareDesc from 'date-fns/compareDesc';
 import {
   activitiesAddActivity,
+  activitiesDeleteActivityRequest,
+  activitiesEditActivityIdChange,
+  activitiesEditActivityRequest,
   activitiesFormDialogMeetingIdChangeRequest,
   activitiesLoadActivitiesProposal,
   activitiesLoadActivitiesSuccess,
@@ -22,6 +25,7 @@ interface ActivityState {
   activities: Record<number, IActivity>;
   activitiesLoadFailed: boolean;
   formDialogMeetingId: number | null;
+  formDialogActivityId: number | null;
 }
 
 const initialState: ActivityState = {
@@ -30,6 +34,7 @@ const initialState: ActivityState = {
   activities: {},
   activitiesLoadFailed: false,
   formDialogMeetingId: null,
+  formDialogActivityId: null,
 };
 
 const activitiesReducer = createReducer(initialState, (builder) =>
@@ -60,6 +65,19 @@ const activitiesReducer = createReducer(initialState, (builder) =>
       state.activities[action.payload.id] = action.payload;
       state.activityIds.push(action.payload.id);
       state.activityIds.sort(compareDesc);
+    })
+    .addCase(activitiesDeleteActivityRequest, (state, action) => {
+      delete state.activities[action.payload];
+      state.activityIds = state.activityIds.filter(
+        (id) => id !== action.payload,
+      );
+    })
+    .addCase(activitiesEditActivityIdChange, (state, action) => {
+      state.formDialogActivityId = action.payload.activityId;
+      state.formDialogMeetingId = action.payload.meetingId;
+    })
+    .addCase(activitiesEditActivityRequest, (state, action) => {
+      state.activities[action.payload.id] = action.payload;
     }),
 );
 

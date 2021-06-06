@@ -11,6 +11,11 @@ import {
   activitiesLoadFailed,
   activitiesLoadActivitiesProposal,
   activitiesLoadActivitiesSuccess,
+  activitiesDeleteActivityProposal,
+  activitiesDeleteActivityRequest,
+  activitiesEditActivityProposal,
+  activitiesEditActivityRequest,
+  activitiesEditActivityIdChange,
 } from './actions';
 import type { IActivity } from './reducer';
 
@@ -69,4 +74,85 @@ const createActivityEpic: AppEpic = (action$, _, { axios }) =>
     ),
   );
 
-export default combineEpics(loadActivitysEpic, createActivityEpic);
+const deleteActivityEpic: AppEpic = (action$, _, { axios }) =>
+  action$.pipe(
+    ofActionType(activitiesDeleteActivityProposal),
+    pluck('payload'),
+    mergeMap(({ meetingId, activityId }) =>
+      fromAxios<never>(axios, {
+        url: `/meeting/${meetingId}/activities/${activityId}`,
+        method: 'DELETE',
+        withCredentials: true,
+      }).pipe(
+        mergeMap(() =>
+          of(
+            activitiesDeleteActivityRequest(activityId),
+            snackbarsEnqueue({
+              message: 'Activity deleted!',
+              options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'success',
+              },
+            }),
+          ),
+        ),
+        catchError(() =>
+          of(
+            snackbarsEnqueue({
+              message: 'Failed to delete activity!',
+              options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'error',
+              },
+            }),
+          ),
+        ),
+      ),
+    ),
+  );
+
+const editActivityEpic: AppEpic = (action$, _, { axios }) =>
+  action$.pipe(
+    ofActionType(activitiesEditActivityProposal),
+    pluck('payload'),
+    mergeMap(({ meetingId, activityId, activity }) =>
+      fromAxios<IActivity>(axios, {
+        url: `/meeting/${meetingId}/activities/${activityId}`,
+        method: 'PUT',
+        data: activity,
+        withCredentials: true,
+      }).pipe(
+        mergeMap((response) =>
+          of(
+            activitiesEditActivityRequest(response.data),
+            activitiesEditActivityIdChange(null, null),
+            snackbarsEnqueue({
+              message: 'Activity updated!',
+              options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'success',
+              },
+            }),
+          ),
+        ),
+        catchError(() =>
+          of(
+            snackbarsEnqueue({
+              message: 'Failed to update activity!',
+              options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'error',
+              },
+            }),
+          ),
+        ),
+      ),
+    ),
+  );
+
+export default combineEpics(
+  loadActivitysEpic,
+  createActivityEpic,
+  deleteActivityEpic,
+  editActivityEpic,
+);

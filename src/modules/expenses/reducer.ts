@@ -3,11 +3,14 @@ import { compareDesc } from 'date-fns';
 import type { IUser } from '../auth/reducer';
 import type { IMeeting } from '../meetings/reducer';
 import {
-  expensesLoadExpensesProposal,
-  expensesLoadExpensesFail,
-  expensesLoadExpensesSuccess,
   expensesAddExpense,
+  expensesChangeExpense,
+  expensesDeleteExpense,
+  expensesFormDialogExpenseIdentifierChangeRequest,
   expensesFormDialogMeetingIdChangeRequest,
+  expensesLoadExpensesFail,
+  expensesLoadExpensesProposal,
+  expensesLoadExpensesSuccess,
 } from './actions';
 
 export interface IExpense {
@@ -21,13 +24,18 @@ export interface IExpense {
   createDate: Date;
 }
 
+export interface IExpenseIdentifier {
+  meetingId: number;
+  expenseId: number | null;
+}
+
 interface ExpensesState {
   expensesLoading: boolean;
   expensesIds: number[];
   expenses: Record<number, IExpense>;
   expensesCount: number;
   expensesLoadFailed: boolean;
-  formDialogMeetingId: number | null;
+  formDialogExpenseIdentifier: IExpenseIdentifier | null;
 }
 
 const initialState: ExpensesState = {
@@ -36,7 +44,7 @@ const initialState: ExpensesState = {
   expenses: {},
   expensesCount: 0,
   expensesLoadFailed: false,
-  formDialogMeetingId: null,
+  formDialogExpenseIdentifier: null,
 };
 
 const expensesReducer = createReducer(initialState, (builder) =>
@@ -69,10 +77,23 @@ const expensesReducer = createReducer(initialState, (builder) =>
       state.expenses[action.payload.id] = action.payload;
       state.expensesIds.unshift(action.payload.id);
     })
+    .addCase(expensesChangeExpense, (state, action) => {
+      state.expenses[action.payload.id] = action.payload;
+    })
+    .addCase(expensesDeleteExpense, (state, action) => {
+      delete state.expenses[action.payload.id];
+    })
     .addCase(expensesFormDialogMeetingIdChangeRequest, (state, action) => {
-      console.log(`Changing form id: ${action.payload}`);
-      state.formDialogMeetingId = action.payload;
-    }),
+      state.formDialogExpenseIdentifier = action.payload
+        ? { meetingId: action.payload, expenseId: null }
+        : null;
+    })
+    .addCase(
+      expensesFormDialogExpenseIdentifierChangeRequest,
+      (state, action) => {
+        state.formDialogExpenseIdentifier = action.payload;
+      },
+    ),
 );
 
 export default expensesReducer;

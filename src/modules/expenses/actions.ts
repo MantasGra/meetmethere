@@ -1,8 +1,6 @@
 import { createAction } from '@reduxjs/toolkit';
 import { withPayloadType } from '../app/actions';
-import type { IUser } from '../auth/reducer';
-import type { IMeeting } from '../meetings/reducer';
-import type { IExpense } from './reducer';
+import type { IExpense, IExpenseIdentifier } from './reducer';
 
 export const expensesLoadExpensesProposal = createAction(
   'expenses/loadExpensesProposal',
@@ -37,14 +35,57 @@ export const expensesCreateExpenseProposal = createAction(
   }),
 );
 
+export interface IExpenseEditRequest {
+  id: number;
+  name: string;
+  description: string;
+  amount: number;
+  userIds: number[];
+}
+
+export const expensesEditExpenseProposal = createAction(
+  'expenses/editExpenseProposal',
+  (expense: IExpenseEditRequest, meetingId: number) => ({
+    payload: {
+      expense,
+      meetingId,
+    },
+  }),
+);
+
+export const expensesDeleteExpenseProposal = createAction(
+  'expenses/deleteExpenseProposal',
+  (expense: IExpense, meetingId: number) => ({
+    payload: {
+      expense,
+      meetingId,
+    },
+  }),
+);
+
 export const expensesAddExpense = createAction(
   'expenses/addExpense',
+  withPayloadType<IExpense>(),
+);
+
+export const expensesChangeExpense = createAction(
+  'expenses/changeExpense',
+  withPayloadType<IExpense>(),
+);
+
+export const expensesDeleteExpense = createAction(
+  'expenses/deleteExpense',
   withPayloadType<IExpense>(),
 );
 
 export const expensesFormDialogMeetingIdChangeRequest = createAction(
   'expenses/formDialogMeetingIdChangeRequest',
   withPayloadType<number | null>(),
+);
+
+export const expensesFormDialogExpenseIdentifierChangeRequest = createAction(
+  'expenses/formDialogExpenseIdentifierChangeRequest',
+  withPayloadType<IExpenseIdentifier | null>(),
 );
 
 export type ExpensesActions =
@@ -54,4 +95,8 @@ export type ExpensesActions =
   | ReturnType<typeof expensesCreateExpenseProposal>
   | ReturnType<typeof expensesCreateExpenseProposal>
   | ReturnType<typeof expensesAddExpense>
-  | ReturnType<typeof expensesFormDialogMeetingIdChangeRequest>;
+  | ReturnType<typeof expensesChangeExpense>
+  | ReturnType<typeof expensesDeleteExpense>
+  | ReturnType<typeof expensesDeleteExpenseProposal>
+  | ReturnType<typeof expensesFormDialogMeetingIdChangeRequest>
+  | ReturnType<typeof expensesFormDialogExpenseIdentifierChangeRequest>;

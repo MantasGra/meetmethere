@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
@@ -7,8 +7,15 @@ import isAfter from 'date-fns/isAfter';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 import { DateTimePicker } from '@material-ui/pickers';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
-import { activitiesFormDialogMeetingIdSelector } from '../selectors';
-import { activitiesCreateActivityProposal } from '../actions';
+import {
+  activitiesEditedActivitySelector,
+  activitiesFormDialogMeetingIdSelector,
+  activitiesIsFormEditSelector,
+} from '../selectors';
+import {
+  activitiesCreateActivityProposal,
+  activitiesEditActivityProposal,
+} from '../actions';
 
 import classes from './ActivityForm.module.scss';
 
@@ -24,6 +31,7 @@ const activityForm: React.FC = () => {
     register,
     handleSubmit,
     watch,
+    reset,
     control,
     formState: { errors },
   } = useForm<IActivityForm>();
@@ -33,20 +41,48 @@ const activityForm: React.FC = () => {
 
   const meetingId = useAppSelector(activitiesFormDialogMeetingIdSelector);
 
+  const isEditForm = useAppSelector(activitiesIsFormEditSelector);
+  const editedActivity = useAppSelector(activitiesEditedActivitySelector);
+
+  useEffect(() => {
+    if (isEditForm && editedActivity) {
+      reset({
+        name: editedActivity.name,
+        description: editedActivity.description,
+        startTime: new Date(editedActivity.startTime),
+        endTime: new Date(editedActivity.endTime),
+      });
+    }
+  }, [isEditForm]);
+
   const dispatch = useAppDispatch();
 
   const onSubmit = (data: IActivityForm) => {
     if (meetingId) {
-      dispatch(
-        activitiesCreateActivityProposal(
-          {
-            ...data,
-            startTime: data.startTime.toISOString(),
-            endTime: data.endTime.toISOString(),
-          },
-          meetingId,
-        ),
-      );
+      if (isEditForm && editedActivity) {
+        dispatch(
+          activitiesEditActivityProposal(
+            {
+              ...data,
+              startTime: data.startTime.toISOString(),
+              endTime: data.endTime.toISOString(),
+            },
+            meetingId,
+            editedActivity.id,
+          ),
+        );
+      } else {
+        dispatch(
+          activitiesCreateActivityProposal(
+            {
+              ...data,
+              startTime: data.startTime.toISOString(),
+              endTime: data.endTime.toISOString(),
+            },
+            meetingId,
+          ),
+        );
+      }
     }
   };
 
@@ -128,7 +164,7 @@ const activityForm: React.FC = () => {
           color="primary"
           className={classes.submitButton}
         >
-          Create
+          {isEditForm ? 'Save' : 'Create'}
         </Button>
       </div>
     </form>

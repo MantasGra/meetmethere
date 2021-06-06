@@ -43,10 +43,54 @@ export const activitiesAddActivity = createAction(
   withPayloadType<IActivity>(),
 );
 
+export const activitiesDeleteActivityProposal = createAction(
+  'activities/deleteActivityProposal',
+  (meetingId: number, activityId: number) => ({
+    payload: { meetingId, activityId },
+  }),
+);
+
+export const activitiesDeleteActivityRequest = createAction(
+  'activities/deleteActivityRequest',
+  withPayloadType<number>(),
+);
+
+export const activitiesEditActivityIdChange = createAction(
+  'activities/editActivityIdChange',
+  (meetingId: number | null, activityId: number | null) => ({
+    payload: { meetingId, activityId },
+  }),
+);
+
+export const activitiesEditActivityProposal = createAction(
+  'activities/editActivityProposal',
+  (
+    activity: ICreateActivityRequest,
+    meetingId: number,
+    activityId: number,
+  ) => ({
+    payload: {
+      activity,
+      meetingId,
+      activityId,
+    },
+  }),
+);
+
+export const activitiesEditActivityRequest = createAction(
+  'activities/editActivityRequest',
+  withPayloadType<IActivity>(),
+);
+
 export type ActivitiesActions =
   | ReturnType<typeof activitiesLoadActivitiesProposal>
   | ReturnType<typeof activitiesLoadActivitiesSuccess>
   | ReturnType<typeof activitiesLoadFailed>
   | ReturnType<typeof activitiesFormDialogMeetingIdChangeRequest>
   | ReturnType<typeof activitiesCreateActivityProposal>
-  | ReturnType<typeof activitiesAddActivity>;
+  | ReturnType<typeof activitiesAddActivity>
+  | ReturnType<typeof activitiesDeleteActivityProposal>
+  | ReturnType<typeof activitiesDeleteActivityRequest>
+  | ReturnType<typeof activitiesEditActivityIdChange>
+  | ReturnType<typeof activitiesEditActivityProposal>
+  | ReturnType<typeof activitiesEditActivityRequest>;
