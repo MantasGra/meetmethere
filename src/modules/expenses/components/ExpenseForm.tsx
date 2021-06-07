@@ -114,11 +114,15 @@ const ExpenseForm: React.FC = () => {
       />
       <TextField
         inputProps={{
-          ...register('amount', { required: 'Required' }),
+          ...register('amount', { validate: (value) => value > 0 }),
           step: '0.01',
         }}
-        helperText={errors.name?.message}
-        error={!!errors.name}
+        helperText={
+          errors.amount?.type === 'validate'
+            ? 'Value must be higher than 0'
+            : undefined
+        }
+        error={!!errors.amount}
         margin="dense"
         variant="outlined"
         label="Amount"

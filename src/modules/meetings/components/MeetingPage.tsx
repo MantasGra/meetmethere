@@ -14,7 +14,7 @@ import {
   meetingsIsEditMode,
 } from '../selectors';
 import { meetingsLoadMeetingRequest } from '../actions';
-import { CircularProgress } from '@material-ui/core';
+import { CircularProgress, Typography } from '@material-ui/core';
 import NotFound from 'src/components/NotFound';
 import AnnouncementList from '../../announcements/components/AnnouncementList';
 import { announcementsFormDialogMeetingIdChangeRequest } from 'src/modules/announcements/actions';
@@ -23,6 +23,8 @@ import { activitiesFormDialogMeetingIdChangeRequest } from 'src/modules/activiti
 import classes from './MeetingPage.module.scss';
 import ExpensesList from 'src/modules/expenses/components/ExpensesList';
 import ActivityList from 'src/modules/activitites/components/ActivityList';
+import { useSelector } from 'react-redux';
+import { expensesTotalSelector } from 'src/modules/expenses/selectors';
 
 interface IMeetingPageParams {
   id: string;
@@ -58,6 +60,9 @@ const MeetingPage: React.FC = () => {
       dispatch(meetingsLoadMeetingRequest({ id }));
     }
   }, [id, meetingLoaded]);
+
+  const totalExpenses = useSelector(expensesTotalSelector);
+
 
   return meetingLoaded ? (
     <Paper elevation={3} className={classes.meetingPageContainer}>
@@ -107,7 +112,8 @@ const MeetingPage: React.FC = () => {
         className={classes.tabContainer}
         hidden={activeTab !== MeetingTabsEnum.Expenses}
       >
-        <div className={classes.addButtonContainer}>
+        <div className={classes.addButtonContainerWithContent}>
+          <Typography variant="h6">Your expenses: {totalExpenses ? totalExpenses.toFixed(2) : 0}€</Typography>
           <Button
             className={classes.addButton}
             startIcon={<AddIcon />}

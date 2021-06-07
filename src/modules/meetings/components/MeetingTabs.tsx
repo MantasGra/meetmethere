@@ -6,6 +6,10 @@ import { meetingsActiveMeetingTabSelector } from '../selectors';
 
 import classes from './MeetingTabs.module.scss';
 import { meetingsSwitchToTab } from '../actions';
+import { useSelector } from 'react-redux';
+import type { RootState } from 'src/modules/app/reducer';
+import { isMobileSelector } from 'src/modules/app/selectors';
+import { Announcement, EuroSymbol, LocalPizza } from '@material-ui/icons';
 
 const MeetingTabs: React.FC = () => {
   const selectedTab = useAppSelector(meetingsActiveMeetingTabSelector);
@@ -16,6 +20,9 @@ const MeetingTabs: React.FC = () => {
   const handleChange = (_: React.ChangeEvent<{}>, newValue: number) => {
     dispatch(meetingsSwitchToTab(newValue));
   };
+
+  const isMobile = useSelector(isMobileSelector);
+
   return (
     <Tabs
       className={classes.meetingTabs}
@@ -23,9 +30,9 @@ const MeetingTabs: React.FC = () => {
       onChange={handleChange}
       variant="fullWidth"
     >
-      <Tab label="Announcements" />
-      <Tab label="Activities" />
-      <Tab label="Expenses" />
+      <Tab label={!isMobile && "Announcements"} icon={isMobile ? <Announcement/> : ''}/>
+      <Tab label={!isMobile && "Activities"} icon={isMobile ? <LocalPizza/> : ''} />
+      <Tab label={!isMobile && "Expenses"} icon={isMobile ? <EuroSymbol/> : ''} />
     </Tabs>
   );
 };

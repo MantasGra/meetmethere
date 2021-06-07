@@ -4,6 +4,7 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import Typography from '@material-ui/core/Typography';
 import { MoreVert } from '@material-ui/icons';
+import { isNumber } from 'lodash';
 import React from 'react';
 import { useParams } from 'react-router';
 import NoContent from 'src/components/NoContent';
@@ -94,8 +95,16 @@ const ExpensesList: React.FC = () => {
               ref={expenses.length - 1 === index ? lastElementRef : undefined}
             >
               <CardHeader
+                avatar={
+                  <AccountAvatar
+                    initials={`${expense.createdBy.name.charAt(
+                      0,
+                    )}${expense.createdBy.lastName.charAt(0)}`}
+                    color={expense.createdBy.color}
+                  />
+                }
                 title={expense.name}
-                subheader={`Amount: ${expense.amount || 4}`}
+                subheader={`${expense.amount ? (expense.amount * 1).toFixed(2) : 0}€ (${expense.amount ? (expense.amount / expense.users.length).toFixed(2) : 0}€ each)`}
                 action={
                   <IconButton
                     aria-label="settings"
@@ -112,8 +121,8 @@ const ExpensesList: React.FC = () => {
                 </Typography>
                 <hr />
                 <Typography variant="body2" component="p">
-                  For:
-                  <span>
+                  <span className={classes.expenseMembers}>
+                    <Typography variant="subtitle2">For:</Typography>
                     {expense.users.map((participant) => (
                       <AccountAvatar
                         key={participant.id}
