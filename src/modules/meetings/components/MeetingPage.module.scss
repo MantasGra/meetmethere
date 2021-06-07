@@ -36,7 +36,24 @@
   align-items: center;
 }
 
+.addButtonContainerWithContent {
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .addButton {
   margin-right: 20px;
   height: 36px;
+}
+
+@media (max-width: 768px) {
+  .meetingPageContainer {
+    height: unset;
+  }
+  .addButtonContainerWithContent {
+    flex-direction: column;
+  }
 }

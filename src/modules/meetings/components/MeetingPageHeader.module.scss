@@ -74,3 +74,35 @@
   top: 65px;
   right: 10px;
 }
+
+@media (max-width: 768px) {
+
+  .meetingPageHeader {
+    padding: 15px;
+  }
+  .meetingDateEntry {
+    width: unset;
+  }
+  .meetingTitle {
+    flex-direction: column;
+  }
+  .meetingTitleRow {
+    flex-direction: column;
+
+    .userParticipationStatus {
+      padding: 10px 0;
+    }
+  }
+
+  .meetingInfoRow {
+    flex-direction: column;
+  }
+
+  .meetingLocation {
+    padding: 0;
+  
+    .meetingLocationText {
+      padding-left: 0px;
+    }
+  }
+}
