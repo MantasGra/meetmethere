@@ -3,6 +3,9 @@ import compareDesc from 'date-fns/compareDesc';
 import type { IUser } from '../auth/reducer';
 import {
   announcementsAddAnnouncement,
+  announcementsDeleteAnnouncementRequest,
+  announcementsEditAnnouncementIdChange,
+  announcementsEditAnnouncementRequest,
   announcementsFormDialogMeetingIdChangeRequest,
   announcementsLoadAnnouncementsFail,
   announcementsLoadAnnouncementsProposal,
@@ -24,6 +27,7 @@ interface AnnouncementState {
   announcementsCount: number;
   announcementsLoadFailed: boolean;
   formDialogMeetingId: number | null;
+  formDialogAnnouncementId: number | null;
 }
 
 const initialState: AnnouncementState = {
@@ -33,6 +37,7 @@ const initialState: AnnouncementState = {
   announcementsCount: 0,
   announcementsLoadFailed: false,
   formDialogMeetingId: null,
+  formDialogAnnouncementId: null,
 };
 
 const announcementsReducer = createReducer(initialState, (builder) =>
@@ -67,6 +72,19 @@ const announcementsReducer = createReducer(initialState, (builder) =>
     .addCase(announcementsAddAnnouncement, (state, action) => {
       state.announcements[action.payload.id] = action.payload;
       state.announcementIds.unshift(action.payload.id);
+    })
+    .addCase(announcementsEditAnnouncementIdChange, (state, action) => {
+      state.formDialogMeetingId = action.payload.meetingId;
+      state.formDialogAnnouncementId = action.payload.announcementId;
+    })
+    .addCase(announcementsEditAnnouncementRequest, (state, action) => {
+      state.announcements[action.payload.id] = action.payload;
+    })
+    .addCase(announcementsDeleteAnnouncementRequest, (state, action) => {
+      delete state.announcements[action.payload];
+      state.announcementIds = state.announcementIds.filter(
+        (id) => id !== action.payload,
+      );
     }),
 );
 

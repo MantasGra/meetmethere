@@ -43,10 +43,48 @@ export const announcementsAddAnnouncement = createAction(
   withPayloadType<IAnnouncement>(),
 );
 
+export const announcementsEditAnnouncementIdChange = createAction(
+  'announcements/editAnnouncementIdChange',
+  (meetingId: number | null, announcementId: number | null) => ({
+    payload: { meetingId, announcementId },
+  }),
+);
+
+export const announcementsEditAnnouncementProposal = createAction(
+  'announcements/editAnnouncementProposal',
+  (
+    announcement: ICreateAnnouncementRequest,
+    meetingId: number,
+    announcementId: number,
+  ) => ({ payload: { announcement, meetingId, announcementId } }),
+);
+
+export const announcementsEditAnnouncementRequest = createAction(
+  'announcements/editAnnouncementRequest',
+  withPayloadType<IAnnouncement>(),
+);
+
+export const announcementsDeleteAnnouncementProposal = createAction(
+  'announcements/deleteAnnouncementProposal',
+  (meetingId: number, announcementId: number) => ({
+    payload: { meetingId, announcementId },
+  }),
+);
+
+export const announcementsDeleteAnnouncementRequest = createAction(
+  'announcements/deleteAnnouncementRequest',
+  withPayloadType<number>(),
+);
+
 export type AnnouncementsActions =
   | ReturnType<typeof announcementsLoadAnnouncementsProposal>
   | ReturnType<typeof announcementsLoadAnnouncementsSuccess>
   | ReturnType<typeof announcementsLoadAnnouncementsFail>
   | ReturnType<typeof announcementsFormDialogMeetingIdChangeRequest>
   | ReturnType<typeof announcementsCreateAnnouncementProposal>
-  | ReturnType<typeof announcementsAddAnnouncement>;
+  | ReturnType<typeof announcementsAddAnnouncement>
+  | ReturnType<typeof announcementsEditAnnouncementIdChange>
+  | ReturnType<typeof announcementsEditAnnouncementProposal>
+  | ReturnType<typeof announcementsEditAnnouncementRequest>
+  | ReturnType<typeof announcementsDeleteAnnouncementProposal>
+  | ReturnType<typeof announcementsDeleteAnnouncementRequest>;

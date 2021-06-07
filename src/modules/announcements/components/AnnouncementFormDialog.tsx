@@ -4,22 +4,34 @@ import DialogContent from '@material-ui/core/DialogContent';
 import CloseableDialogTitle from 'src/components/CloseableDialogTitle';
 import AnnouncementForm from './AnnouncementForm';
 import { useAppSelector, useAppDispatch } from 'src/hooks/redux';
-import { announcementsFormDialogMeetingIdChangeRequest } from '../actions';
-import { announcementsIsFormDialogOpenSelector } from '../selectors';
+import {
+  announcementsEditAnnouncementIdChange,
+  announcementsFormDialogMeetingIdChangeRequest,
+} from '../actions';
+import {
+  announcementsIsFormDialogOpenSelector,
+  announcementsIsFormEditSelector,
+} from '../selectors';
 
 const AnnouncementFormDialog: React.FC = () => {
   const open = useAppSelector(announcementsIsFormDialogOpenSelector);
 
+  const isEditForm = useAppSelector(announcementsIsFormEditSelector);
+
   const dispatch = useAppDispatch();
 
   const onClose = () => {
-    dispatch(announcementsFormDialogMeetingIdChangeRequest(null));
+    if (isEditForm) {
+      dispatch(announcementsEditAnnouncementIdChange(null, null));
+    } else {
+      dispatch(announcementsFormDialogMeetingIdChangeRequest(null));
+    }
   };
 
   return (
     <Dialog open={open} maxWidth="sm" fullWidth>
       <CloseableDialogTitle onClose={onClose}>
-        Create Announcement
+        {isEditForm ? 'Update' : 'Create'} Announcement
       </CloseableDialogTitle>
       <DialogContent>
         <AnnouncementForm />

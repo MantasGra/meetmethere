@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
-import { announcementsFormDialogMeetingIdSelector } from '../selectors';
+import {
+  announcementsEditedAnnouncementSelector,
+  announcementsFormDialogMeetingIdSelector,
+  announcementsIsFormEditSelector,
+} from '../selectors';
 import {
   announcementsCreateAnnouncementProposal,
+  announcementsEditAnnouncementProposal,
   ICreateAnnouncementRequest,
 } from '../actions';
 
@@ -16,6 +21,7 @@ const AnnouncementForm: React.FC = () => {
     register,
     handleSubmit,
     watch,
+    reset,
     formState: { errors },
   } = useForm<ICreateAnnouncementRequest>();
 
@@ -23,11 +29,35 @@ const AnnouncementForm: React.FC = () => {
 
   const meetingId = useAppSelector(announcementsFormDialogMeetingIdSelector);
 
+  const isEditForm = useAppSelector(announcementsIsFormEditSelector);
+  const editedAnnouncement = useAppSelector(
+    announcementsEditedAnnouncementSelector,
+  );
+
+  useEffect(() => {
+    if (isEditForm && editedAnnouncement) {
+      reset({
+        title: editedAnnouncement.title,
+        description: editedAnnouncement.description,
+      });
+    }
+  }, [isEditForm, editedAnnouncement]);
+
   const dispatch = useAppDispatch();
 
   const onSubmit = (data: ICreateAnnouncementRequest) => {
     if (meetingId) {
-      dispatch(announcementsCreateAnnouncementProposal(data, meetingId));
+      if (isEditForm && editedAnnouncement) {
+        dispatch(
+          announcementsEditAnnouncementProposal(
+            data,
+            meetingId,
+            editedAnnouncement.id,
+          ),
+        );
+      } else {
+        dispatch(announcementsCreateAnnouncementProposal(data, meetingId));
+      }
     }
   };
 
@@ -68,7 +98,7 @@ const AnnouncementForm: React.FC = () => {
           color="primary"
           className={classes.submitButton}
         >
-          Create
+          {isEditForm ? 'Save' : 'Create'}
         </Button>
       </div>
     </form>

@@ -7,6 +7,11 @@ import { snackbarsEnqueue } from '../snackbars/actions';
 import {
   announcementsAddAnnouncement,
   announcementsCreateAnnouncementProposal,
+  announcementsDeleteAnnouncementProposal,
+  announcementsDeleteAnnouncementRequest,
+  announcementsEditAnnouncementIdChange,
+  announcementsEditAnnouncementProposal,
+  announcementsEditAnnouncementRequest,
   announcementsFormDialogMeetingIdChangeRequest,
   announcementsLoadAnnouncementsFail,
   announcementsLoadAnnouncementsProposal,
@@ -84,4 +89,85 @@ const createAnnouncementEpic: AppEpic = (action$, _, { axios }) =>
     ),
   );
 
-export default combineEpics(loadAnnouncementsEpic, createAnnouncementEpic);
+const editAnnouncementEpic: AppEpic = (action$, _, { axios }) =>
+  action$.pipe(
+    ofActionType(announcementsEditAnnouncementProposal),
+    pluck('payload'),
+    mergeMap(({ meetingId, announcementId, announcement }) =>
+      fromAxios<IAnnouncement>(axios, {
+        url: `/meeting/${meetingId}/announcements/${announcementId}`,
+        method: 'PUT',
+        data: announcement,
+        withCredentials: true,
+      }).pipe(
+        mergeMap((response) =>
+          of(
+            announcementsEditAnnouncementRequest(response.data),
+            announcementsEditAnnouncementIdChange(null, null),
+            snackbarsEnqueue({
+              message: 'Announcement updated!',
+              options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'success',
+              },
+            }),
+          ),
+        ),
+        catchError(() =>
+          of(
+            snackbarsEnqueue({
+              message: 'Failed to update announcement!',
+              options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'error',
+              },
+            }),
+          ),
+        ),
+      ),
+    ),
+  );
+
+const deleteAnnouncementEpic: AppEpic = (action$, _, { axios }) =>
+  action$.pipe(
+    ofActionType(announcementsDeleteAnnouncementProposal),
+    pluck('payload'),
+    mergeMap(({ meetingId, announcementId }) =>
+      fromAxios<never>(axios, {
+        url: `/meeting/${meetingId}/announcements/${announcementId}`,
+        method: 'DELETE',
+        withCredentials: true,
+      }).pipe(
+        mergeMap(() =>
+          of(
+            announcementsDeleteAnnouncementRequest(announcementId),
+            snackbarsEnqueue({
+              message: 'Announcement deleted!',
+              options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'success',
+              },
+            }),
+          ),
+        ),
+        catchError(() =>
+          of(
+            snackbarsEnqueue({
+              message: 'Failed to delete activity!',
+              options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'error',
+              },
+            }),
+          ),
+        ),
+      ),
+    ),
+  );
+
+export default combineEpics(
+  loadAnnouncementsEpic,
+  createAnnouncementEpic,
+  editAnnouncementEpic,
+  deleteAnnouncementEpic,
+);

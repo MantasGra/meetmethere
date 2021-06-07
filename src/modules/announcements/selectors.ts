@@ -23,3 +23,15 @@ export const announcementsFormDialogMeetingIdSelector = (
 export const announcementsIsFormDialogOpenSelector = (
   state: RootState,
 ): boolean => !!state.announcements.formDialogMeetingId;
+
+export const announcementsIsFormEditSelector = (state: RootState): boolean =>
+  !!state.announcements.formDialogAnnouncementId;
+
+export const announcementsEditedAnnouncementSelector = (
+  state: RootState,
+): IAnnouncement | null =>
+  state.announcements.formDialogAnnouncementId
+    ? state.announcements.announcements[
+        state.announcements.formDialogAnnouncementId
+      ]
+    : null;

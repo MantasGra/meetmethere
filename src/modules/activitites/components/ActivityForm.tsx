@@ -53,7 +53,7 @@ const activityForm: React.FC = () => {
         endTime: new Date(editedActivity.endTime),
       });
     }
-  }, [isEditForm]);
+  }, [isEditForm, editedActivity]);
 
   const dispatch = useAppDispatch();
 
