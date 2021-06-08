@@ -245,6 +245,7 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
             variant="outlined"
             className={classes.statusSelect}
             size="small"
+            disabled={isHistoricMeeting}
           >
             <InputLabel id="demo-simple-select-outlined-label">
               Status
@@ -256,9 +257,12 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
               value={invitation.userParticipationStatus}
               onChange={onStatusChange}
             >
-              <MenuItem value="invited">
-                <em>Invited</em>
-              </MenuItem>
+              {invitation.userParticipationStatus ===
+              ParticipationStatus.Invited ? (
+                <MenuItem value="invited">
+                  <em>Invited</em>
+                </MenuItem>
+              ) : null}
               <MenuItem value={ParticipationStatus.Going}>Going</MenuItem>
               <MenuItem value={ParticipationStatus.Maybe}>Maybe</MenuItem>
               <MenuItem value={ParticipationStatus.Declined}>Declined</MenuItem>

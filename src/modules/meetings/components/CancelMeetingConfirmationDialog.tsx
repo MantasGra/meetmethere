@@ -6,11 +6,19 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
-import { meetingsCancelMeetingDialogIsOpen } from '../selectors';
+import {
+  meetingsCancelingMeetingSelector,
+  meetingsCancelMeetingDialogIsOpen,
+} from '../selectors';
 import { meetingsRespondToCancelingMeeting } from '../actions';
+import { MeetingStatus } from '../reducer';
 
 const CancelMeetingConfirmationDialog: React.FC = () => {
   const isOpen = useAppSelector(meetingsCancelMeetingDialogIsOpen);
+
+  const cancelingMeeting = useAppSelector(meetingsCancelingMeetingSelector);
+
+  const isCanceling = cancelingMeeting?.data.status === MeetingStatus.Canceled;
 
   const dispatch = useAppDispatch();
 
@@ -23,11 +31,11 @@ const CancelMeetingConfirmationDialog: React.FC = () => {
   };
   return (
     <Dialog open={isOpen}>
-      <DialogTitle>Cancel meeting?</DialogTitle>
+      <DialogTitle>{isCanceling ? 'Cancel' : 'End'} meeting?</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Are you sure you want to cancel this meeting? This action can not be
-          undone.
+          Are you sure you want to {isCanceling ? 'cancel' : 'end'} this
+          meeting? This action can not be undone.
         </DialogContentText>
       </DialogContent>
       <DialogActions>

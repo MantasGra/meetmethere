@@ -115,6 +115,7 @@ const LoginForm: React.FC = () => {
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton
+                    id="passwordVisibilityButton"
                     onClick={onShowPasswordToggle}
                     onMouseDown={onShowPasswordMouseDown}
                   >

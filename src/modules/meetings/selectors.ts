@@ -140,3 +140,10 @@ export const meetingsCancelingMeetingSelector = (
 
 export const meetingsCancelMeetingDialogIsOpen = (state: RootState): boolean =>
   !!state.meetings.cancelingMeeting;
+
+export const meetingsStatusByIdSelector = (
+  state: RootState,
+  id: number,
+): MeetingStatus =>
+  (state.meetings.plannedMeetings[id] || state.meetings.historicMeetings[id])
+    ?.status;

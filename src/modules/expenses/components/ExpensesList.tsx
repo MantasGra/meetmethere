@@ -4,14 +4,17 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import Typography from '@material-ui/core/Typography';
 import { MoreVert } from '@material-ui/icons';
-import { isNumber } from 'lodash';
 import React from 'react';
 import { useParams } from 'react-router';
 import NoContent from 'src/components/NoContent';
 import { useInfiniteScroll } from 'src/hooks/infiniteScroll';
 import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
 import { authCurrentUserIdSelector } from 'src/modules/auth/selectors';
-import { meetingsIsUserCreator } from 'src/modules/meetings/selectors';
+import { MeetingStatus } from 'src/modules/meetings/reducer';
+import {
+  meetingsIsUserCreator,
+  meetingsStatusByIdSelector,
+} from 'src/modules/meetings/selectors';
 import { useAppDispatch, useAppSelector } from '../../../hooks/redux';
 import {
   expensesDeleteExpenseProposal,
@@ -76,6 +79,10 @@ const ExpensesList: React.FC = () => {
 
   const currentUserId = useAppSelector(authCurrentUserIdSelector);
 
+  const meetingStatus = useAppSelector((state) =>
+    meetingsStatusByIdSelector(state, id),
+  );
+
   const handleDelete = (expense: IExpense) => {
     dispatch(expensesDeleteExpenseProposal(expense, id));
     setAnchorEl(null);
@@ -122,8 +129,11 @@ const ExpensesList: React.FC = () => {
                     : 0
                 }€ each)`}
                 action={
-                  isUserMeetingCreator ||
-                  currentUserId === expense.createdBy.id ? (
+                  (isUserMeetingCreator ||
+                    currentUserId === expense.createdBy.id) &&
+                  ![MeetingStatus.Canceled, MeetingStatus.Ended].includes(
+                    meetingStatus,
+                  ) ? (
                     <IconButton
                       aria-label="settings"
                       onClick={(e) => handleClick(e, expense)}

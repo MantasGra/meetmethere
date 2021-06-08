@@ -6,12 +6,13 @@ import AddIcon from '@material-ui/icons/Add';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
 import MeetingPageHeader from './MeetingPageHeader';
 import MeetingTabs from './MeetingTabs';
-import { MeetingTabs as MeetingTabsEnum } from '../reducer';
+import { MeetingStatus, MeetingTabs as MeetingTabsEnum } from '../reducer';
 import {
   meetingsMeetingLoadFailedSelector,
   meetingsActiveMeetingTabSelector,
   meetingsMeetingLoadedSelector,
   meetingsIsEditMode,
+  meetingsStatusByIdSelector,
 } from '../selectors';
 import { meetingsLoadMeetingRequest } from '../actions';
 import { CircularProgress, Typography } from '@material-ui/core';
@@ -63,6 +64,14 @@ const MeetingPage: React.FC = () => {
 
   const totalExpenses = useSelector(expensesTotalSelector);
 
+  const meetingStatus = useAppSelector((state) =>
+    meetingsStatusByIdSelector(state, id),
+  );
+
+  const canAdd = ![MeetingStatus.Canceled, MeetingStatus.Ended].includes(
+    meetingStatus,
+  );
+
   return meetingLoaded ? (
     <Paper elevation={3} className={classes.meetingPageContainer}>
       <MeetingPageHeader id={id} />
@@ -72,15 +81,17 @@ const MeetingPage: React.FC = () => {
         hidden={activeTab !== MeetingTabsEnum.Announcements}
       >
         <div className={classes.addButtonContainer}>
-          <Button
-            className={classes.addButton}
-            startIcon={<AddIcon />}
-            variant="contained"
-            color="primary"
-            onClick={onAddAnnouncementClick}
-          >
-            Add Announcement
-          </Button>
+          {canAdd ? (
+            <Button
+              className={classes.addButton}
+              startIcon={<AddIcon />}
+              variant="contained"
+              color="primary"
+              onClick={onAddAnnouncementClick}
+            >
+              Add Announcement
+            </Button>
+          ) : null}
         </div>
         <div className={classes.tabContent}>
           <AnnouncementList />
@@ -115,15 +126,17 @@ const MeetingPage: React.FC = () => {
           <Typography variant="h6">
             Your expenses: {totalExpenses ? totalExpenses.toFixed(2) : 0}€
           </Typography>
-          <Button
-            className={classes.addButton}
-            startIcon={<AddIcon />}
-            onClick={onAddExpenseClick}
-            variant="contained"
-            color="primary"
-          >
-            Add Expense
-          </Button>
+          {canAdd ? (
+            <Button
+              className={classes.addButton}
+              startIcon={<AddIcon />}
+              onClick={onAddExpenseClick}
+              variant="contained"
+              color="primary"
+            >
+              Add Expense
+            </Button>
+          ) : null}
         </div>
         <div className={classes.tabContent}>
           <ExpensesList />

@@ -25,8 +25,12 @@ import {
 import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
 import classes from './AnnouncementList.module.scss';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
-import { meetingsIsUserCreator } from 'src/modules/meetings/selectors';
+import {
+  meetingsIsUserCreator,
+  meetingsStatusByIdSelector,
+} from 'src/modules/meetings/selectors';
 import { authCurrentUserIdSelector } from 'src/modules/auth/selectors';
+import { MeetingStatus } from 'src/modules/meetings/reducer';
 
 interface IMeetingPageParams {
   id: string;
@@ -97,6 +101,10 @@ const AnnouncementList: React.FC = () => {
     }
   };
 
+  const meetingStatus = useAppSelector((state) =>
+    meetingsStatusByIdSelector(state, id),
+  );
+
   return announcements.length || loading ? (
     <div className={classes.announcementList}>
       {announcements.map((announcement, index) => (
@@ -121,7 +129,11 @@ const AnnouncementList: React.FC = () => {
               'yyyy-MM-dd HH:mm',
             )}
             action={
-              isUserMeetingCreator || currentUserId === announcement.user.id ? (
+              (isUserMeetingCreator ||
+                currentUserId === announcement.user.id) &&
+              ![MeetingStatus.Canceled, MeetingStatus.Ended].includes(
+                meetingStatus,
+              ) ? (
                 <IconButton
                   onClick={(event) =>
                     handleClick(event, announcement.id, announcement.user.id)
