@@ -87,11 +87,11 @@ const addPollResponseEpic: AppEpic = (action$, _, { axios }) =>
   action$.pipe(
     ofActionType(meetingsMeetingPollDatesResponseChangeRequest),
     pluck('payload'),
-    mergeMap(({ votes, meetingId }) =>
+    mergeMap(({ votes, newMeetingDatesPollEntries, meetingId }) =>
       fromAxios<IMeetingDatesPollEntry[]>(axios, {
         url: `/meeting/${meetingId}/vote`,
         method: 'POST',
-        data: { votes },
+        data: { votes, newMeetingDatesPollEntries },
         withCredentials: true,
       }).pipe(
         mergeMap((response) =>

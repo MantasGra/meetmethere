@@ -4,6 +4,7 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import Typography from '@material-ui/core/Typography';
 import { MoreVert } from '@material-ui/icons';
+import { isNumber } from 'lodash';
 import React from 'react';
 import { useParams } from 'react-router';
 import NoContent from 'src/components/NoContent';
