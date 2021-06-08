@@ -87,7 +87,8 @@ export const meetingsMeetingDatesPollFormIdSelector = (
 ): number | null => state.meetings.meetingPollFormId;
 
 export const meetingsMeetingHasUserPollEntryAdditionsEnabled = (
-  state: RootState, meetingId: number
+  state: RootState,
+  meetingId: number,
 ): boolean => state.meetings.plannedMeetings[meetingId]?.canUsersAddPollEntries;
 
 export const meetingsDatesPollEntriesSelector = (

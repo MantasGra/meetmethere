@@ -253,8 +253,11 @@ const changeParticipationStatusEpic: AppEpic = (action$, _, { axios }) =>
     ),
   );
 
-interface IMeetingUpdateResponse extends IUpdateMeetingRequest {
+interface IMeetingUpdateResponse
+  extends Omit<IUpdateMeetingRequest, 'startDate' | 'endDate'> {
   id: number;
+  startDate?: Date;
+  endDate?: Date;
 }
 
 const updateMeetingEpic: AppEpic = (action$, state$, { axios }) =>

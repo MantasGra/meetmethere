@@ -30,7 +30,12 @@ export interface IMeetingPollForm {
 }
 
 const MeetingPollForm: React.FC = () => {
-  const { control, setValue, handleSubmit, formState: { errors } } = useForm<IMeetingPollForm>();
+  const {
+    control,
+    setValue,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<IMeetingPollForm>();
 
   const { fields, remove, append } = useFieldArray({
     control,
@@ -40,9 +45,14 @@ const MeetingPollForm: React.FC = () => {
   const meetingDatesPollFormId = useAppSelector(
     meetingsMeetingDatesPollFormIdSelector,
   );
-  
+
   const meetingCanUsersCreatePollEntries = useAppSelector(
-    (state) => meetingDatesPollFormId && meetingsMeetingHasUserPollEntryAdditionsEnabled(state, meetingDatesPollFormId)
+    (state) =>
+      meetingDatesPollFormId &&
+      meetingsMeetingHasUserPollEntryAdditionsEnabled(
+        state,
+        meetingDatesPollFormId,
+      ),
   );
 
   const currentUserId = useAppSelector(authCurrentUserIdSelector);
@@ -118,7 +128,9 @@ const MeetingPollForm: React.FC = () => {
                       render={(props) => (
                         <Checkbox
                           checked={props.field.value}
-                          onChange={(e) => props.field.onChange(e.target.checked)}
+                          onChange={(e) =>
+                            props.field.onChange(e.target.checked)
+                          }
                         />
                       )}
                       defaultValue={entry.selected}
@@ -136,20 +148,22 @@ const MeetingPollForm: React.FC = () => {
                   } - ${
                     meetingDatesPollEntriesMap[entry.id]
                       ? format(
-                          new Date(meetingDatesPollEntriesMap[entry.id].endDate),
+                          new Date(
+                            meetingDatesPollEntriesMap[entry.id].endDate,
+                          ),
                           'yyyy-MM-dd HH:mm',
                         )
                       : ''
                   } (${entry.count})`}
                 />
-            </>
+              </>
             );
           })}
         </FormGroup>
       </FormControl>
       {fields.map((item, index) => {
         return (
-          <div className={classes.dateFields} key={item.id}>          
+          <div className={classes.dateFields} key={item.id}>
             <Controller
               render={({ field }) => (
                 <DateTimePicker
@@ -192,12 +206,10 @@ const MeetingPollForm: React.FC = () => {
             <Button
               color="primary"
               startIcon={<DeleteIcon />}
-              onClick={() =>
-                remove(index)
-              }
+              onClick={() => remove(index)}
             >
               Remove
-            </Button>  
+            </Button>
             <Divider className={classes.divider} />
             {isMobile && fields.length - 1 !== index && (
               <Divider className={classes.divider} />
@@ -205,7 +217,7 @@ const MeetingPollForm: React.FC = () => {
           </div>
         );
       })}
-      
+
       <div className={classes.submitContainer}>
         <Button
           type="submit"
@@ -215,15 +227,17 @@ const MeetingPollForm: React.FC = () => {
         >
           Submit
         </Button>
-        {meetingCanUsersCreatePollEntries && <Button
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={() =>
-            append({ startDate: new Date(), endDate: new Date() })
-          }
-        >
-          Add Option
-        </Button>}
+        {meetingCanUsersCreatePollEntries && (
+          <Button
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={() =>
+              append({ startDate: new Date(), endDate: new Date() })
+            }
+          >
+            Add Option
+          </Button>
+        )}
       </div>
     </form>
   );

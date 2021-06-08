@@ -79,7 +79,7 @@ export const meetingsMeetingPollDatesResponseChangeRequest = createAction(
   'meetings/meetingPollDatesResponseChangeRequest',
   withPayloadType<{
     votes: Array<{ [id: string]: boolean }>;
-    newMeetingDatesPollEntries: Array<{ startDate: Date; endDate: Date }>
+    newMeetingDatesPollEntries: Array<{ startDate: Date; endDate: Date }>;
     meetingId: number;
   }>(),
 );
