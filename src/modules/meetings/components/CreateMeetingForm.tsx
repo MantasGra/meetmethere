@@ -235,7 +235,7 @@ const CreateMeetingForm: React.FC = () => {
       })}
       {showPollOptions && (
         <div className={classes.pollActionsRow}>
-          {/* <FormControlLabel
+          <FormControlLabel
             control={
               <Controller
                 render={({ field }) => (
@@ -252,7 +252,7 @@ const CreateMeetingForm: React.FC = () => {
               />
             }
             label="Allow user poll entries"
-          /> */}
+          />
           <Button
             color="primary"
             startIcon={<AddIcon />}

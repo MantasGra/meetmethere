@@ -104,7 +104,13 @@ const ExpensesList: React.FC = () => {
                   />
                 }
                 title={expense.name}
-                subheader={`${expense.amount ? (expense.amount * 1).toFixed(2) : 0}€ (${expense.amount ? (expense.amount / expense.users.length).toFixed(2) : 0}€ each)`}
+                subheader={`${
+                  expense.amount ? (expense.amount * 1).toFixed(2) : 0
+                }€ (${
+                  expense.amount
+                    ? (expense.amount / expense.users.length).toFixed(2)
+                    : 0
+                }€ each)`}
                 action={
                   <IconButton
                     aria-label="settings"

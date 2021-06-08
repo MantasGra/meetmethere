@@ -16,7 +16,7 @@ const MeetingPollDialog: React.FC = () => {
   };
 
   return (
-    <Dialog open={open} maxWidth="md">
+    <Dialog open={open} maxWidth="md" fullWidth>
       <CloseableDialogTitle onClose={onClose}>
         Choose the best dates for you.
       </CloseableDialogTitle>

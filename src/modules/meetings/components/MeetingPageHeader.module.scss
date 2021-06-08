@@ -76,16 +76,18 @@
 }
 
 @media (max-width: 768px) {
-
   .meetingPageHeader {
     padding: 15px;
   }
+
   .meetingDateEntry {
     width: unset;
   }
+
   .meetingTitle {
     flex-direction: column;
   }
+
   .meetingTitleRow {
     flex-direction: column;
 
@@ -100,9 +102,9 @@
 
   .meetingLocation {
     padding: 0;
-  
+
     .meetingLocationText {
-      padding-left: 0px;
+      padding-left: 0;
     }
   }
 }

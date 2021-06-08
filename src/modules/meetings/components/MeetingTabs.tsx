@@ -30,9 +30,18 @@ const MeetingTabs: React.FC = () => {
       onChange={handleChange}
       variant="fullWidth"
     >
-      <Tab label={!isMobile && "Announcements"} icon={isMobile ? <Announcement/> : ''}/>
-      <Tab label={!isMobile && "Activities"} icon={isMobile ? <LocalPizza/> : ''} />
-      <Tab label={!isMobile && "Expenses"} icon={isMobile ? <EuroSymbol/> : ''} />
+      <Tab
+        label={!isMobile && 'Announcements'}
+        icon={isMobile ? <Announcement /> : ''}
+      />
+      <Tab
+        label={!isMobile && 'Activities'}
+        icon={isMobile ? <LocalPizza /> : ''}
+      />
+      <Tab
+        label={!isMobile && 'Expenses'}
+        icon={isMobile ? <EuroSymbol /> : ''}
+      />
     </Tabs>
   );
 };
