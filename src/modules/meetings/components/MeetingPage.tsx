@@ -63,7 +63,6 @@ const MeetingPage: React.FC = () => {
 
   const totalExpenses = useSelector(expensesTotalSelector);
 
-
   return meetingLoaded ? (
     <Paper elevation={3} className={classes.meetingPageContainer}>
       <MeetingPageHeader id={id} />
@@ -113,7 +112,9 @@ const MeetingPage: React.FC = () => {
         hidden={activeTab !== MeetingTabsEnum.Expenses}
       >
         <div className={classes.addButtonContainerWithContent}>
-          <Typography variant="h6">Your expenses: {totalExpenses ? totalExpenses.toFixed(2) : 0}€</Typography>
+          <Typography variant="h6">
+            Your expenses: {totalExpenses ? totalExpenses.toFixed(2) : 0}€
+          </Typography>
           <Button
             className={classes.addButton}
             startIcon={<AddIcon />}
