@@ -24,7 +24,9 @@ import {
 } from '../actions';
 import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
 import classes from './AnnouncementList.module.scss';
-import { useAppDispatch } from 'src/hooks/redux';
+import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+import { meetingsIsUserCreator } from 'src/modules/meetings/selectors';
+import { authCurrentUserIdSelector } from 'src/modules/auth/selectors';
 
 interface IMeetingPageParams {
   id: string;
@@ -33,6 +35,7 @@ interface IMeetingPageParams {
 interface IActiveMenuState {
   anchorEl: HTMLElement;
   announcementId: number;
+  announcementCreatorId: number;
 }
 
 const AnnouncementList: React.FC = () => {
@@ -55,8 +58,13 @@ const AnnouncementList: React.FC = () => {
   const handleClick = (
     event: React.MouseEvent<HTMLElement>,
     announcementId: number,
+    announcementCreatorId: number,
   ) => {
-    setActiveMenu({ anchorEl: event.currentTarget, announcementId });
+    setActiveMenu({
+      anchorEl: event.currentTarget,
+      announcementId,
+      announcementCreatorId,
+    });
   };
 
   const handleClose = () => {
@@ -64,6 +72,12 @@ const AnnouncementList: React.FC = () => {
   };
 
   const dispatch = useAppDispatch();
+
+  const isUserMeetingCreator = useAppSelector((state) =>
+    meetingsIsUserCreator(state, id),
+  );
+
+  const currentUserId = useAppSelector(authCurrentUserIdSelector);
 
   const handleEditClick = () => {
     if (activeMenu) {
@@ -107,17 +121,19 @@ const AnnouncementList: React.FC = () => {
               'yyyy-MM-dd HH:mm',
             )}
             action={
-              <IconButton
-                onClick={(event) => handleClick(event, announcement.id)}
-              >
-                <MoreVertIcon />
-              </IconButton>
+              isUserMeetingCreator || currentUserId === announcement.user.id ? (
+                <IconButton
+                  onClick={(event) =>
+                    handleClick(event, announcement.id, announcement.user.id)
+                  }
+                >
+                  <MoreVertIcon />
+                </IconButton>
+              ) : null
             }
           />
           <CardContent>
-            <Typography variant="body2" component="p">
-              {announcement.description}
-            </Typography>
+            <Typography variant="body2">{announcement.description}</Typography>
           </CardContent>
         </Card>
       ))}
@@ -127,7 +143,9 @@ const AnnouncementList: React.FC = () => {
         keepMounted
         onClose={handleClose}
       >
-        <MenuItem onClick={handleEditClick}>Edit</MenuItem>
+        {activeMenu?.announcementCreatorId === currentUserId ? (
+          <MenuItem onClick={handleEditClick}>Edit</MenuItem>
+        ) : null}
         <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
       </Menu>
     </div>

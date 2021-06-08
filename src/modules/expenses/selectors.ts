@@ -57,5 +57,11 @@ export const expensesMeetingParticipantSelector = (
     : null;
 
 export const expensesTotalSelector = (state: RootState): number => {
-  return Object.values(state.expenses.expenses).filter((expense) => state.auth.account && expense.users.map((user) => user.id).includes(state.auth.account?.id)).reduce((prev, curr) => prev + (curr.amount / curr.users.length), 0);
+  return Object.values(state.expenses.expenses)
+    .filter(
+      (expense) =>
+        state.auth.account &&
+        expense.users.map((user) => user.id).includes(state.auth.account?.id),
+    )
+    .reduce((prev, curr) => prev + curr.amount / curr.users.length, 0);
 };

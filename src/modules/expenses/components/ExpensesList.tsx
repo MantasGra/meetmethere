@@ -4,13 +4,14 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import Typography from '@material-ui/core/Typography';
 import { MoreVert } from '@material-ui/icons';
-import { isNumber } from 'lodash';
 import React from 'react';
 import { useParams } from 'react-router';
 import NoContent from 'src/components/NoContent';
 import { useInfiniteScroll } from 'src/hooks/infiniteScroll';
 import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
-import { useAppDispatch } from '../../../hooks/redux';
+import { authCurrentUserIdSelector } from 'src/modules/auth/selectors';
+import { meetingsIsUserCreator } from 'src/modules/meetings/selectors';
+import { useAppDispatch, useAppSelector } from '../../../hooks/redux';
 import {
   expensesDeleteExpenseProposal,
   expensesFormDialogExpenseIdentifierChangeRequest,
@@ -68,6 +69,12 @@ const ExpensesList: React.FC = () => {
     setAnchorObj(null);
   };
 
+  const isUserMeetingCreator = useAppSelector((state) =>
+    meetingsIsUserCreator(state, id),
+  );
+
+  const currentUserId = useAppSelector(authCurrentUserIdSelector);
+
   const handleDelete = (expense: IExpense) => {
     dispatch(expensesDeleteExpenseProposal(expense, id));
     setAnchorEl(null);
@@ -81,7 +88,9 @@ const ExpensesList: React.FC = () => {
         open={Boolean(anchorEl) && Boolean(anchorObj)}
         onClose={handleCloseMenu}
       >
-        <MenuItem onClick={() => handleEdit(anchorObj!)}>Edit</MenuItem>
+        {currentUserId === anchorObj?.createdBy.id ? (
+          <MenuItem onClick={() => handleEdit(anchorObj!)}>Edit</MenuItem>
+        ) : null}
         <MenuItem onClick={() => handleDelete(anchorObj!)}>Delete</MenuItem>
       </Menu>
       <div className={classes.expenseList}>
@@ -104,23 +113,30 @@ const ExpensesList: React.FC = () => {
                   />
                 }
                 title={expense.name}
-                subheader={`${expense.amount ? (expense.amount * 1).toFixed(2) : 0}€ (${expense.amount ? (expense.amount / expense.users.length).toFixed(2) : 0}€ each)`}
+                subheader={`${
+                  expense.amount ? (expense.amount * 1).toFixed(2) : 0
+                }€ (${
+                  expense.amount
+                    ? (expense.amount / expense.users.length).toFixed(2)
+                    : 0
+                }€ each)`}
                 action={
-                  <IconButton
-                    aria-label="settings"
-                    onClick={(e) => handleClick(e, expense)}
-                    aria-haspopup="true"
-                  >
-                    <MoreVert />
-                  </IconButton>
+                  isUserMeetingCreator ||
+                  currentUserId === expense.createdBy.id ? (
+                    <IconButton
+                      aria-label="settings"
+                      onClick={(e) => handleClick(e, expense)}
+                      aria-haspopup="true"
+                    >
+                      <MoreVert />
+                    </IconButton>
+                  ) : null
                 }
               />
               <CardContent>
-                <Typography variant="body2" component="p">
-                  {expense.description}
-                </Typography>
+                <Typography variant="body2">{expense.description}</Typography>
                 <hr />
-                <Typography variant="body2" component="p">
+                <div>
                   <span className={classes.expenseMembers}>
                     <Typography variant="subtitle2">For:</Typography>
                     {expense.users.map((participant) => (
@@ -134,7 +150,7 @@ const ExpensesList: React.FC = () => {
                       />
                     ))}
                   </span>
-                </Typography>
+                </div>
               </CardContent>
               <div></div>
             </Card>

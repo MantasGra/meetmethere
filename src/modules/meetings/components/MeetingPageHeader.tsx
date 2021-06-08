@@ -35,8 +35,10 @@ import { ParticipationStatus } from 'src/modules/invitations/reducer';
 import { accountEmailSelector } from 'src/modules/auth/selectors';
 import { invitationsInviteUserDialogOpenRequest } from 'src/modules/invitations/actions';
 import { MeetingStatus } from '../reducer';
-import classes from './MeetingPageHeader.module.scss';
 import { omit } from 'lodash';
+import { DateTimePicker } from '@material-ui/pickers';
+import { differenceInMinutes, isAfter, min } from 'date-fns';
+import classes from './MeetingPageHeader.module.scss';
 
 interface IProps {
   id: number;
@@ -47,6 +49,8 @@ interface IMeetingEditForm {
   meetingStatus: MeetingStatus;
   description: string;
   location: IValue;
+  startDate: Date;
+  endDate: Date;
 }
 
 const MeetingPageHeader: React.FC<IProps> = (props) => {
@@ -61,6 +65,8 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
     register,
     handleSubmit,
     reset,
+    watch,
+    formState: { errors },
   } = useForm<IMeetingEditForm>();
 
   const invitation = useAppSelector((state) =>
@@ -69,6 +75,8 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
   const currentUserEmail = useAppSelector((state) =>
     accountEmailSelector(state),
   );
+
+  const formStartDate = watch('startDate', new Date());
 
   const isEditMode = useAppSelector((state) =>
     meetingsIsEditMode(state, props.id),
@@ -91,6 +99,12 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
             }
           : {}),
         status: formData.meetingStatus,
+        startDate: meeting.isDatesPollActive
+          ? null
+          : formData.startDate.toISOString(),
+        endDate: meeting.isDatesPollActive
+          ? null
+          : formData.endDate.toISOString(),
       }),
     );
   };
@@ -102,6 +116,8 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
         name: meeting.name,
         description: meeting.description,
         location: { input: meeting.locationString || '', place: null },
+        startDate: new Date(meeting.startDate),
+        endDate: new Date(meeting.endDate),
       });
     }
   }, [isEditMode]);
@@ -225,7 +241,11 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
           )}
         </div>
         <div className={classes.userParticipationStatus}>
-          <FormControl variant="outlined" className={classes.statusSelect}>
+          <FormControl
+            variant="outlined"
+            className={classes.statusSelect}
+            size="small"
+          >
             <InputLabel id="demo-simple-select-outlined-label">
               Status
             </InputLabel>
@@ -248,7 +268,11 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
       </div>
       <div>
         {!isEditMode ? (
-          <Typography variant="body2" color="textSecondary">
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            className={classes.meetingDescription}
+          >
             {meeting.description}
           </Typography>
         ) : (
@@ -274,7 +298,7 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
             >
               Open Dates Poll
             </Button>
-          ) : (
+          ) : !isEditMode ? (
             <>
               <div className={classes.meetingDateEntry}>
                 <Typography variant="subtitle2">From:</Typography>
@@ -289,6 +313,52 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
                 </Typography>
               </div>
             </>
+          ) : (
+            <div className={classes.meetingDateInputs}>
+              <Controller
+                render={({ field }) => (
+                  <DateTimePicker
+                    {...omit(field, 'ref')}
+                    label="Start Date"
+                    margin="dense"
+                    minDate={min([new Date(), meeting.startDate])}
+                    inputVariant="filled"
+                  />
+                )}
+                name="startDate"
+                control={control}
+                defaultValue={new Date()}
+              />
+              <Controller
+                render={({ field }) => (
+                  <DateTimePicker
+                    {...omit(field, 'ref')}
+                    helperText={
+                      errors.endDate?.type === 'validate'
+                        ? 'End date must be after start date'
+                        : undefined
+                    }
+                    error={!!errors.endDate}
+                    margin="dense"
+                    label="End Date"
+                    minDate={min([new Date(), meeting.endDate])}
+                    inputVariant="filled"
+                  />
+                )}
+                name="endDate"
+                control={control}
+                rules={{
+                  validate: (value) => {
+                    console.log(value, formStartDate);
+                    return (
+                      isAfter(value, formStartDate) &&
+                      differenceInMinutes(value, formStartDate) > 0
+                    );
+                  },
+                }}
+                defaultValue={new Date()}
+              />
+            </div>
           )}
         </div>
         <div className={classes.meetingLocation}>

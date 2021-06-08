@@ -126,6 +126,8 @@ export interface IUpdateMeetingRequest {
   locationId?: string | null;
   locationString?: string | null;
   status: MeetingStatus;
+  startDate: string | null;
+  endDate: string | null;
 }
 
 export const meetingsUpdateMeetingRequest = createAction(
