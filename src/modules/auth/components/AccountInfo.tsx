@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import Button from '@material-ui/core/Button';
-import Popover from '@material-ui/core/Popover';
-import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
-import Typography from '@material-ui/core/Typography';
-
+import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import Popover from '@mui/material/Popover';
+import Typography from '@mui/material/Typography';
+import { useState, Fragment } from 'react';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
-import AccountAvatar from './AccountAvatar';
+
 import { authOpenLoginProposal, authLogoutProposal } from '../actions';
 import {
   accountAvatarDataSelector,
@@ -15,7 +14,8 @@ import {
   isUserLoggedInSelector,
 } from '../selectors';
 
-import classes from './AccountInfo.module.scss';
+import AccountAvatar from './AccountAvatar';
+import classes from './AccountInfo.styles';
 
 const AccountInfo: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -48,8 +48,13 @@ const AccountInfo: React.FC = () => {
   const id = open ? 'account-popover' : undefined;
 
   return isUserLoggedIn ? (
-    <>
-      <IconButton edge="end" color="inherit" onClick={onAccountClick}>
+    <Fragment>
+      <IconButton
+        edge="end"
+        color="inherit"
+        onClick={onAccountClick}
+        size="large"
+      >
         <AccountAvatar
           initials={accountAvatarData.accountInitials}
           color={accountAvatarData.color}
@@ -62,7 +67,7 @@ const AccountInfo: React.FC = () => {
         onClose={onPopoverClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <div className={classes.accountInfoPopoverContainer}>
+        <div css={classes.accountInfoPopoverContainer}>
           <Typography>{accountFullName}</Typography>
           <Typography variant="body2" gutterBottom>
             {accountEmail}
@@ -73,7 +78,7 @@ const AccountInfo: React.FC = () => {
           </Button>
         </div>
       </Popover>
-    </>
+    </Fragment>
   ) : (
     <Button color="inherit" onClick={onLoginClick}>
       Login

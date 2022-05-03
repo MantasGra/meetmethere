@@ -1,6 +1,11 @@
 import { createReducer } from '@reduxjs/toolkit';
 import compareDesc from 'date-fns/compareDesc';
+import { keyBy, keys } from 'lodash';
+import { getComparerByGetter } from 'src/utils/sortUtils';
+import { toDate } from 'src/utils/transformators';
+
 import type { IUser } from '../auth/reducer';
+
 import {
   announcementsAddAnnouncement,
   announcementsDeleteAnnouncementRequest,
@@ -20,7 +25,7 @@ export interface IAnnouncement {
   createDate: Date;
 }
 
-interface AnnouncementState {
+export interface AnnouncementState {
   announcementsLoading: boolean;
   announcementIds: number[];
   announcements: Record<number, IAnnouncement>;
@@ -51,13 +56,18 @@ const announcementsReducer = createReducer(initialState, (builder) =>
       }
     })
     .addCase(announcementsLoadAnnouncementsSuccess, (state, action) => {
-      action.payload.announcements.forEach((announcement) => {
-        state.announcements[announcement.id] = announcement;
-        if (!state.announcementIds.includes(announcement.id)) {
-          state.announcementIds.push(announcement.id);
-        }
-      });
-      state.announcementIds = state.announcementIds.sort(compareDesc);
+      state.announcements = {
+        ...state.announcements,
+        ...keyBy(action.payload.announcements, 'id'),
+      };
+      state.announcementIds = keys(state.announcements)
+        .map(Number)
+        .sort(
+          getComparerByGetter(
+            (id) => toDate(state.announcements[id].createDate),
+            compareDesc,
+          ),
+        );
       state.announcementsCount = action.payload.announcementCount;
       state.announcementsLoading = false;
       state.announcementsLoadFailed = false;

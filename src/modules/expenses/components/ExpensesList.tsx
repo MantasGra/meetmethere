@@ -1,173 +1,182 @@
-import { IconButton, Menu, MenuItem } from '@material-ui/core';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import CardHeader from '@material-ui/core/CardHeader';
-import Typography from '@material-ui/core/Typography';
-import { MoreVert } from '@material-ui/icons';
-import React from 'react';
+import { MoreVert } from '@mui/icons-material';
+import { IconButton, Menu, MenuItem } from '@mui/material';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import Typography from '@mui/material/Typography';
+import { useState, useCallback, useEffect, Fragment } from 'react';
 import { useParams } from 'react-router';
-import NoContent from 'src/components/NoContent';
-import { useInfiniteScroll } from 'src/hooks/infiniteScroll';
+import NoContent from 'src/components/StatusIcons/NoContent';
 import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
-import { authCurrentUserIdSelector } from 'src/modules/auth/selectors';
+import {
+  authCurrentUserIdSelector,
+  getUserInitials,
+} from 'src/modules/auth/selectors';
 import { MeetingStatus } from 'src/modules/meetings/reducer';
 import {
   meetingsIsUserCreator,
   meetingsStatusByIdSelector,
 } from 'src/modules/meetings/selectors';
+
 import { useAppDispatch, useAppSelector } from '../../../hooks/redux';
 import {
   expensesDeleteExpenseProposal,
-  expensesFormDialogExpenseIdentifierChangeRequest,
+  expensesEditExpenseIdChange,
   expensesLoadExpensesProposal,
 } from '../actions';
 import type { IExpense } from '../reducer';
-import {
-  expensesHasMoreSelector,
-  expensesListSelector,
-  expensesLoadFailedSelector,
-  expensesLoadingSelector,
-} from '../selectors';
-import classes from './ExpensesList.module.scss';
+import { expensesListSelector, expensesLoadingSelector } from '../selectors';
 
-interface IMeetingPageParams {
-  id: string;
+import classes from './ExpensesList.styles';
+
+// TODO: Factor out list item component for improved memoization
+
+interface IActiveMenuState {
+  anchorEl: HTMLElement;
+  expenseId: number;
+  expenseCreatorId: number;
 }
 
+const getExpenseAmountString = (expense: IExpense) => {
+  const amount = expense.amount || 0;
+  console.log(expense.amount);
+  return `${amount.toFixed(2)}€ (${(
+    expense.amount / expense.users.length
+  ).toFixed(2)}€ each)`;
+};
+
 const ExpensesList: React.FC = () => {
-  const { id: idString } = useParams<IMeetingPageParams>();
-  const id = parseInt(idString);
-  const {
-    loading,
-    list: expenses,
-    lastElementRef,
-  } = useInfiniteScroll(
-    expensesLoadingSelector,
-    expensesHasMoreSelector,
-    expensesListSelector,
-    expensesLoadFailedSelector,
-    (page) => expensesLoadExpensesProposal(id, page),
-  );
-  const dispatch = useAppDispatch();
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [anchorObj, setAnchorObj] = React.useState<IExpense | null>(null);
+  // Route params
+  const { id: idString } = useParams<'id'>();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const id = parseInt(idString!);
 
-  const handleClick = (event: any, expense: IExpense) => {
-    setAnchorEl(event.currentTarget);
-    setAnchorObj(expense);
-  };
-
-  const handleCloseMenu = () => {
-    setAnchorEl(null);
-    setAnchorObj(null);
-  };
-
-  const handleEdit = (expense: IExpense) => {
-    dispatch(
-      expensesFormDialogExpenseIdentifierChangeRequest({
-        meetingId: id,
-        expenseId: expense.id,
-      }),
-    );
-    setAnchorEl(null);
-    setAnchorObj(null);
-  };
-
+  // Selectors
+  const expenses = useAppSelector(expensesListSelector);
+  const loading = useAppSelector(expensesLoadingSelector);
   const isUserMeetingCreator = useAppSelector((state) =>
     meetingsIsUserCreator(state, id),
   );
-
   const currentUserId = useAppSelector(authCurrentUserIdSelector);
-
   const meetingStatus = useAppSelector((state) =>
     meetingsStatusByIdSelector(state, id),
   );
 
-  const handleDelete = (expense: IExpense) => {
-    dispatch(expensesDeleteExpenseProposal(expense, id));
-    setAnchorEl(null);
-    setAnchorObj(null);
-  };
+  const dispatch = useAppDispatch();
+
+  // Helpers
+  const shouldShowMenuButton = useCallback(
+    (expense: IExpense) =>
+      (isUserMeetingCreator || currentUserId === expense.createdBy.id) &&
+      ![MeetingStatus.Canceled, MeetingStatus.Ended].includes(meetingStatus),
+    [isUserMeetingCreator, currentUserId, meetingStatus],
+  );
+
+  // State
+  const [activeMenu, setActiveMenu] = useState<IActiveMenuState | null>(null);
+
+  // Effects
+  useEffect(() => {
+    if (id) {
+      dispatch(expensesLoadExpensesProposal(id));
+    }
+  }, [dispatch, id]);
+
+  // Event handlers
+  const handleMenuClick = useCallback(
+    (
+      event: React.MouseEvent<HTMLElement>,
+      expenseId: number,
+      expenseCreatorId: number,
+    ) => {
+      setActiveMenu({
+        anchorEl: event.currentTarget,
+        expenseId,
+        expenseCreatorId,
+      });
+    },
+    [],
+  );
+
+  const handleMenuClose = useCallback(() => {
+    setActiveMenu(null);
+  }, []);
+
+  const handleEditClick = useCallback(() => {
+    if (activeMenu) {
+      dispatch(expensesEditExpenseIdChange(id, activeMenu.expenseId));
+      handleMenuClose();
+    }
+  }, [dispatch, handleMenuClose, activeMenu, id]);
+
+  const handleDeleteClick = useCallback(() => {
+    if (activeMenu) {
+      dispatch(expensesDeleteExpenseProposal(id, activeMenu.expenseId));
+      handleMenuClose();
+    }
+  }, [dispatch, handleMenuClose, activeMenu, id]);
+
   return expenses.length || loading ? (
-    <>
+    <Fragment>
+      <div css={classes.expenseList}>
+        {expenses.map((expense) => (
+          <Card key={expense.id} css={classes.expenseListItem} raised>
+            <CardHeader
+              avatar={
+                <AccountAvatar
+                  initials={getUserInitials(expense.createdBy)}
+                  color={expense.createdBy.color}
+                />
+              }
+              title={expense.name}
+              subheader={getExpenseAmountString(expense)}
+              action={
+                shouldShowMenuButton(expense) ? (
+                  <IconButton
+                    aria-label="settings"
+                    onClick={(e) =>
+                      handleMenuClick(e, expense.id, expense.createdBy.id)
+                    }
+                    aria-haspopup="true"
+                    size="large"
+                  >
+                    <MoreVert />
+                  </IconButton>
+                ) : null
+              }
+            />
+            <CardContent>
+              <Typography variant="body2">{expense.description}</Typography>
+              <hr />
+              <div>
+                <span css={classes.expenseMembers}>
+                  <Typography variant="subtitle2">For:</Typography>
+                  {expense.users.map((participant) => (
+                    <AccountAvatar
+                      key={participant.id}
+                      initials={getUserInitials(participant)}
+                      color={participant.color}
+                      css={classes.memberListAvatar}
+                    />
+                  ))}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
       <Menu
         id="simple-menu"
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl) && Boolean(anchorObj)}
-        onClose={handleCloseMenu}
+        anchorEl={activeMenu?.anchorEl}
+        open={!!activeMenu}
+        onClose={handleMenuClose}
       >
-        {currentUserId === anchorObj?.createdBy.id ? (
-          <MenuItem onClick={() => handleEdit(anchorObj!)}>Edit</MenuItem>
+        {activeMenu?.expenseCreatorId === currentUserId ? (
+          <MenuItem onClick={handleEditClick}>Edit</MenuItem>
         ) : null}
-        <MenuItem onClick={() => handleDelete(anchorObj!)}>Delete</MenuItem>
+        <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
       </Menu>
-      <div className={classes.expenseList}>
-        {expenses
-          .filter((e) => e !== undefined)
-          .map((expense, index) => (
-            <Card
-              key={expense.id}
-              className={classes.expenseListItem}
-              raised
-              ref={expenses.length - 1 === index ? lastElementRef : undefined}
-            >
-              <CardHeader
-                avatar={
-                  <AccountAvatar
-                    initials={`${expense.createdBy.name.charAt(
-                      0,
-                    )}${expense.createdBy.lastName.charAt(0)}`}
-                    color={expense.createdBy.color}
-                  />
-                }
-                title={expense.name}
-                subheader={`${
-                  expense.amount ? (expense.amount * 1).toFixed(2) : 0
-                }€ (${
-                  expense.amount
-                    ? (expense.amount / expense.users.length).toFixed(2)
-                    : 0
-                }€ each)`}
-                action={
-                  (isUserMeetingCreator ||
-                    currentUserId === expense.createdBy.id) &&
-                  ![MeetingStatus.Canceled, MeetingStatus.Ended].includes(
-                    meetingStatus,
-                  ) ? (
-                    <IconButton
-                      aria-label="settings"
-                      onClick={(e) => handleClick(e, expense)}
-                      aria-haspopup="true"
-                    >
-                      <MoreVert />
-                    </IconButton>
-                  ) : null
-                }
-              />
-              <CardContent>
-                <Typography variant="body2">{expense.description}</Typography>
-                <hr />
-                <div>
-                  <span className={classes.expenseMembers}>
-                    <Typography variant="subtitle2">For:</Typography>
-                    {expense.users.map((participant) => (
-                      <AccountAvatar
-                        key={participant.id}
-                        initials={`${participant.name.charAt(
-                          0,
-                        )}${participant.lastName.charAt(0)}`}
-                        color={participant.color}
-                        className={classes.memberListAvatar}
-                      />
-                    ))}
-                  </span>
-                </div>
-              </CardContent>
-              <div></div>
-            </Card>
-          ))}
-      </div>
-    </>
+    </Fragment>
   ) : (
     <NoContent text="This meeting has no expenses yet!" />
   );

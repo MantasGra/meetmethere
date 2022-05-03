@@ -1,5 +1,7 @@
 import { createReducer } from '@reduxjs/toolkit';
+
 import type { ParticipationStatus } from '../invitations/reducer';
+
 import {
   authAuthorizeUserRequest,
   authChangeSubmitErrorRequest,
@@ -11,6 +13,7 @@ import {
   authLogoutRequest,
   authSetAuthLoading,
   authAuthorizeUserProposal,
+  authSetCsrfTokenRequest,
 } from './actions';
 
 export interface IAccount {
@@ -18,19 +21,12 @@ export interface IAccount {
   name: string;
   lastName: string;
   email: string;
-  createDate: Date;
   color: string;
 }
 
-export interface IUser {
-  id: number;
-  name: string;
-  email: string;
-  lastName: string;
-  color: string;
-}
+export type IUser = IAccount;
 
-export interface IUserInvitation extends IUser {
+export interface IParticipant extends IUser {
   userParticipationStatus: ParticipationStatus;
 }
 
@@ -40,9 +36,10 @@ export interface IFormError {
   password?: string;
 }
 
-interface AuthState {
+export interface AuthState {
   account?: IAccount;
   authLoading: boolean;
+  csrfToken?: string;
   formErrors: IFormError;
   isAuthDialogOpen: boolean;
   isDialogRegister: boolean;
@@ -91,6 +88,9 @@ const authReducer = createReducer(initialState, (builder) =>
     })
     .addCase(authLogoutRequest, (state) => {
       delete state.account;
+    })
+    .addCase(authSetCsrfTokenRequest, (state, action) => {
+      state.csrfToken = action.payload;
     }),
 );
 

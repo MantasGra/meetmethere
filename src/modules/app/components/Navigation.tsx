@@ -1,20 +1,21 @@
-import React from 'react';
-import { useHistory, useLocation } from 'react-router';
-import Drawer from '@material-ui/core/Drawer';
-import Toolbar from '@material-ui/core/Toolbar';
-import List from '@material-ui/core/List';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import EventIcon from '@material-ui/icons/Event';
-import HistoryIcon from '@material-ui/icons/History';
-import EmailIcon from '@material-ui/icons/Email';
-import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+import { ClassNames } from '@emotion/react';
+import EmailIcon from '@mui/icons-material/Email';
+import EventIcon from '@mui/icons-material/Event';
+import HistoryIcon from '@mui/icons-material/History';
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { Fragment } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Routes } from 'src/constants/enums';
-import { isMobileMenuOpenSelector, isMobileSelector } from '../selectors';
-import { openMobileMenu } from '../actions';
+import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
 
-import classes from './Navigation.module.scss';
+import { openMobileMenu } from '../actions';
+import { isMobileMenuOpenSelector, isMobileSelector } from '../selectors';
+
+import classes from './Navigation.styles';
 
 const Navigation: React.FC = () => {
   const isMobile = useAppSelector(isMobileSelector);
@@ -43,16 +44,15 @@ const Navigation: React.FC = () => {
     },
   ];
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const goToRoute = (route: Routes) => {
-    history.push(route);
+    navigate(route);
   };
 
   const drawerContents = (
-    <>
-      {!isMobile && <Toolbar />}
-      <div className={classes.drawerContainer}>
+    <Fragment>
+      <div css={classes.drawerContainer}>
         <List>
           {navigationItems.map((item) => (
             <ListItem
@@ -69,31 +69,45 @@ const Navigation: React.FC = () => {
           ))}
         </List>
       </div>
-    </>
+    </Fragment>
   );
 
   return (
     <nav>
-      {isMobile ? (
-        <Drawer
-          variant="temporary"
-          className={classes.drawer}
-          classes={{ paper: classes.drawerPaper }}
-          open={isMobileMenuOpen}
-          onClose={onMobileMenuClose}
-          ModalProps={{ keepMounted: true }}
-        >
-          {drawerContents}
-        </Drawer>
-      ) : (
-        <Drawer
-          variant="permanent"
-          className={classes.drawer}
-          classes={{ paper: classes.drawerPaper }}
-        >
-          {drawerContents}
-        </Drawer>
-      )}
+      <ClassNames>
+        {({ css }) => (
+          <Fragment>
+            {isMobile ? (
+              <Drawer
+                variant="temporary"
+                css={classes.drawer}
+                classes={{
+                  paper: css`
+                    ${classes.drawerPaper};
+                  `,
+                }}
+                open={isMobileMenuOpen}
+                onClose={onMobileMenuClose}
+                ModalProps={{ keepMounted: true }}
+              >
+                {drawerContents}
+              </Drawer>
+            ) : (
+              <Drawer
+                variant="permanent"
+                css={classes.drawer}
+                classes={{
+                  paper: css`
+                    ${classes.drawerPaper};
+                  `,
+                }}
+              >
+                {drawerContents}
+              </Drawer>
+            )}
+          </Fragment>
+        )}
+      </ClassNames>
     </nav>
   );
 };

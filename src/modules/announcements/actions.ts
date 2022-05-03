@@ -1,5 +1,8 @@
 import { createAction } from '@reduxjs/toolkit';
+
 import { withPayloadType } from '../app/actions';
+
+import { IAnnouncementForm } from './components/AnnouncementForm';
 import type { IAnnouncement } from './reducer';
 
 export const announcementsLoadAnnouncementsProposal = createAction(
@@ -23,14 +26,9 @@ export const announcementsFormDialogMeetingIdChangeRequest = createAction(
   withPayloadType<number | null>(),
 );
 
-export interface ICreateAnnouncementRequest {
-  title: string;
-  description: string;
-}
-
 export const announcementsCreateAnnouncementProposal = createAction(
   'announcements/createAnnouncementProposal',
-  (announcement: ICreateAnnouncementRequest, meetingId: number) => ({
+  (announcement: IAnnouncementForm, meetingId: number) => ({
     payload: {
       announcement,
       meetingId,
@@ -53,7 +51,7 @@ export const announcementsEditAnnouncementIdChange = createAction(
 export const announcementsEditAnnouncementProposal = createAction(
   'announcements/editAnnouncementProposal',
   (
-    announcement: ICreateAnnouncementRequest,
+    announcement: IAnnouncementForm,
     meetingId: number,
     announcementId: number,
   ) => ({ payload: { announcement, meetingId, announcementId } }),

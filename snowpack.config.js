@@ -11,8 +11,8 @@ module.exports = {
     '@snowpack/plugin-react-refresh',
     '@snowpack/plugin-dotenv',
     '@snowpack/plugin-typescript',
-    '@snowpack/plugin-sass',
     'snowpack-svgr-plugin',
+    '@snowpack/plugin-babel',
   ],
   routes: [
     /* Enable an SPA Fallback in development: */

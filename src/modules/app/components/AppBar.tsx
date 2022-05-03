@@ -1,21 +1,20 @@
-import React from 'react';
+import MenuIcon from '@mui/icons-material/Menu';
+import MuiAppBar from '@mui/material/AppBar';
+import IconButton from '@mui/material/IconButton';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 import { useLocation } from 'react-router';
-import MuiAppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
-
 import { Routes } from 'src/constants/enums';
-import { useMatchRoutes } from 'src/hooks/router';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
-import getAppTitle from 'src/utils/getAppTitle';
+import { useMatchRoutes } from 'src/hooks/router';
 import AccountInfo from 'src/modules/auth/components/AccountInfo';
+import { isUserLoggedInSelector } from 'src/modules/auth/selectors';
+import getAppTitle from 'src/utils/getAppTitle';
+
+import { openMobileMenu } from '../actions';
 import { isMobileSelector } from '../selectors';
 
-import classes from './AppBar.module.scss';
-import { openMobileMenu } from '../actions';
-import { isUserLoggedInSelector } from 'src/modules/auth/selectors';
+import classes from './AppBar.styles';
 
 const AppBar: React.FC = () => {
   const location = useLocation();
@@ -29,7 +28,7 @@ const AppBar: React.FC = () => {
 
   const hideAccountInfo = useMatchRoutes(Routes.Login, Routes.Register);
   return (
-    <MuiAppBar position="fixed" className={classes.appBar}>
+    <MuiAppBar position="fixed" css={classes.appBar}>
       <Toolbar>
         {isMobile && isLoggedIn && (
           <IconButton
@@ -37,11 +36,12 @@ const AppBar: React.FC = () => {
             color="inherit"
             aria-label="menu"
             onClick={onMobileMenuOpen}
+            size="large"
           >
             <MenuIcon />
           </IconButton>
         )}
-        <Typography variant="h6" className={classes.title} align="left">
+        <Typography variant="h6" css={classes.title} align="left">
           {getAppTitle(location.pathname)}
         </Typography>
         {!hideAccountInfo ? <AccountInfo /> : null}

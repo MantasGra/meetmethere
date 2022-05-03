@@ -1,23 +1,21 @@
-import React from 'react';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
+import { Announcement, EuroSymbol, LocalPizza } from '@mui/icons-material';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import { useSelector } from 'react-redux';
 import { useAppSelector, useAppDispatch } from 'src/hooks/redux';
+import { isMobileSelector } from 'src/modules/app/selectors';
+
+import { meetingsSwitchToTab } from '../actions';
 import { meetingsActiveMeetingTabSelector } from '../selectors';
 
-import classes from './MeetingTabs.module.scss';
-import { meetingsSwitchToTab } from '../actions';
-import { useSelector } from 'react-redux';
-import type { RootState } from 'src/modules/app/reducer';
-import { isMobileSelector } from 'src/modules/app/selectors';
-import { Announcement, EuroSymbol, LocalPizza } from '@material-ui/icons';
+import classes from './MeetingTabs.styles';
 
 const MeetingTabs: React.FC = () => {
   const selectedTab = useAppSelector(meetingsActiveMeetingTabSelector);
 
   const dispatch = useAppDispatch();
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  const handleChange = (_: React.ChangeEvent<{}>, newValue: number) => {
+  const handleChange = (_: React.SyntheticEvent, newValue: number) => {
     dispatch(meetingsSwitchToTab(newValue));
   };
 
@@ -25,7 +23,7 @@ const MeetingTabs: React.FC = () => {
 
   return (
     <Tabs
-      className={classes.meetingTabs}
+      css={classes.meetingTabs}
       value={selectedTab}
       onChange={handleChange}
       variant="fullWidth"

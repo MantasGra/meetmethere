@@ -1,6 +1,7 @@
 import { createAction } from '@reduxjs/toolkit';
+
 import { withPayloadType } from '../app/actions';
-import type { IInvitation } from './reducer';
+import type { IMeeting } from '../meetings/reducer';
 
 export const invitationsLoadInvitationsProposal = createAction(
   'invitations/loadInvitationsProposal',
@@ -8,7 +9,7 @@ export const invitationsLoadInvitationsProposal = createAction(
 
 export const invitationsLoadInvitationsSuccess = createAction(
   'invitations/loadMeetingsSuccess',
-  (invitations: IInvitation[]) => ({
+  (invitations: IMeeting[]) => ({
     payload: { invitations },
   }),
 );

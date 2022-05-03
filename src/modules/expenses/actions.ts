@@ -1,33 +1,27 @@
 import { createAction } from '@reduxjs/toolkit';
+
 import { withPayloadType } from '../app/actions';
-import type { IExpense, IExpenseIdentifier } from './reducer';
+
+import { IExpenseForm } from './components/ExpenseForm';
+import type { IExpense } from './reducer';
 
 export const expensesLoadExpensesProposal = createAction(
   'expenses/loadExpensesProposal',
-  (meetingId: number, page: number) => ({ payload: { page, meetingId } }),
+  withPayloadType<number>(),
 );
 
 export const expensesLoadExpensesSuccess = createAction(
   'expenses/loadExpensesSuccess',
-  (expenses: IExpense[], announcementCount: number) => ({
-    payload: { expenses, announcementCount },
-  }),
+  withPayloadType<IExpense[]>(),
 );
 
 export const expensesLoadExpensesFail = createAction(
   'expenses/loadExpensesFail',
 );
 
-export interface IExpenseCreateRequest {
-  name: string;
-  description: string;
-  amount: number;
-  userIds: number[];
-}
-
 export const expensesCreateExpenseProposal = createAction(
   'expenses/createExpenseProposal',
-  (expense: IExpenseCreateRequest, meetingId: number) => ({
+  (expense: IExpenseForm, meetingId: number) => ({
     payload: {
       expense,
       meetingId,
@@ -35,29 +29,22 @@ export const expensesCreateExpenseProposal = createAction(
   }),
 );
 
-export interface IExpenseEditRequest {
-  id: number;
-  name: string;
-  description: string;
-  amount: number;
-  userIds: number[];
-}
-
 export const expensesEditExpenseProposal = createAction(
   'expenses/editExpenseProposal',
-  (expense: IExpenseEditRequest, meetingId: number) => ({
+  (expense: IExpenseForm, meetingId: number, expenseId: number) => ({
     payload: {
       expense,
       meetingId,
+      expenseId,
     },
   }),
 );
 
 export const expensesDeleteExpenseProposal = createAction(
   'expenses/deleteExpenseProposal',
-  (expense: IExpense, meetingId: number) => ({
+  (meetingId: number, expenseId: number) => ({
     payload: {
-      expense,
+      expenseId,
       meetingId,
     },
   }),
@@ -68,14 +55,14 @@ export const expensesAddExpense = createAction(
   withPayloadType<IExpense>(),
 );
 
-export const expensesChangeExpense = createAction(
-  'expenses/changeExpense',
+export const expensesEditExpenseRequest = createAction(
+  'expenses/editExpenseRequest',
   withPayloadType<IExpense>(),
 );
 
-export const expensesDeleteExpense = createAction(
+export const expensesDeleteExpenseRequest = createAction(
   'expenses/deleteExpense',
-  withPayloadType<IExpense>(),
+  withPayloadType<number>(),
 );
 
 export const expensesFormDialogMeetingIdChangeRequest = createAction(
@@ -83,9 +70,11 @@ export const expensesFormDialogMeetingIdChangeRequest = createAction(
   withPayloadType<number | null>(),
 );
 
-export const expensesFormDialogExpenseIdentifierChangeRequest = createAction(
-  'expenses/formDialogExpenseIdentifierChangeRequest',
-  withPayloadType<IExpenseIdentifier | null>(),
+export const expensesEditExpenseIdChange = createAction(
+  'expenses/editExpenseIdChange',
+  (meetingId: number | null, expenseId: number | null) => ({
+    payload: { meetingId, expenseId },
+  }),
 );
 
 export type ExpensesActions =
@@ -93,10 +82,10 @@ export type ExpensesActions =
   | ReturnType<typeof expensesLoadExpensesSuccess>
   | ReturnType<typeof expensesLoadExpensesFail>
   | ReturnType<typeof expensesCreateExpenseProposal>
-  | ReturnType<typeof expensesCreateExpenseProposal>
+  | ReturnType<typeof expensesEditExpenseProposal>
   | ReturnType<typeof expensesAddExpense>
-  | ReturnType<typeof expensesChangeExpense>
-  | ReturnType<typeof expensesDeleteExpense>
+  | ReturnType<typeof expensesEditExpenseRequest>
+  | ReturnType<typeof expensesDeleteExpenseRequest>
   | ReturnType<typeof expensesDeleteExpenseProposal>
   | ReturnType<typeof expensesFormDialogMeetingIdChangeRequest>
-  | ReturnType<typeof expensesFormDialogExpenseIdentifierChangeRequest>;
+  | ReturnType<typeof expensesEditExpenseIdChange>;
