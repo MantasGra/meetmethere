@@ -2,10 +2,10 @@ import { matchPath } from 'react-router';
 import { Routes } from 'src/constants/enums';
 
 const getAppTitle = (pathName: string): string => {
-  if (matchPath(pathName, { path: Routes.Login, exact: true })) {
+  if (matchPath(pathName, Routes.Login)) {
     return 'Login';
   }
-  if (matchPath(pathName, { path: Routes.Register, exact: true })) {
+  if (matchPath(pathName, Routes.Register)) {
     return 'Register';
   }
   return 'MeetMeThere';

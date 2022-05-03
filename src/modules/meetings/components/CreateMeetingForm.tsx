@@ -1,29 +1,31 @@
-import React, { useEffect } from 'react';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import DateTimePicker from '@mui/lab/DateTimePicker';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import Divider from '@mui/material/Divider';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import differenceInMinutes from 'date-fns/differenceInMinutes';
+import isAfter from 'date-fns/isAfter';
+import { omit } from 'lodash';
+import { useEffect } from 'react';
 import {
   useForm,
   Controller,
   useFieldArray,
   FieldError,
 } from 'react-hook-form';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
-import { DateTimePicker } from '@material-ui/pickers';
-import isAfter from 'date-fns/isAfter';
-import differenceInMinutes from 'date-fns/differenceInMinutes';
-import Checkbox from '@material-ui/core/Checkbox';
-import AddIcon from '@material-ui/icons/Add';
-import DeleteIcon from '@material-ui/icons/Delete';
-import IconButton from '@material-ui/core/IconButton';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
-import { omit } from 'lodash';
-import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
-import { isMobileSelector } from 'src/modules/app/selectors';
 import PlacesAutocomplete, { IValue } from 'src/components/PlacesAutocomplete';
 import UserAutocomplete, { IUser } from 'src/components/UserAutocomplete';
-import classes from './CreateMeetingForm.module.scss';
+import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+import { isMobileSelector } from 'src/modules/app/selectors';
+
 import { meetingsCreateMeetingProposal } from '../actions';
+
+import classes from './CreateMeetingForm.styles';
 
 interface ICreateMeetingForm {
   meetingName: string;
@@ -88,7 +90,7 @@ const CreateMeetingForm: React.FC = () => {
     if (!showPollOptions) {
       setValue('dates', [getValues('dates')[0]]);
     }
-  }, [showPollOptions]);
+  }, [showPollOptions, setValue, getValues]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -172,12 +174,12 @@ const CreateMeetingForm: React.FC = () => {
       />
       {fields.map((item, index) => {
         return (
-          <div className={classes.dateFields} key={item.id}>
+          <div css={classes.dateFields} key={item.id}>
             {showPollOptions && (
               <div>
                 <Typography variant="overline">Option {index + 1}</Typography>
                 {isMobile && fields.length > 1 && (
-                  <IconButton onClick={() => remove(index)}>
+                  <IconButton onClick={() => remove(index)} size="large">
                     <DeleteIcon />
                   </IconButton>
                 )}
@@ -188,9 +190,10 @@ const CreateMeetingForm: React.FC = () => {
                 <DateTimePicker
                   {...omit(field, 'ref')}
                   label="Start Date"
-                  margin="dense"
                   disablePast
-                  inputVariant="outlined"
+                  renderInput={(props) => (
+                    <TextField {...props} margin="dense" variant="outlined" />
+                  )}
                 />
               )}
               name={`dates.${index}.startDate` as const}
@@ -201,16 +204,21 @@ const CreateMeetingForm: React.FC = () => {
               render={({ field }) => (
                 <DateTimePicker
                   {...omit(field, 'ref')}
-                  helperText={
-                    errors.dates?.[index]?.endDate?.type === 'validate'
-                      ? 'End date must be after start date'
-                      : undefined
-                  }
-                  error={!!errors.dates?.[index]?.endDate}
-                  margin="dense"
                   label="End Date"
                   disablePast
-                  inputVariant="outlined"
+                  renderInput={(props) => (
+                    <TextField
+                      {...props}
+                      helperText={
+                        errors.dates?.[index]?.endDate?.type === 'validate'
+                          ? 'End date must be after start date'
+                          : undefined
+                      }
+                      error={!!errors.dates?.[index]?.endDate}
+                      margin="dense"
+                      variant="outlined"
+                    />
+                  )}
                 />
               )}
               name={`dates.${index}.endDate` as const}
@@ -223,10 +231,10 @@ const CreateMeetingForm: React.FC = () => {
               defaultValue={new Date()}
             />
             {isMobile && fields.length - 1 !== index && (
-              <Divider className={classes.divider} />
+              <Divider css={classes.divider} />
             )}
             {!isMobile && fields.length > 1 && (
-              <IconButton onClick={() => remove(index)}>
+              <IconButton onClick={() => remove(index)} size="large">
                 <DeleteIcon />
               </IconButton>
             )}
@@ -234,7 +242,7 @@ const CreateMeetingForm: React.FC = () => {
         );
       })}
       {showPollOptions && (
-        <div className={classes.pollActionsRow}>
+        <div css={classes.pollActionsRow}>
           <FormControlLabel
             control={
               <Controller
@@ -264,12 +272,12 @@ const CreateMeetingForm: React.FC = () => {
           </Button>
         </div>
       )}
-      <div className={classes.submitContainer}>
+      <div css={classes.submitContainer}>
         <Button
           type="submit"
           variant="contained"
           color="primary"
-          className={classes.submitButton}
+          css={classes.submitButton}
         >
           Create
         </Button>

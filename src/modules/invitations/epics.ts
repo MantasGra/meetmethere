@@ -2,10 +2,13 @@ import { combineEpics } from 'redux-observable';
 import { of } from 'rxjs';
 import { mergeMap, pluck, map, catchError } from 'rxjs/operators';
 import { fromAxios, ofActionType } from 'src/utils/operators';
+
 import type { AppEpic } from '../app/epics';
-import type { IUserInvitation } from '../auth/reducer';
+import type { IParticipant } from '../auth/reducer';
 import { meetingsAddUsersToMeeting } from '../meetings/actions';
+import type { IMeeting } from '../meetings/reducer';
 import { snackbarsEnqueue } from '../snackbars/actions';
+
 import {
   invitationsLoadInvitationsFail,
   invitationsLoadInvitationsProposal,
@@ -13,19 +16,24 @@ import {
   invitationsInviteUsersToMeeting,
   invitationsInviteUserDialogOpenRequest,
 } from './actions';
-import type { IInvitation } from './reducer';
+
+interface ILoadInvitationsResponse {
+  invitations: IMeeting[];
+}
 
 const loadInvitationsEpic: AppEpic = (action$, _, { axios }) =>
   action$.pipe(
     ofActionType(invitationsLoadInvitationsProposal),
     pluck('payload'),
     mergeMap(() =>
-      fromAxios<IInvitation[]>(axios, {
+      fromAxios<ILoadInvitationsResponse>(axios, {
         url: '/meeting/invitations',
         method: 'GET',
         withCredentials: true,
       }).pipe(
-        map((response) => invitationsLoadInvitationsSuccess(response.data)),
+        map((response) =>
+          invitationsLoadInvitationsSuccess(response.data.invitations),
+        ),
         catchError(() => of(invitationsLoadInvitationsFail())),
       ),
     ),
@@ -36,7 +44,7 @@ const inviteToMeetingEpic: AppEpic = (action$, _, { axios }) =>
     ofActionType(invitationsInviteUsersToMeeting),
     pluck('payload'),
     mergeMap(({ meetingId, newUserIds }) =>
-      fromAxios<IUserInvitation[]>(axios, {
+      fromAxios<IParticipant[]>(axios, {
         url: `/meeting/${meetingId}/invite`,
         method: 'POST',
         withCredentials: true,
@@ -51,7 +59,6 @@ const inviteToMeetingEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Invitations sent!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'success',
               },
             }),
@@ -62,7 +69,6 @@ const inviteToMeetingEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Something went wrong!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'error',
               },
             }),

@@ -1,14 +1,13 @@
-import React from 'react';
-import Container from '@material-ui/core/Container';
-import Paper from '@material-ui/core/Paper';
-import RegisterForm from './RegisterForm';
+import Container from '@mui/material/Container';
+import Paper from '@mui/material/Paper';
 
-import classes from './RegisterPage.module.scss';
+import RegisterForm from './RegisterForm';
+import classes from './RegisterPage.styles';
 
 const RegisterPage: React.FC = () => {
   return (
-    <Container maxWidth="xs" className={classes.registerPageContainer}>
-      <Paper elevation={3} className={classes.registerPagePaper}>
+    <Container maxWidth="xs" css={classes.registerPageContainer}>
+      <Paper elevation={3} css={classes.registerPagePaper}>
         <RegisterForm />
       </Paper>
     </Container>

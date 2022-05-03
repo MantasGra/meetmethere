@@ -5,16 +5,16 @@ import type {
 } from '@reduxjs/toolkit';
 import type { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import type Axios from 'axios-observable';
+import { StatusCodes } from 'http-status-codes';
 import { OperatorFunction, Observable, throwError } from 'rxjs';
 import { filter, catchError, mergeMap } from 'rxjs/operators';
-import StatusCodes from 'http-status-codes';
 import { multipleActionsMatcher } from 'src/modules/app/actions';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const ofActionType = <
   PAC extends
     | PayloadActionCreator<any>
-    | ActionCreatorWithPreparedPayload<any[], any>
+    | ActionCreatorWithPreparedPayload<any[], any>,
 >(
   actions: PAC | PAC[],
 ): OperatorFunction<Action<unknown>, ReturnType<PAC>> => {
@@ -38,8 +38,8 @@ export const fromAxios = <T>(
     catchError((error: AxiosError<T>) => {
       if (
         error.response?.status === StatusCodes.FORBIDDEN &&
-        ((error.response?.data as unknown) as IExpiredTokenResponse)
-          ?.expired === true
+        (error.response?.data as unknown as IExpiredTokenResponse)?.expired ===
+          true
       ) {
         return axiosInstance
           .request({
@@ -48,7 +48,7 @@ export const fromAxios = <T>(
           })
           .pipe(mergeMap(() => axiosInstance.request<T>(config)));
       }
-      return throwError(error);
+      return throwError(() => error);
     }),
   );
 };
@@ -56,6 +56,7 @@ export const fromAxios = <T>(
 const isNotNullOrUndefined = <T>(input: null | undefined | T): input is T =>
   input !== null && input !== undefined;
 
-export const filterNotNullOrUndefined = <T>() => (
-  source$: Observable<null | undefined | T>,
-): Observable<T> => source$.pipe(filter(isNotNullOrUndefined));
+export const filterNotNullOrUndefined =
+  <T>() =>
+  (source$: Observable<null | undefined | T>): Observable<T> =>
+    source$.pipe(filter(isNotNullOrUndefined));

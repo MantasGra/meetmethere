@@ -1,5 +1,5 @@
-import React from 'react';
-import Chip from '@material-ui/core/Chip';
+import Chip from '@mui/material/Chip';
+
 import { MeetingStatus } from '../reducer';
 
 interface IMeetingStatusChipProps {
@@ -30,7 +30,6 @@ const MeetingStatusChip: React.FC<IMeetingStatusChipProps> = ({
   <Chip
     label={MeetingStatusDisplayNames[meetingStatus]}
     style={{
-      /* stylelint-disable-next-line value-keyword-case */
       backgroundColor: MeetingStatusDisplayColor[meetingStatus],
       color: 'white',
     }}

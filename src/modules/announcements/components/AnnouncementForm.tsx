@@ -1,20 +1,26 @@
-import React, { useEffect } from 'react';
+import { ClassNames } from '@emotion/react';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+
+import {
+  announcementsCreateAnnouncementProposal,
+  announcementsEditAnnouncementProposal,
+} from '../actions';
 import {
   announcementsEditedAnnouncementSelector,
   announcementsFormDialogMeetingIdSelector,
   announcementsIsFormEditSelector,
 } from '../selectors';
-import {
-  announcementsCreateAnnouncementProposal,
-  announcementsEditAnnouncementProposal,
-  ICreateAnnouncementRequest,
-} from '../actions';
 
-import classes from './AnnouncementForm.module.scss';
+import classes from './AnnouncementForm.styles';
+
+export interface IAnnouncementForm {
+  title: string;
+  description: string;
+}
 
 const AnnouncementForm: React.FC = () => {
   const {
@@ -23,7 +29,7 @@ const AnnouncementForm: React.FC = () => {
     watch,
     reset,
     formState: { errors },
-  } = useForm<ICreateAnnouncementRequest>();
+  } = useForm<IAnnouncementForm>();
 
   const description = watch('description', '');
 
@@ -41,11 +47,11 @@ const AnnouncementForm: React.FC = () => {
         description: editedAnnouncement.description,
       });
     }
-  }, [isEditForm, editedAnnouncement]);
+  }, [isEditForm, editedAnnouncement, reset]);
 
   const dispatch = useAppDispatch();
 
-  const onSubmit = (data: ICreateAnnouncementRequest) => {
+  const onSubmit = (data: IAnnouncementForm) => {
     if (meetingId) {
       if (isEditForm && editedAnnouncement) {
         dispatch(
@@ -75,28 +81,34 @@ const AnnouncementForm: React.FC = () => {
         label="Title"
         fullWidth
       />
-      <TextField
-        inputProps={{
-          ...register('description'),
-          maxLength: 1000,
-        }}
-        helperText={`${description.length}/1000`}
-        FormHelperTextProps={{
-          className: classes.helperTextRight,
-        }}
-        margin="dense"
-        variant="outlined"
-        label="Description"
-        fullWidth
-        multiline
-        rows={10}
-      />
-      <div className={classes.submitContainer}>
+      <ClassNames>
+        {({ css }) => (
+          <TextField
+            inputProps={{
+              ...register('description'),
+              maxLength: 1000,
+            }}
+            helperText={`${description.length}/1000`}
+            FormHelperTextProps={{
+              className: css`
+                ${classes.helperTextRight};
+              `,
+            }}
+            margin="dense"
+            variant="outlined"
+            label="Description"
+            fullWidth
+            multiline
+            rows={10}
+          />
+        )}
+      </ClassNames>
+      <div css={classes.submitContainer}>
         <Button
           type="submit"
           variant="contained"
           color="primary"
-          className={classes.submitButton}
+          css={classes.submitButton}
         >
           {isEditForm ? 'Save' : 'Create'}
         </Button>

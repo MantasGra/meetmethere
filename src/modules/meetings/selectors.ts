@@ -1,149 +1,155 @@
+import { createSelector } from '@reduxjs/toolkit';
+import { toOrderedList } from 'src/utils/transformators';
+
 import type { RootState } from '../app/reducer';
-import type { IUserInvitation } from '../auth/reducer';
-import {
-  IMeeting,
-  MeetingTabs,
-  IMeetingDatesPollEntry,
-  MeetingStatus,
-  updateRequest,
-} from './reducer';
+import { authCurrentUserIdSelector } from '../auth/selectors';
 
-export const meetingsPlannedSelector = (state: RootState): IMeeting[] =>
-  state.meetings.plannedMeetingIds.map(
-    (value) => state.meetings.plannedMeetings[value],
+import { MeetingStatus, MeetingState, MeetingTypes } from './reducer';
+
+export const meetingsStateSelector = (state: RootState): MeetingState =>
+  state.meetings;
+
+const idGetter = (_state: RootState, id: number) => id;
+
+const typeOfMeetingGetter = (_state: RootState, typeOfMeeting: MeetingTypes) =>
+  typeOfMeeting;
+
+export const meetingsMapSelector = createSelector(
+  meetingsStateSelector,
+  (meetingsState) => meetingsState.meetings,
+);
+
+export const meetingsListDataSelector = createSelector(
+  meetingsStateSelector,
+  (meetingsState) => meetingsState.meetingListData,
+);
+
+export const meetingsListDataByTypeSelector = createSelector(
+  meetingsListDataSelector,
+  typeOfMeetingGetter,
+  (meetingsListData, typeOfMeeting) => meetingsListData[typeOfMeeting],
+);
+
+export const meetingsListIdsSelector = createSelector(
+  meetingsListDataByTypeSelector,
+  (meetingListData) => meetingListData.ids,
+);
+
+export const meetingsListSelector = createSelector(
+  meetingsListIdsSelector,
+  meetingsMapSelector,
+  (ids, meetings) => toOrderedList(ids, meetings),
+);
+
+export const meetingsListLoadingSelector = createSelector(
+  meetingsListDataByTypeSelector,
+  (meetingsListData) => meetingsListData.loading,
+);
+
+export const meetingsListCountSelector = createSelector(
+  meetingsListDataByTypeSelector,
+  (meetingsListData) => meetingsListData.count,
+);
+
+export const meetingsListHasMoreSelector = createSelector(
+  meetingsListCountSelector,
+  meetingsListIdsSelector,
+  (count, ids) => !count || count > ids.length,
+);
+
+export const meetingsListLoadFailedSelector = createSelector(
+  meetingsListDataByTypeSelector,
+  (meetingsListData) => meetingsListData.loadFailed,
+);
+
+export const meetingsIsCreateDialogOpenSelector = createSelector(
+  meetingsStateSelector,
+  (meetingsState) => meetingsState.isCreateDialogOpen,
+);
+
+export const meetingsMeetingByIdSelector = createSelector(
+  meetingsMapSelector,
+  idGetter,
+  (meetingsMap, id) => meetingsMap[id],
+);
+
+export const meetingsMeetingParticipantsSelector = createSelector(
+  meetingsMeetingByIdSelector,
+  (meeting) => meeting?.participants || [],
+);
+
+export const meetingsCurrentUserAsMeetingParticipantSelector = createSelector(
+  meetingsMeetingParticipantsSelector,
+  authCurrentUserIdSelector,
+  (meetingParticipants, currentUserId) =>
+    meetingParticipants.find((participant) => participant.id === currentUserId),
+);
+
+export const meetingsActiveMeetingTabSelector = createSelector(
+  meetingsStateSelector,
+  (meetingsState) => meetingsState.activeMeetingTab,
+);
+
+export const meetingsMeetingLoadedSelector = createSelector(
+  meetingsMeetingByIdSelector,
+  (meeting) => !!meeting,
+);
+
+export const meetingsMeetingLoadFailedSelector = createSelector(
+  meetingsStateSelector,
+  (meetingsState) => meetingsState.meetingLoadFailed,
+);
+
+export const meetingsMeetingDatesPollFormIdSelector = createSelector(
+  meetingsStateSelector,
+  (meetingsState) => meetingsState.meetingPollFormId,
+);
+
+export const meetingsIsMeetingPollDialogOpenSelector = createSelector(
+  meetingsMeetingDatesPollFormIdSelector,
+  (meetingPollFormId) => !!meetingPollFormId,
+);
+
+export const meetingsMeetingHasUserPollEntryAdditionsEnabledSelector =
+  createSelector(
+    meetingsMeetingByIdSelector,
+    (meeting) => meeting?.canUsersAddPollEntries,
   );
 
-export const meetingsPlannedMeetingsLoadingSelector = (
-  state: RootState,
-): boolean => state.meetings.plannedMeetingsLoading;
+export const meetingsDatesPollEntriesSelector = createSelector(
+  meetingsMeetingByIdSelector,
+  (meeting) => meeting?.meetingDatesPollEntries || [],
+);
 
-export const meetingsPlannedMeetingsHasMoreSelector = (
-  state: RootState,
-): boolean =>
-  state.meetings.plannedMeetingIds.length < state.meetings.plannedMeetingCount;
+export const meetingsIsUserCreator = createSelector(
+  meetingsMeetingByIdSelector,
+  authCurrentUserIdSelector,
+  (meeting, currentUserId) =>
+    !!meeting && !!currentUserId && meeting.creator.id === currentUserId,
+);
 
-export const meetingsPlannedMeetingLoadFailedSelector = (
-  state: RootState,
-): boolean => state.meetings.plannedMeetingLoadFailed;
+export const meetingsIsEditMode = createSelector(
+  meetingsStateSelector,
+  idGetter,
+  (meetingsState, id) => meetingsState.editMode === id,
+);
 
-export const meetingsHistoricSelector = (state: RootState): IMeeting[] =>
-  state.meetings.historicMeetingIds.map(
-    (value) => state.meetings.historicMeetings[value],
-  );
+export const meetingsStatusByIdSelector = createSelector(
+  meetingsMeetingByIdSelector,
+  (meeting) => meeting?.status,
+);
 
-export const meetingsHistoricMeetingsLoadingSelector = (
-  state: RootState,
-): boolean => state.meetings.historicMeetingsLoading;
+export const meetingsIsMeetingArchived = createSelector(
+  meetingsStatusByIdSelector,
+  (status) => [MeetingStatus.Canceled, MeetingStatus.Ended].includes(status),
+);
 
-export const meetingsHistoricMeetingsHasMoreSelector = (
-  state: RootState,
-): boolean =>
-  state.meetings.historicMeetingIds.length <
-  state.meetings.historicMeetingCount;
+export const meetingsCancelingMeetingSelector = createSelector(
+  meetingsStateSelector,
+  (meetingsState) => meetingsState.cancelingMeeting,
+);
 
-export const meetingsHistoricMeetingLoadFailedSelector = (
-  state: RootState,
-): boolean => state.meetings.historicMeetingLoadFailed;
-
-export const meetingsIsCreateDialogOpenSelector = (state: RootState): boolean =>
-  state.meetings.isCreateDialogOpen;
-
-export const meetingsMeetingByIdSelector = (
-  state: RootState,
-  id: number,
-): IMeeting =>
-  state.meetings.plannedMeetings[id] || state.meetings.historicMeetings[id];
-
-export const invitationMeetingByIdSelector = (
-  state: RootState,
-  id: number,
-): IUserInvitation =>
-  (
-    state.meetings.plannedMeetings[id] || state.meetings.historicMeetings[id]
-  ).participants.filter(
-    (participant: IUserInvitation) =>
-      participant.email === state.auth.account?.email,
-  )[0];
-
-export const meetingsActiveMeetingTabSelector = (
-  state: RootState,
-): MeetingTabs => state.meetings.activeMeetingTab;
-
-export const meetingsMeetingLoadedSelector = (
-  state: RootState,
-  id: number,
-): boolean =>
-  !!state.meetings.plannedMeetings[id] || !!state.meetings.historicMeetings[id];
-
-export const meetingsMeetingLoadFailedSelector = (state: RootState): boolean =>
-  state.meetings.meetingLoadFailed;
-
-export const meetingsIsMeetingPollDialogOpenSelector = (
-  state: RootState,
-): boolean => !!state.meetings.meetingPollFormId;
-
-export const meetingsMeetingDatesPollFormIdSelector = (
-  state: RootState,
-): number | null => state.meetings.meetingPollFormId;
-
-export const meetingsMeetingHasUserPollEntryAdditionsEnabled = (
-  state: RootState,
-  meetingId: number,
-): boolean => state.meetings.plannedMeetings[meetingId]?.canUsersAddPollEntries;
-
-export const meetingsDatesPollEntriesSelector = (
-  state: RootState,
-  id: number,
-): IMeetingDatesPollEntry[] =>
-  (state.meetings.plannedMeetings[id] || state.meetings.historicMeetings[id])
-    .meetingDatesPollEntries;
-
-export const meetingsMeetingParticipantsSelector = (
-  state: RootState,
-  id: number,
-): IUserInvitation[] =>
-  (state.meetings.plannedMeetings[id] || state.meetings.historicMeetings[id])
-    ?.participants || [];
-
-export const meetingsIsUserCreator = (
-  state: RootState,
-  meetingId: number,
-): boolean =>
-  !!state.auth.account &&
-  (state.meetings.plannedMeetings[meetingId] ||
-    state.meetings.historicMeetings[meetingId]) &&
-  state.auth.account.id ===
-    (
-      state.meetings.plannedMeetings[meetingId] ||
-      state.meetings.historicMeetings[meetingId]
-    )?.creator?.id;
-
-export const meetingsIsEditMode = (
-  state: RootState,
-  meetingId: number,
-): boolean => state.meetings.editMode === meetingId;
-
-export const meetingsIsMeetingHistorical = (
-  state: RootState,
-  meetingId: number,
-): boolean =>
-  [MeetingStatus.Canceled, MeetingStatus.Ended].includes(
-    (
-      state.meetings.plannedMeetings[meetingId] ||
-      state.meetings.historicMeetings[meetingId]
-    )?.status,
-  );
-
-export const meetingsCancelingMeetingSelector = (
-  state: RootState,
-): typeof updateRequest.payload | null => state.meetings.cancelingMeeting;
-
-export const meetingsCancelMeetingDialogIsOpen = (state: RootState): boolean =>
-  !!state.meetings.cancelingMeeting;
-
-export const meetingsStatusByIdSelector = (
-  state: RootState,
-  id: number,
-): MeetingStatus =>
-  (state.meetings.plannedMeetings[id] || state.meetings.historicMeetings[id])
-    ?.status;
+export const meetingsCancelMeetingDialogIsOpen = createSelector(
+  meetingsCancelingMeetingSelector,
+  (cancelingMeeting) => !!cancelingMeeting,
+);

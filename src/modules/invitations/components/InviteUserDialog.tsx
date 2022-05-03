@@ -1,20 +1,21 @@
-import React from 'react';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
 import CloseableDialogTitle from 'src/components/CloseableDialogTitle';
-import InviteUserForm from './InviteUserForm';
+import UsersList from 'src/components/UsersList';
 import { useAppSelector, useAppDispatch } from 'src/hooks/redux';
+import {
+  meetingsIsMeetingArchived,
+  meetingsIsUserCreator,
+  meetingsMeetingParticipantsSelector,
+} from 'src/modules/meetings/selectors';
+
+import { invitationsInviteUserDialogOpenRequest } from '../actions';
 import {
   invitationsInviteUserDialogMeetingIdSelector,
   invitationsInviteUserDialogOpenSelector,
 } from '../selectors';
-import { invitationsInviteUserDialogOpenRequest } from '../actions';
-import {
-  meetingsIsMeetingHistorical,
-  meetingsIsUserCreator,
-  meetingsMeetingParticipantsSelector,
-} from 'src/modules/meetings/selectors';
-import UsersList from 'src/components/UsersList';
+
+import InviteUserForm from './InviteUserForm';
 
 const InviteUserDialog: React.FC = () => {
   const open = useAppSelector(invitationsInviteUserDialogOpenSelector);
@@ -39,7 +40,7 @@ const InviteUserDialog: React.FC = () => {
 
   const isHistoricalMeeting = useAppSelector((state) => {
     if (meetingId) {
-      return meetingsIsMeetingHistorical(state, meetingId);
+      return meetingsIsMeetingArchived(state, meetingId);
     }
     return true;
   });

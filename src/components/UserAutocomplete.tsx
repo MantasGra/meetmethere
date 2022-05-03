@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import Autocomplete, { AutocompleteProps } from '@mui/material/Autocomplete';
+import CircularProgress from '@mui/material/CircularProgress';
+import Grid from '@mui/material/Grid';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import axios, { AxiosResponse } from 'axios';
 import { throttle, omit } from 'lodash';
-import Autocomplete, { AutocompleteProps } from '@material-ui/lab/Autocomplete';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import TextField from '@material-ui/core/TextField';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
+import { Fragment, useState, useEffect, useMemo } from 'react';
 import getConfig from 'src/config/config';
 import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
-import classes from './UserAutocomplete.module.scss';
+
+import classes from './UserAutocomplete.styles';
 
 export interface IUser {
   id: number;
@@ -35,7 +36,7 @@ interface IUserAutocompleteProps<DisableClearable extends boolean | undefined>
 }
 
 const UserAutocomplete = <
-  DisableClearable extends boolean | undefined = undefined
+  DisableClearable extends boolean | undefined = undefined,
 >(
   props: IUserAutocompleteProps<DisableClearable>,
 ): JSX.Element => {
@@ -60,7 +61,7 @@ const UserAutocomplete = <
       },
       200,
     );
-  }, []);
+  }, [props.optionsUrl]);
 
   useEffect(() => {
     let active = true;
@@ -74,7 +75,7 @@ const UserAutocomplete = <
     return () => {
       active = false;
     };
-  }, [loading, searchText]);
+  }, [loading, searchText, fetchUsers]);
 
   useEffect(() => {
     if (!open) {
@@ -107,26 +108,30 @@ const UserAutocomplete = <
         setSearchText(newInputValue);
       }}
       value={props.realValue}
-      getOptionSelected={(option, value) => option.id === value.id}
+      isOptionEqualToValue={(option, value) => option.id === value.id}
       onChange={(_, value) => {
         props.onRealValueChange(value);
       }}
       getOptionLabel={(option) => `${option.name} ${option.lastName}`}
-      renderOption={(option) => (
-        <Grid container alignItems="center" spacing={1}>
-          <Grid item>
-            <AccountAvatar
-              initials={`${option.name.charAt(0)}${option.lastName.charAt(0)}`}
-              color={option.color}
-              className={classes.avatarSize}
-            />
+      renderOption={(props, option) => (
+        <li {...props}>
+          <Grid container alignItems="center" spacing={1}>
+            <Grid item>
+              <AccountAvatar
+                initials={`${option.name.charAt(0)}${option.lastName.charAt(
+                  0,
+                )}`}
+                color={option.color}
+                css={classes.avatarSize}
+              />
+            </Grid>
+            <Grid item xs>
+              <Typography variant="body2" color="textSecondary">
+                {`${option.name} ${option.lastName}`}
+              </Typography>
+            </Grid>
           </Grid>
-          <Grid item xs>
-            <Typography variant="body2" color="textSecondary">
-              {`${option.name} ${option.lastName}`}
-            </Typography>
-          </Grid>
-        </Grid>
+        </li>
       )}
       renderInput={(params) => (
         <TextField
@@ -139,12 +144,12 @@ const UserAutocomplete = <
           InputProps={{
             ...params.InputProps,
             endAdornment: (
-              <>
+              <Fragment>
                 {loading ? (
                   <CircularProgress color="inherit" size={20} />
                 ) : null}
                 {params.InputProps.endAdornment}
-              </>
+              </Fragment>
             ),
           }}
         />

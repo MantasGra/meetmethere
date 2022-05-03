@@ -1,5 +1,8 @@
 import { createAction } from '@reduxjs/toolkit';
+
 import { withPayloadType } from '../app/actions';
+
+import { IActivityForm } from './components/ActivityForm';
 import type { IActivity } from './reducer';
 
 export const activitiesLoadActivitiesProposal = createAction(
@@ -21,16 +24,9 @@ export const activitiesFormDialogMeetingIdChangeRequest = createAction(
   withPayloadType<number | null>(),
 );
 
-interface ICreateActivityRequest {
-  name: string;
-  description: string;
-  startTime: string;
-  endTime: string;
-}
-
 export const activitiesCreateActivityProposal = createAction(
   'activities/createActivityProposal',
-  (activity: ICreateActivityRequest, meetingId: number) => ({
+  (activity: IActivityForm, meetingId: number) => ({
     payload: {
       activity,
       meetingId,
@@ -64,11 +60,7 @@ export const activitiesEditActivityIdChange = createAction(
 
 export const activitiesEditActivityProposal = createAction(
   'activities/editActivityProposal',
-  (
-    activity: ICreateActivityRequest,
-    meetingId: number,
-    activityId: number,
-  ) => ({
+  (activity: IActivityForm, meetingId: number, activityId: number) => ({
     payload: {
       activity,
       meetingId,

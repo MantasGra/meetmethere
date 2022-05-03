@@ -1,54 +1,31 @@
-import React from 'react';
-import Fab from '@material-ui/core/Fab';
-import AddIcon from '@material-ui/icons/Add';
+import AddIcon from '@mui/icons-material/Add';
+import Fab from '@mui/material/Fab';
+import { Fragment } from 'react';
 import { useAppDispatch } from 'src/hooks/redux';
-import { useInfiniteScroll } from 'src/hooks/infiniteScroll';
-import {
-  meetingsPlannedMeetingLoadFailedSelector,
-  meetingsPlannedMeetingsHasMoreSelector,
-  meetingsPlannedMeetingsLoadingSelector,
-  meetingsPlannedSelector,
-} from '../selectors';
-import {
-  meetingsCreateDialogVisibleChangeRequest,
-  meetingsLoadMeetingsProposal,
-} from '../actions';
-import MeetingList from './MeetingList';
 
-import classes from './PlannedMeetingList.module.scss';
+import { meetingsCreateDialogVisibleChangeRequest } from '../actions';
+import { MeetingTypes } from '../reducer';
+
+import MeetingList from './MeetingList';
+import classes from './PlannedMeetingList.styles';
 
 const PlannedMeetingList: React.FC = () => {
-  const {
-    loading,
-    list: meetings,
-    lastElementRef,
-  } = useInfiniteScroll(
-    meetingsPlannedMeetingsLoadingSelector,
-    meetingsPlannedMeetingsHasMoreSelector,
-    meetingsPlannedSelector,
-    meetingsPlannedMeetingLoadFailedSelector,
-    (page) => meetingsLoadMeetingsProposal(page, 'planned'),
-  );
   const dispatch = useAppDispatch();
   const onCreateMeetingClick = () => {
     dispatch(meetingsCreateDialogVisibleChangeRequest(true));
   };
+
   return (
-    <>
-      <MeetingList
-        meetings={meetings}
-        lastElementRef={lastElementRef}
-        loading={loading}
-        typeOfMeeting={'planned'}
-      />
+    <Fragment>
+      <MeetingList typeOfMeeting={MeetingTypes.Planned} />
       <Fab
         color="primary"
-        className={classes.addButton}
+        css={classes.addButton}
         onClick={onCreateMeetingClick}
       >
         <AddIcon />
       </Fab>
-    </>
+    </Fragment>
   );
 };
 

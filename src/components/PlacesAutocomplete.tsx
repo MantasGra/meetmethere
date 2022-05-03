@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { throttle, omit } from 'lodash';
-import Autocomplete, { AutocompleteProps } from '@material-ui/lab/Autocomplete';
-import TextField from '@material-ui/core/TextField';
-import Grid from '@material-ui/core/Grid';
-import LocationOnIcon from '@material-ui/icons/LocationOn';
-import Typography from '@material-ui/core/Typography';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import Autocomplete, { AutocompleteProps } from '@mui/material/Autocomplete';
+import Grid from '@mui/material/Grid';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import parse from 'autosuggest-highlight/parse';
+import { throttle, omit } from 'lodash';
+import { useState, useEffect, useMemo } from 'react';
 
-import classes from './PlacesAutocomplete.module.scss';
+import classes from './PlacesAutocomplete.styles';
 
 type PlaceType = Pick<
   google.maps.places.AutocompletePrediction,
@@ -64,13 +64,15 @@ const PlacesAutocomplete = (props: IPlacesAutocompleteProps): JSX.Element => {
   useEffect(() => {
     let active = true;
     if (!autocompleteService.current) {
-      autocompleteService.current = new google.maps.places.AutocompleteService();
+      autocompleteService.current =
+        new google.maps.places.AutocompleteService();
     }
     if (!autocompleteService.current) {
       return undefined;
     }
     if (!autocompleteSessionToken.current) {
-      autocompleteSessionToken.current = new google.maps.places.AutocompleteSessionToken();
+      autocompleteSessionToken.current =
+        new google.maps.places.AutocompleteSessionToken();
     }
     if (props.realValue.input === '') {
       setOptions(props.realValue.place ? [props.realValue.place] : []);
@@ -139,7 +141,7 @@ const PlacesAutocomplete = (props: IPlacesAutocompleteProps): JSX.Element => {
           fullWidth
         />
       )}
-      renderOption={(option) => {
+      renderOption={(props, option) => {
         const matches =
           option.structured_formatting.main_text_matched_substrings;
         const parts = parse(
@@ -148,24 +150,26 @@ const PlacesAutocomplete = (props: IPlacesAutocompleteProps): JSX.Element => {
         );
 
         return (
-          <Grid container alignItems="center">
-            <Grid item>
-              <LocationOnIcon className={classes.icon} />
+          <li {...props}>
+            <Grid container alignItems="center">
+              <Grid item>
+                <LocationOnIcon css={classes.icon} />
+              </Grid>
+              <Grid item xs>
+                {parts.map((part, index) => (
+                  <span
+                    key={index}
+                    style={{ fontWeight: part.highlight ? 700 : 400 }}
+                  >
+                    {part.text}
+                  </span>
+                ))}
+                <Typography variant="body2" color="textSecondary">
+                  {option.structured_formatting.secondary_text}
+                </Typography>
+              </Grid>
             </Grid>
-            <Grid item xs>
-              {parts.map((part, index) => (
-                <span
-                  key={index}
-                  style={{ fontWeight: part.highlight ? 700 : 400 }}
-                >
-                  {part.text}
-                </span>
-              ))}
-              <Typography variant="body2" color="textSecondary">
-                {option.structured_formatting.secondary_text}
-              </Typography>
-            </Grid>
-          </Grid>
+          </li>
         );
       }}
     />

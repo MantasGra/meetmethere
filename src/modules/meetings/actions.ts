@@ -1,13 +1,16 @@
 import { createAction } from '@reduxjs/toolkit';
+
 import { withPayloadType } from '../app/actions';
-import type { IUserInvitation } from '../auth/reducer';
+import type { IParticipant } from '../auth/reducer';
 import type { ParticipationStatus } from '../invitations/reducer';
+
 import type {
   IMeeting,
   MeetingTabs,
   IMeetingDatesPollEntry,
   MeetingStatus,
   updateRequest,
+  MeetingTypes,
 } from './reducer';
 
 export const meetingsCreateDialogVisibleChangeRequest = createAction(
@@ -35,25 +38,32 @@ export const meetingsCreateMeetingProposal = createAction(
 
 export const meetingsLoadMeetingsProposal = createAction(
   'meetings/loadMeetingsProposal',
-  (page: number, typeOfMeeting: string) => ({
+  (page: number, typeOfMeeting: MeetingTypes) => ({
     payload: { page, typeOfMeeting },
   }),
 );
 
 export const meetingsLoadMeetingsSuccess = createAction(
   'meetings/loadMeetingsSuccess',
-  (meetings: IMeeting[], meetingCount: number, typeOfMeeting: string) => ({
+  (
+    meetings: IMeeting[],
+    meetingCount: number,
+    typeOfMeeting: MeetingTypes,
+  ) => ({
     payload: { meetings, meetingCount, typeOfMeeting },
   }),
 );
 
 export const meetingsLoadMeetingsFail = createAction(
   'meetings/loadMeetingsFail',
+  withPayloadType<MeetingTypes>(),
 );
 
 export const meetingsAddMeeting = createAction(
   'meetings/addMeeting',
-  withPayloadType<IMeeting>(),
+  (meeting: IMeeting, typeOfMeeting?: MeetingTypes) => ({
+    payload: { meeting, typeOfMeeting },
+  }),
 );
 
 export const meetingsSwitchToTab = createAction(
@@ -61,13 +71,9 @@ export const meetingsSwitchToTab = createAction(
   withPayloadType<MeetingTabs>(),
 );
 
-interface ILoadMeetingRequest {
-  id: number;
-}
-
-export const meetingsLoadMeetingRequest = createAction(
+export const meetingsLoadMeetingProposal = createAction(
   'meetings/loadMeetingProposal',
-  withPayloadType<ILoadMeetingRequest>(),
+  withPayloadType<number>(),
 );
 
 export const meetingsMeetingPollDialogVisibleChangeRequest = createAction(
@@ -78,7 +84,7 @@ export const meetingsMeetingPollDialogVisibleChangeRequest = createAction(
 export const meetingsMeetingPollDatesResponseChangeRequest = createAction(
   'meetings/meetingPollDatesResponseChangeRequest',
   withPayloadType<{
-    votes: Array<{ [id: string]: boolean }>;
+    votes: { [id: string]: boolean };
     newMeetingDatesPollEntries: Array<{ startDate: Date; endDate: Date }>;
     meetingId: number;
   }>(),
@@ -91,27 +97,23 @@ export const meetingsMeetingPollDatesResponseChangeSuccess = createAction(
 
 export const meetingsLoadMeetingFail = createAction('meetings/loadMeetingFail');
 
-interface IParticipationStatusRequest {
-  status: ParticipationStatus;
-  id: number;
-  userEmail: string;
-}
-
 export const meetingsChangeParticipantStatusProposal = createAction(
   'meetings/changeParticipantStatusProposal',
-  withPayloadType<IParticipationStatusRequest>(),
+  (meetingId: number, userId: number, status: ParticipationStatus) => ({
+    payload: { meetingId, userId, status },
+  }),
 );
 
 export const meetingsChangeUserParticipationStatus = createAction(
   'meetings/changeUserParticipationStatus',
-  (meetingId: number, newStatus: ParticipationStatus, userEmail: string) => ({
-    payload: { meetingId, newStatus, userEmail },
+  (meetingId: number, userId: number, status: ParticipationStatus) => ({
+    payload: { meetingId, userId, status },
   }),
 );
 
 export const meetingsAddUsersToMeeting = createAction(
   'meetings/addUsersToMeeting',
-  (meetingId: number, newUsers: IUserInvitation[]) => ({
+  (meetingId: number, newUsers: IParticipant[]) => ({
     payload: { meetingId, newUsers },
   }),
 );
@@ -143,7 +145,7 @@ export const meetingsUpdateMeetingRequest = createAction(
 
 export const meetingsModifyMeeting = createAction(
   'meetings/modifyMeeting',
-  withPayloadType<Partial<IMeeting>>(),
+  (id: number, meeting: Partial<IMeeting>) => ({ payload: { id, meeting } }),
 );
 
 export const meetingsChangeCancelingMeeting = createAction(
@@ -164,7 +166,7 @@ export type MeetingsActions =
   | ReturnType<typeof meetingsLoadMeetingsFail>
   | ReturnType<typeof meetingsAddMeeting>
   | ReturnType<typeof meetingsSwitchToTab>
-  | ReturnType<typeof meetingsLoadMeetingRequest>
+  | ReturnType<typeof meetingsLoadMeetingProposal>
   | ReturnType<typeof meetingsLoadMeetingFail>
   | ReturnType<typeof meetingsMeetingPollDialogVisibleChangeRequest>
   | ReturnType<typeof meetingsMeetingPollDatesResponseChangeRequest>

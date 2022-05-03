@@ -1,14 +1,14 @@
-import React from 'react';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
 import CloseableDialogTitle from 'src/components/CloseableDialogTitle';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+
+import { authLoginDialogVisibleChangeRequest } from '../actions';
 import {
   isAuthDialogOpenSelector,
   isAuthDialogRegisterSelector,
 } from '../selectors';
-import { authLoginDialogVisibleChangeRequest } from '../actions';
+
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 

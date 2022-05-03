@@ -1,11 +1,21 @@
-import React, { useEffect } from 'react';
+import AddIcon from '@mui/icons-material/Add';
+import { CircularProgress, Typography } from '@mui/material';
+import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
+import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router';
-import Paper from '@material-ui/core/Paper';
-import Button from '@material-ui/core/Button';
-import AddIcon from '@material-ui/icons/Add';
+import NotFound from 'src/components/StatusIcons/NotFound';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
-import MeetingPageHeader from './MeetingPageHeader';
-import MeetingTabs from './MeetingTabs';
+import { activitiesFormDialogMeetingIdChangeRequest } from 'src/modules/activitites/actions';
+import ActivityList from 'src/modules/activitites/components/ActivityList';
+import { announcementsFormDialogMeetingIdChangeRequest } from 'src/modules/announcements/actions';
+import { expensesFormDialogMeetingIdChangeRequest } from 'src/modules/expenses/actions';
+import ExpensesList from 'src/modules/expenses/components/ExpensesList';
+import { expensesTotalSelector } from 'src/modules/expenses/selectors';
+
+import AnnouncementList from '../../announcements/components/AnnouncementList';
+import { meetingsLoadMeetingProposal } from '../actions';
 import { MeetingStatus, MeetingTabs as MeetingTabsEnum } from '../reducer';
 import {
   meetingsMeetingLoadFailedSelector,
@@ -14,26 +24,15 @@ import {
   meetingsIsEditMode,
   meetingsStatusByIdSelector,
 } from '../selectors';
-import { meetingsLoadMeetingRequest } from '../actions';
-import { CircularProgress, Typography } from '@material-ui/core';
-import NotFound from 'src/components/NotFound';
-import AnnouncementList from '../../announcements/components/AnnouncementList';
-import { announcementsFormDialogMeetingIdChangeRequest } from 'src/modules/announcements/actions';
-import { expensesFormDialogMeetingIdChangeRequest } from 'src/modules/expenses/actions';
-import { activitiesFormDialogMeetingIdChangeRequest } from 'src/modules/activitites/actions';
-import classes from './MeetingPage.module.scss';
-import ExpensesList from 'src/modules/expenses/components/ExpensesList';
-import ActivityList from 'src/modules/activitites/components/ActivityList';
-import { useSelector } from 'react-redux';
-import { expensesTotalSelector } from 'src/modules/expenses/selectors';
 
-interface IMeetingPageParams {
-  id: string;
-}
+import classes from './MeetingPage.styles';
+import MeetingPageHeader from './MeetingPageHeader';
+import MeetingTabs from './MeetingTabs';
 
 const MeetingPage: React.FC = () => {
-  const { id: idString } = useParams<IMeetingPageParams>();
-  const id = parseInt(idString);
+  const { id: idString } = useParams<'id'>();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const id = parseInt(idString!);
   const activeTab = useAppSelector(meetingsActiveMeetingTabSelector);
   const meetingLoaded = useAppSelector(
     (state) => !isNaN(id) && meetingsMeetingLoadedSelector(state, id),
@@ -58,9 +57,9 @@ const MeetingPage: React.FC = () => {
 
   useEffect(() => {
     if (!isNaN(id) && !meetingLoaded) {
-      dispatch(meetingsLoadMeetingRequest({ id }));
+      dispatch(meetingsLoadMeetingProposal(id));
     }
-  }, [id, meetingLoaded]);
+  }, [id, meetingLoaded, dispatch]);
 
   const totalExpenses = useSelector(expensesTotalSelector);
 
@@ -73,17 +72,17 @@ const MeetingPage: React.FC = () => {
   );
 
   return meetingLoaded ? (
-    <Paper elevation={3} className={classes.meetingPageContainer}>
+    <Paper elevation={3} css={classes.meetingPageContainer}>
       <MeetingPageHeader id={id} />
       <MeetingTabs />
       <div
-        className={classes.tabContainer}
+        css={classes.tabContainer}
         hidden={activeTab !== MeetingTabsEnum.Announcements}
       >
-        <div className={classes.addButtonContainer}>
+        <div css={classes.addButtonContainer}>
           {canAdd ? (
             <Button
-              className={classes.addButton}
+              css={classes.addButton}
               startIcon={<AddIcon />}
               variant="contained"
               color="primary"
@@ -93,18 +92,18 @@ const MeetingPage: React.FC = () => {
             </Button>
           ) : null}
         </div>
-        <div className={classes.tabContent}>
+        <div css={classes.tabContent}>
           <AnnouncementList />
         </div>
       </div>
       <div
-        className={classes.tabContainer}
+        css={classes.tabContainer}
         hidden={activeTab !== MeetingTabsEnum.Activities}
       >
-        <div className={classes.addButtonContainer}>
+        <div css={classes.addButtonContainer}>
           {isEditMode ? (
             <Button
-              className={classes.addButton}
+              css={classes.addButton}
               startIcon={<AddIcon />}
               variant="contained"
               color="primary"
@@ -114,21 +113,21 @@ const MeetingPage: React.FC = () => {
             </Button>
           ) : null}
         </div>
-        <div className={classes.tabContent}>
+        <div css={classes.tabContent}>
           <ActivityList />
         </div>
       </div>
       <div
-        className={classes.tabContainer}
+        css={classes.tabContainer}
         hidden={activeTab !== MeetingTabsEnum.Expenses}
       >
-        <div className={classes.addButtonContainerWithContent}>
+        <div css={classes.addButtonContainerWithContent}>
           <Typography variant="h6">
             Your expenses: {totalExpenses ? totalExpenses.toFixed(2) : 0}€
           </Typography>
           {canAdd ? (
             <Button
-              className={classes.addButton}
+              css={classes.addButton}
               startIcon={<AddIcon />}
               onClick={onAddExpenseClick}
               variant="contained"
@@ -138,7 +137,7 @@ const MeetingPage: React.FC = () => {
             </Button>
           ) : null}
         </div>
-        <div className={classes.tabContent}>
+        <div css={classes.tabContent}>
           <ExpensesList />
         </div>
       </div>
@@ -146,7 +145,7 @@ const MeetingPage: React.FC = () => {
   ) : meetingLoadFailed ? (
     <NotFound text="Meeting not found" />
   ) : (
-    <div className={classes.loading}>
+    <div css={classes.loading}>
       <CircularProgress size={140} />
     </div>
   );

@@ -1,12 +1,13 @@
 import { createReducer } from '@reduxjs/toolkit';
-import { compareDesc } from 'date-fns';
+import { keyBy } from 'lodash';
+
 import type { IUser } from '../auth/reducer';
-import type { IMeeting } from '../meetings/reducer';
+
 import {
   expensesAddExpense,
-  expensesChangeExpense,
-  expensesDeleteExpense,
-  expensesFormDialogExpenseIdentifierChangeRequest,
+  expensesEditExpenseRequest,
+  expensesDeleteExpenseRequest,
+  expensesEditExpenseIdChange,
   expensesFormDialogMeetingIdChangeRequest,
   expensesLoadExpensesFail,
   expensesLoadExpensesProposal,
@@ -20,52 +21,36 @@ export interface IExpense {
   amount: number;
   users: IUser[];
   createdBy: IUser;
-  meeting: IMeeting;
-  createDate: Date;
 }
 
-export interface IExpenseIdentifier {
-  meetingId: number;
-  expenseId: number | null;
-}
-
-interface ExpensesState {
+export interface ExpensesState {
   expensesLoading: boolean;
   expensesIds: number[];
   expenses: Record<number, IExpense>;
-  expensesCount: number;
   expensesLoadFailed: boolean;
-  formDialogExpenseIdentifier: IExpenseIdentifier | null;
+  formDialogMeetingId: number | null;
+  formDialogExpenseId: number | null;
 }
 
 const initialState: ExpensesState = {
   expensesLoading: false,
   expensesIds: [],
   expenses: {},
-  expensesCount: 0,
   expensesLoadFailed: false,
-  formDialogExpenseIdentifier: null,
+  formDialogMeetingId: null,
+  formDialogExpenseId: null,
 };
 
 const expensesReducer = createReducer(initialState, (builder) =>
   builder
-    .addCase(expensesLoadExpensesProposal, (state, action) => {
+    .addCase(expensesLoadExpensesProposal, (state) => {
       state.expensesLoading = true;
-      if (action.payload.page === 1) {
-        state.expenses = {};
-        state.expensesIds = [];
-        state.expensesCount = 0;
-      }
+      state.expenses = {};
+      state.expensesIds = [];
     })
     .addCase(expensesLoadExpensesSuccess, (state, action) => {
-      action.payload.expenses.forEach((expense) => {
-        state.expenses[expense.id] = expense;
-        if (!state.expensesIds.includes(expense.id)) {
-          state.expensesIds.push(expense.id);
-        }
-      });
-      state.expensesIds = state.expensesIds.sort(compareDesc);
-      state.expensesCount = action.payload.announcementCount;
+      state.expenses = keyBy(action.payload, 'id');
+      state.expensesIds = action.payload.map((activity) => activity.id);
       state.expensesLoading = false;
       state.expensesLoadFailed = false;
     })
@@ -75,25 +60,24 @@ const expensesReducer = createReducer(initialState, (builder) =>
     })
     .addCase(expensesAddExpense, (state, action) => {
       state.expenses[action.payload.id] = action.payload;
-      state.expensesIds.unshift(action.payload.id);
+      state.expensesIds.push(action.payload.id);
     })
-    .addCase(expensesChangeExpense, (state, action) => {
+    .addCase(expensesEditExpenseRequest, (state, action) => {
       state.expenses[action.payload.id] = action.payload;
     })
-    .addCase(expensesDeleteExpense, (state, action) => {
-      delete state.expenses[action.payload.id];
+    .addCase(expensesDeleteExpenseRequest, (state, action) => {
+      delete state.expenses[action.payload];
+      state.expensesIds = state.expensesIds.filter(
+        (id) => id !== action.payload,
+      );
     })
     .addCase(expensesFormDialogMeetingIdChangeRequest, (state, action) => {
-      state.formDialogExpenseIdentifier = action.payload
-        ? { meetingId: action.payload, expenseId: null }
-        : null;
+      state.formDialogMeetingId = action.payload;
     })
-    .addCase(
-      expensesFormDialogExpenseIdentifierChangeRequest,
-      (state, action) => {
-        state.formDialogExpenseIdentifier = action.payload;
-      },
-    ),
+    .addCase(expensesEditExpenseIdChange, (state, action) => {
+      state.formDialogExpenseId = action.payload.expenseId;
+      state.formDialogMeetingId = action.payload.meetingId;
+    }),
 );
 
 export default expensesReducer;

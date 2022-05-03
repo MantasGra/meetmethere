@@ -1,40 +1,38 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
 import format from 'date-fns/format';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent';
-import IconButton from '@material-ui/core/IconButton';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import Typography from '@material-ui/core/Typography';
-import NoContent from 'src/components/NoContent';
+import { useState } from 'react';
+import { useParams } from 'react-router';
+import NoContent from 'src/components/StatusIcons/NoContent';
 import { useInfiniteScroll } from 'src/hooks/infiniteScroll';
+import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
+import { authCurrentUserIdSelector } from 'src/modules/auth/selectors';
+import { MeetingStatus } from 'src/modules/meetings/reducer';
+import {
+  meetingsIsUserCreator,
+  meetingsStatusByIdSelector,
+} from 'src/modules/meetings/selectors';
+
+import {
+  announcementsDeleteAnnouncementProposal,
+  announcementsEditAnnouncementIdChange,
+  announcementsLoadAnnouncementsProposal,
+} from '../actions';
 import {
   announcementsHasMoreSelector,
   announcementsListSelector,
   announcementsLoadFailedSelector,
   announcementsLoadingSelector,
 } from '../selectors';
-import {
-  announcementsDeleteAnnouncementProposal,
-  announcementsEditAnnouncementIdChange,
-  announcementsLoadAnnouncementsProposal,
-} from '../actions';
-import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
-import classes from './AnnouncementList.module.scss';
-import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
-import {
-  meetingsIsUserCreator,
-  meetingsStatusByIdSelector,
-} from 'src/modules/meetings/selectors';
-import { authCurrentUserIdSelector } from 'src/modules/auth/selectors';
-import { MeetingStatus } from 'src/modules/meetings/reducer';
 
-interface IMeetingPageParams {
-  id: string;
-}
+import classes from './AnnouncementList.styles';
 
 interface IActiveMenuState {
   anchorEl: HTMLElement;
@@ -43,8 +41,9 @@ interface IActiveMenuState {
 }
 
 const AnnouncementList: React.FC = () => {
-  const { id: idString } = useParams<IMeetingPageParams>();
-  const id = parseInt(idString);
+  const { id: idString } = useParams<'id'>();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const id = parseInt(idString!);
   const {
     loading,
     list: announcements,
@@ -59,7 +58,7 @@ const AnnouncementList: React.FC = () => {
 
   const [activeMenu, setActiveMenu] = useState<IActiveMenuState | null>(null);
 
-  const handleClick = (
+  const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
     announcementId: number,
     announcementCreatorId: number,
@@ -71,7 +70,7 @@ const AnnouncementList: React.FC = () => {
     });
   };
 
-  const handleClose = () => {
+  const handleMenuClose = () => {
     setActiveMenu(null);
   };
 
@@ -88,7 +87,7 @@ const AnnouncementList: React.FC = () => {
       dispatch(
         announcementsEditAnnouncementIdChange(id, activeMenu.announcementId),
       );
-      setActiveMenu(null);
+      handleMenuClose();
     }
   };
 
@@ -97,7 +96,7 @@ const AnnouncementList: React.FC = () => {
       dispatch(
         announcementsDeleteAnnouncementProposal(id, activeMenu.announcementId),
       );
-      setActiveMenu(null);
+      handleMenuClose();
     }
   };
 
@@ -106,11 +105,11 @@ const AnnouncementList: React.FC = () => {
   );
 
   return announcements.length || loading ? (
-    <div className={classes.announcementList}>
+    <div css={classes.announcementList}>
       {announcements.map((announcement, index) => (
         <Card
           key={announcement.id}
-          className={classes.announcementListItem}
+          css={classes.announcementListItem}
           raised
           ref={announcements.length - 1 === index ? lastElementRef : undefined}
         >
@@ -136,8 +135,13 @@ const AnnouncementList: React.FC = () => {
               ) ? (
                 <IconButton
                   onClick={(event) =>
-                    handleClick(event, announcement.id, announcement.user.id)
+                    handleMenuClick(
+                      event,
+                      announcement.id,
+                      announcement.user.id,
+                    )
                   }
+                  size="large"
                 >
                   <MoreVertIcon />
                 </IconButton>
@@ -153,7 +157,7 @@ const AnnouncementList: React.FC = () => {
         anchorEl={activeMenu?.anchorEl}
         open={!!activeMenu}
         keepMounted
-        onClose={handleClose}
+        onClose={handleMenuClose}
       >
         {activeMenu?.announcementCreatorId === currentUserId ? (
           <MenuItem onClick={handleEditClick}>Edit</MenuItem>

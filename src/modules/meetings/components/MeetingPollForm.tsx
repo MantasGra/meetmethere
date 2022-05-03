@@ -1,28 +1,32 @@
-import React, { useEffect, useMemo } from 'react';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import DateTimePicker from '@mui/lab/DateTimePicker';
+import { Divider } from '@mui/material';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormGroup from '@mui/material/FormGroup';
+import TextField from '@mui/material/TextField';
+import { differenceInMinutes, isAfter } from 'date-fns';
 import format from 'date-fns/format';
-import FormControl from '@material-ui/core/FormControl';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Button from '@material-ui/core/Button';
-import Checkbox from '@material-ui/core/Checkbox';
+import { omit } from 'lodash';
+import { useEffect, useMemo } from 'react';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { useAppSelector, useAppDispatch } from 'src/hooks/redux';
-import AddIcon from '@material-ui/icons/Add';
+import { isMobileSelector } from 'src/modules/app/selectors';
+import { authCurrentUserIdSelector } from 'src/modules/auth/selectors';
+import { toDate } from 'src/utils/transformators';
+
+import { meetingsMeetingPollDatesResponseChangeRequest } from '../actions';
+import type { IMeetingDatesPollEntry } from '../reducer';
 import {
   meetingsDatesPollEntriesSelector,
   meetingsMeetingDatesPollFormIdSelector,
-  meetingsMeetingHasUserPollEntryAdditionsEnabled,
+  meetingsMeetingHasUserPollEntryAdditionsEnabledSelector,
 } from '../selectors';
-import type { IMeetingDatesPollEntry } from '../reducer';
-import { meetingsMeetingPollDatesResponseChangeRequest } from '../actions';
-import classes from './MeetingPollForm.module.scss';
-import { authCurrentUserIdSelector } from 'src/modules/auth/selectors';
-import { Divider, IconButton } from '@material-ui/core';
-import { differenceInMinutes, isAfter } from 'date-fns';
-import { DateTimePicker } from '@material-ui/pickers';
-import { omit } from 'lodash';
-import DeleteIcon from '@material-ui/icons/Delete';
-import { isMobileSelector } from 'src/modules/app/selectors';
+
+import classes from './MeetingPollForm.styles';
 
 export interface IMeetingPollForm {
   selections: Array<{ id: number; selected: boolean; count: number }>;
@@ -49,7 +53,7 @@ const MeetingPollForm: React.FC = () => {
   const meetingCanUsersCreatePollEntries = useAppSelector(
     (state) =>
       meetingDatesPollFormId &&
-      meetingsMeetingHasUserPollEntryAdditionsEnabled(
+      meetingsMeetingHasUserPollEntryAdditionsEnabledSelector(
         state,
         meetingDatesPollFormId,
       ),
@@ -74,9 +78,12 @@ const MeetingPollForm: React.FC = () => {
     [meetingDatesPollEntries],
   );
 
+  console.log(meetingDatesPollEntriesMap);
+
   const { fields: selections } = useFieldArray({
     control,
     name: 'selections',
+    keyName: 'formKey',
   });
 
   useEffect(() => {
@@ -85,14 +92,13 @@ const MeetingPollForm: React.FC = () => {
         'selections',
         meetingDatesPollEntries.map((value) => ({
           id: value.id,
-          selected: value.userMeetingDatesPollEntries.some(
-            (value) => value.user.id === currentUserId,
-          ),
-          count: value.userMeetingDatesPollEntries.length,
+          selected: value.users.some((user) => user.id === currentUserId),
+          count: value.users.length,
         })),
       );
     }
-  }, [meetingDatesPollEntries]);
+    console.log('effect');
+  }, [meetingDatesPollEntries, currentUserId, setValue]);
 
   const dispatch = useAppDispatch();
 
@@ -100,9 +106,13 @@ const MeetingPollForm: React.FC = () => {
     if (meetingDatesPollFormId) {
       dispatch(
         meetingsMeetingPollDatesResponseChangeRequest({
-          votes: formData.selections.map((value) => ({
-            [value.id]: value.selected,
-          })),
+          votes: formData.selections.reduce(
+            (votes, value) => ({
+              ...votes,
+              [value.id]: value.selected,
+            }),
+            {},
+          ),
           newMeetingDatesPollEntries: formData.newOptions,
           meetingId: meetingDatesPollFormId,
         }),
@@ -112,66 +122,60 @@ const MeetingPollForm: React.FC = () => {
 
   const isMobile = useAppSelector(isMobileSelector);
 
+  console.log(selections);
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <FormControl component="fieldset">
         <FormGroup>
           {selections.map((entry, index) => {
             return (
-              <>
-                <FormControlLabel
-                  key={entry.id}
-                  control={
-                    <Controller
-                      name={`selections.${index}.selected` as const}
-                      control={control}
-                      render={(props) => (
-                        <Checkbox
-                          checked={props.field.value}
-                          onChange={(e) =>
-                            props.field.onChange(e.target.checked)
-                          }
-                        />
-                      )}
-                      defaultValue={entry.selected}
-                    />
-                  }
-                  label={`${
-                    meetingDatesPollEntriesMap[entry.id]
-                      ? format(
-                          new Date(
-                            meetingDatesPollEntriesMap[entry.id].startDate,
-                          ),
-                          'yyyy-MM-dd HH:mm',
-                        )
-                      : ''
-                  } - ${
-                    meetingDatesPollEntriesMap[entry.id]
-                      ? format(
-                          new Date(
-                            meetingDatesPollEntriesMap[entry.id].endDate,
-                          ),
-                          'yyyy-MM-dd HH:mm',
-                        )
-                      : ''
-                  } (${entry.count})`}
-                />
-              </>
+              <FormControlLabel
+                key={entry.formKey}
+                control={
+                  <Controller
+                    name={`selections.${index}.selected` as const}
+                    control={control}
+                    render={(props) => (
+                      <Checkbox
+                        checked={props.field.value}
+                        onChange={(e) => props.field.onChange(e.target.checked)}
+                      />
+                    )}
+                    defaultValue={entry.selected}
+                  />
+                }
+                label={`${
+                  meetingDatesPollEntriesMap[entry.id]
+                    ? format(
+                        toDate(meetingDatesPollEntriesMap[entry.id].startDate),
+                        'yyyy-MM-dd HH:mm',
+                      )
+                    : ''
+                } - ${
+                  meetingDatesPollEntriesMap[entry.id]
+                    ? format(
+                        toDate(meetingDatesPollEntriesMap[entry.id].endDate),
+                        'yyyy-MM-dd HH:mm',
+                      )
+                    : ''
+                } (${entry.count})`}
+              />
             );
           })}
         </FormGroup>
       </FormControl>
       {fields.map((item, index) => {
         return (
-          <div className={classes.dateFields} key={item.id}>
+          <div css={classes.dateFields} key={item.id}>
             <Controller
               render={({ field }) => (
                 <DateTimePicker
                   {...omit(field, 'ref')}
                   label="Start Date"
-                  margin="dense"
                   disablePast
-                  inputVariant="outlined"
+                  renderInput={(props) => (
+                    <TextField {...props} margin="dense" variant="outlined" />
+                  )}
                 />
               )}
               name={`newOptions.${index}.startDate` as const}
@@ -182,16 +186,21 @@ const MeetingPollForm: React.FC = () => {
               render={({ field }) => (
                 <DateTimePicker
                   {...omit(field, 'ref')}
-                  helperText={
-                    errors.newOptions?.[index]?.endDate?.type === 'validate'
-                      ? 'End date must be after start date'
-                      : undefined
-                  }
-                  error={!!errors.newOptions?.[index]?.endDate}
-                  margin="dense"
                   label="End Date"
                   disablePast
-                  inputVariant="outlined"
+                  renderInput={(props) => (
+                    <TextField
+                      {...props}
+                      helperText={
+                        errors.newOptions?.[index]?.endDate?.type === 'validate'
+                          ? 'End date must be after start date'
+                          : undefined
+                      }
+                      error={!!errors.newOptions?.[index]?.endDate}
+                      margin="dense"
+                      variant="outlined"
+                    />
+                  )}
                 />
               )}
               name={`newOptions.${index}.endDate` as const}
@@ -210,20 +219,20 @@ const MeetingPollForm: React.FC = () => {
             >
               Remove
             </Button>
-            <Divider className={classes.divider} />
+            <Divider css={classes.divider} />
             {isMobile && fields.length - 1 !== index && (
-              <Divider className={classes.divider} />
+              <Divider css={classes.divider} />
             )}
           </div>
         );
       })}
 
-      <div className={classes.submitContainer}>
+      <div css={classes.submitContainer}>
         <Button
           type="submit"
           variant="contained"
           color="primary"
-          className={classes.submitButton}
+          css={classes.submitButton}
         >
           Submit
         </Button>

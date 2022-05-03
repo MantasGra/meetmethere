@@ -1,6 +1,9 @@
 import { createAction } from '@reduxjs/toolkit';
 import type { SnackbarKey } from 'notistack';
+import { v4 as uuidv4 } from 'uuid';
+
 import { withPayloadType } from '../app/actions';
+
 import type { Notification } from './reducer';
 
 export const snackbarsEnqueue = createAction(
@@ -14,7 +17,7 @@ export const snackbarsEnqueue = createAction(
         dismissed: !!notification.dismissed,
         message,
         options,
-        key: key || new Date().getTime() + Math.random(),
+        key: key || uuidv4(),
       },
     };
   },

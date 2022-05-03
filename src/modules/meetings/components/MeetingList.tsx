@@ -1,50 +1,94 @@
-import React from 'react';
-import { generatePath, useHistory, useLocation } from 'react-router';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import EventIcon from '@material-ui/icons/Event';
-import type { IMeeting } from '../reducer';
-import NoContent from 'src/components/NoContent';
+import EventIcon from '@mui/icons-material/Event';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import CircularProgress from '@mui/material/CircularProgress';
+import { Fragment, useCallback, useMemo } from 'react';
+import { generatePath, useNavigate, useLocation } from 'react-router-dom';
+import NoContent from 'src/components/StatusIcons/NoContent';
+import { Routes } from 'src/constants/enums';
+import { useInfiniteScroll } from 'src/hooks/infiniteScroll';
+import { RootState } from 'src/modules/app/reducer';
+import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
+import { toDate } from 'src/utils/transformators';
+
+import { meetingsLoadMeetingsProposal } from '../actions';
+import { MeetingTypes } from '../reducer';
+import {
+  meetingsListHasMoreSelector,
+  meetingsListLoadFailedSelector,
+  meetingsListLoadingSelector,
+  meetingsListSelector,
+} from '../selectors';
+
+import classes from './MeetingList.styles';
 import MeetingStatusChip from './MeetingStatusChip';
 
-import classes from './MeetingList.module.scss';
-import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
-import { Routes } from 'src/constants/enums';
-
 interface IProps {
-  meetings: IMeeting[];
-  loading?: boolean;
-  error?: string;
-  lastElementRef?: (node: Element) => void;
-  typeOfMeeting?: string;
+  typeOfMeeting: MeetingTypes;
 }
 
-const MeetingList: React.FC<IProps> = ({
-  meetings,
-  lastElementRef,
-  loading,
-  typeOfMeeting,
-}) => {
-  const history = useHistory();
+const MeetingList: React.FC<IProps> = ({ typeOfMeeting }) => {
+  // Router
+  const navigate = useNavigate();
   const location = useLocation();
   const openMeetingPage = (id: string) => {
-    history.push(generatePath(Routes.MeetingPage, { id }));
+    navigate(generatePath(Routes.MeetingPage, { id }));
   };
-  const typeOfMeetingClass =
-    typeOfMeeting == 'planned'
-      ? classes.meetingListItem
-      : classes.meetingListItemHistorical;
+
+  // Scroll callbacks
+  const isLoadingSelector = useCallback(
+    (state: RootState) => meetingsListLoadingSelector(state, typeOfMeeting),
+    [typeOfMeeting],
+  );
+  const hasMoreSelector = useCallback(
+    (state: RootState) => meetingsListHasMoreSelector(state, typeOfMeeting),
+    [typeOfMeeting],
+  );
+  const meetingsSelector = useCallback(
+    (state: RootState) => meetingsListSelector(state, typeOfMeeting),
+    [typeOfMeeting],
+  );
+  const loadFailedSelector = useCallback(
+    (state: RootState) => meetingsListLoadFailedSelector(state, typeOfMeeting),
+    [typeOfMeeting],
+  );
+  const loadProposal = useCallback(
+    (page: number) => meetingsLoadMeetingsProposal(page, typeOfMeeting),
+    [typeOfMeeting],
+  );
+
+  // List
+  const {
+    loading,
+    list: meetings,
+    lastElementRef,
+  } = useInfiniteScroll(
+    isLoadingSelector,
+    hasMoreSelector,
+    meetingsSelector,
+    loadFailedSelector,
+    loadProposal,
+  );
+
+  // Derived values
+  const typeOfMeetingClass = useMemo(
+    () =>
+      typeOfMeeting == MeetingTypes.Planned
+        ? classes.meetingListItem
+        : classes.meetingListItemHistorical,
+    [typeOfMeeting],
+  );
+
   return (
-    <>
-      <div className={classes.meetingList}>
+    <Fragment>
+      <div css={classes.meetingList}>
         {meetings.length || loading ? (
-          <>
+          <Fragment>
             {meetings.map((meeting, index) => (
               <Card
                 key={meeting.id}
-                className={typeOfMeetingClass}
+                css={typeOfMeetingClass}
                 raised
                 ref={meetings.length - 1 === index ? lastElementRef : undefined}
                 onClick={() => openMeetingPage(meeting.id.toString())}
@@ -56,19 +100,13 @@ const MeetingList: React.FC<IProps> = ({
                   subheader={
                     meeting.isDatesPollActive
                       ? 'Date poll is active'
-                      : new Date(meeting.startDate).toLocaleString()
+                      : toDate(meeting.startDate).toLocaleString()
                   }
-                  action={
-                    <>
-                      <MeetingStatusChip meetingStatus={meeting.status} />
-                    </>
-                  }
+                  action={<MeetingStatusChip meetingStatus={meeting.status} />}
                 />
-                <CardContent className={classes.meetingListItemContent}>
-                  <div className={classes.description}>
-                    {meeting.description}
-                  </div>
-                  <div className={classes.meetingListItemAvatars}>
+                <CardContent css={classes.meetingListItemContent}>
+                  <div css={classes.description}>{meeting.description}</div>
+                  <div css={classes.meetingListItemAvatars}>
                     {meeting.participants.map((participant) => (
                       <AccountAvatar
                         key={participant.id}
@@ -76,7 +114,7 @@ const MeetingList: React.FC<IProps> = ({
                           0,
                         )}${participant.lastName.charAt(0)}`}
                         color={participant.color}
-                        className={classes.listItemAvatar}
+                        css={classes.listItemAvatar}
                       />
                     ))}
                   </div>
@@ -84,11 +122,11 @@ const MeetingList: React.FC<IProps> = ({
               </Card>
             ))}
             {loading && (
-              <div className={classes.loading}>
+              <div css={classes.loading}>
                 <CircularProgress size={140} />
               </div>
             )}
-          </>
+          </Fragment>
         ) : (
           <NoContent
             text={`You have no ${
@@ -99,7 +137,7 @@ const MeetingList: React.FC<IProps> = ({
           />
         )}
       </div>
-    </>
+    </Fragment>
   );
 };
 

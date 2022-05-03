@@ -1,5 +1,6 @@
 import { createReducer } from '@reduxjs/toolkit';
 import type { SnackbarMessage, OptionsObject, SnackbarKey } from 'notistack';
+
 import { snackbarsClose, snackbarsEnqueue, snackbarsRemove } from './actions';
 
 export interface Notification {
