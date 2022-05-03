@@ -6,7 +6,8 @@
     "test": "web-test-runner \"src/**/*.test.tsx\"",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint": "npx eslint --fix \"src/**/*.{js,jsx,ts,tsx}\" && npx stylelint --fix \"src/**/*.{css,scss}\"",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@emotion/babel-preset-css-prop": "11.2.0",
@@ -26,6 +27,7 @@
     "lodash": "4.17.21",
     "mocha": "^9.0.0",
     "notistack": "2.0.4",
+    "patch-package": "6.4.7",
     "polished": "4.2.2",
     "react": "18.0.0",
     "react-dom": "18.0.0",
