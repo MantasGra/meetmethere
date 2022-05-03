@@ -7,7 +7,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import format from 'date-fns/format';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams } from 'react-router';
 import NoContent from 'src/components/StatusIcons/NoContent';
 import { useInfiniteScroll } from 'src/hooks/infiniteScroll';
@@ -44,6 +44,10 @@ const AnnouncementList: React.FC = () => {
   const { id: idString } = useParams<'id'>();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const id = parseInt(idString!);
+  const loadAnnouncementsProposal = useCallback(
+    (page: number) => announcementsLoadAnnouncementsProposal(id, page),
+    [id],
+  );
   const {
     loading,
     list: announcements,
@@ -53,7 +57,7 @@ const AnnouncementList: React.FC = () => {
     announcementsHasMoreSelector,
     announcementsListSelector,
     announcementsLoadFailedSelector,
-    (page) => announcementsLoadAnnouncementsProposal(id, page),
+    loadAnnouncementsProposal,
   );
 
   const [activeMenu, setActiveMenu] = useState<IActiveMenuState | null>(null);

@@ -35,7 +35,7 @@ interface NamedEntity {
   lastName: string;
 }
 
-export const getFullName = (user?: NamedEntity) =>
+export const getFullName = (user?: NamedEntity): string =>
   `${user?.name || ''} ${user?.lastName || ''}`;
 
 export const accountFullNameSelector = createSelector(
@@ -63,7 +63,7 @@ export const accountColorSelector = createSelector(
   (account) => account?.color || '',
 );
 
-export const getUserInitials = (user?: NamedEntity) =>
+export const getUserInitials = (user?: NamedEntity): string =>
   `${user?.name.charAt(0) || ''}${user?.lastName.charAt(0) || ''}`;
 
 export const accountInitialsSelector = createSelector(
