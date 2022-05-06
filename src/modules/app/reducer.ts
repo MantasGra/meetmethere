@@ -5,6 +5,7 @@ import activitiesReducer from '../activitites/reducer';
 import announcementsReducer from '../announcements/reducer';
 import authReducer from '../auth/reducer';
 import expensesReducer from '../expenses/reducer';
+import formSubmitBlockerReducer from '../formSubmitBlocker/reducer';
 import invitationsReducer from '../invitations/reducer';
 import meetingsReducer from '../meetings/reducer';
 import snackbarsReducer from '../snackbars/reducer';
@@ -41,6 +42,7 @@ const rootReducer = combineReducers({
   meetings: meetingsReducer,
   activities: activitiesReducer,
   invitations: invitationsReducer,
+  formSubmitBlocker: formSubmitBlockerReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

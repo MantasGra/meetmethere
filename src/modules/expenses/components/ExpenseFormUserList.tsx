@@ -9,6 +9,8 @@ import { useMemo, useCallback } from 'react';
 import type { IUser } from 'src/modules/auth/reducer';
 import { getFullName } from 'src/modules/auth/selectors';
 
+import classes from './ExpenseFormUserList.styles';
+
 export interface ExpenseFormUserListProps {
   userOptions: IUser[];
   selectedUserIds: number[];
@@ -105,7 +107,9 @@ const ExpenseFormUserList: React.FC<ExpenseFormUserListProps> = ({
           />
         ))}
       </FormGroup>
-      {error && <FormHelperText>{error}</FormHelperText>}
+      {error && (
+        <FormHelperText css={classes.errorText}>{error}</FormHelperText>
+      )}
     </FormControl>
   );
 };

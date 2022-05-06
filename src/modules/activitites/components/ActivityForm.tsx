@@ -1,13 +1,14 @@
 import { ClassNames } from '@emotion/react';
 import DateTimePicker from '@mui/lab/DateTimePicker';
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 import isAfter from 'date-fns/isAfter';
 import { omit } from 'lodash';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+import usePreviousConditional from 'src/hooks/usePreviousConditional';
+import SubmitButton from 'src/modules/formSubmitBlocker/components/SubmitButton';
 
 import {
   activitiesCreateActivityProposal,
@@ -46,6 +47,16 @@ const ActivityForm: React.FC = () => {
   const isEditForm = useAppSelector(activitiesIsFormEditSelector);
   const editedActivity = useAppSelector(activitiesEditedActivitySelector);
 
+  const submitButtonText = useMemo(
+    () => (isEditForm ? 'Save' : 'Create'),
+    [isEditForm],
+  );
+
+  const submitButtonTextRendered = usePreviousConditional(
+    submitButtonText,
+    !meetingId,
+  );
+
   useEffect(() => {
     if (isEditForm && editedActivity) {
       reset({
@@ -72,7 +83,7 @@ const ActivityForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form>
       <TextField
         inputProps={{
           ...register('name', { required: 'Required' }),
@@ -155,14 +166,15 @@ const ActivityForm: React.FC = () => {
         />
       </div>
       <div css={classes.submitContainer}>
-        <Button
-          type="submit"
+        <SubmitButton
+          type="button"
           variant="contained"
           color="primary"
           css={classes.submitButton}
+          onClick={handleSubmit(onSubmit)}
         >
-          {isEditForm ? 'Save' : 'Create'}
-        </Button>
+          {submitButtonTextRendered}
+        </SubmitButton>
       </div>
     </form>
   );

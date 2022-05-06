@@ -1,9 +1,10 @@
 import { ClassNames } from '@emotion/react';
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+import usePreviousConditional from 'src/hooks/usePreviousConditional';
+import SubmitButton from 'src/modules/formSubmitBlocker/components/SubmitButton';
 
 import {
   announcementsCreateAnnouncementProposal,
@@ -36,6 +37,15 @@ const AnnouncementForm: React.FC = () => {
   const meetingId = useAppSelector(announcementsFormDialogMeetingIdSelector);
 
   const isEditForm = useAppSelector(announcementsIsFormEditSelector);
+
+  const submitButtonText = useMemo(
+    () => (isEditForm ? 'Save' : 'Create'),
+    [isEditForm],
+  );
+  const submitButtonTextRendered = usePreviousConditional(
+    submitButtonText,
+    !meetingId,
+  );
   const editedAnnouncement = useAppSelector(
     announcementsEditedAnnouncementSelector,
   );
@@ -68,7 +78,7 @@ const AnnouncementForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form>
       <TextField
         inputProps={{
           ...register('title', { required: 'Required' }),
@@ -104,14 +114,15 @@ const AnnouncementForm: React.FC = () => {
         )}
       </ClassNames>
       <div css={classes.submitContainer}>
-        <Button
-          type="submit"
+        <SubmitButton
+          type="button"
           variant="contained"
           color="primary"
           css={classes.submitButton}
+          onClick={handleSubmit(onSubmit)}
         >
-          {isEditForm ? 'Save' : 'Create'}
-        </Button>
+          {submitButtonTextRendered}
+        </SubmitButton>
       </div>
     </form>
   );

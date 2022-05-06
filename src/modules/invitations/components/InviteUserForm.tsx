@@ -1,9 +1,9 @@
-import Button from '@mui/material/Button/Button';
 import { omit } from 'lodash';
 import { FieldError, useForm, Controller } from 'react-hook-form';
 import UserAutocomplete from 'src/components/UserAutocomplete';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
 import type { IUser } from 'src/modules/auth/reducer';
+import SubmitButton from 'src/modules/formSubmitBlocker/components/SubmitButton';
 
 import { invitationsInviteUsersToMeeting } from '../actions';
 import { invitationsInviteUserDialogMeetingIdSelector } from '../selectors';
@@ -39,7 +39,7 @@ const InviteUserForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form>
       <Controller
         render={({ field }) => (
           <UserAutocomplete
@@ -64,14 +64,15 @@ const InviteUserForm: React.FC = () => {
         }}
       />
       <div css={classes.submitContainer}>
-        <Button
-          type="submit"
+        <SubmitButton
+          type="button"
           variant="contained"
           color="primary"
           css={classes.submitButton}
+          onClick={handleSubmit(onSubmit)}
         >
           Invite
-        </Button>
+        </SubmitButton>
       </div>
     </form>
   );

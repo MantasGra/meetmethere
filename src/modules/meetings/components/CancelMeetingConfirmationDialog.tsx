@@ -5,6 +5,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+import usePreviousConditional from 'src/hooks/usePreviousConditional';
 
 import { meetingsRespondToCancelingMeeting } from '../actions';
 import { MeetingStatus } from '../reducer';
@@ -20,6 +21,8 @@ const CancelMeetingConfirmationDialog: React.FC = () => {
 
   const isCanceling = cancelingMeeting?.data.status === MeetingStatus.Canceled;
 
+  const isCancelingForRender = usePreviousConditional(isCanceling, !isOpen);
+
   const dispatch = useAppDispatch();
 
   const onConfirmClick = () => {
@@ -31,11 +34,13 @@ const CancelMeetingConfirmationDialog: React.FC = () => {
   };
   return (
     <Dialog open={isOpen}>
-      <DialogTitle>{isCanceling ? 'Cancel' : 'End'} meeting?</DialogTitle>
+      <DialogTitle>
+        {isCancelingForRender ? 'Cancel' : 'End'} meeting?
+      </DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Are you sure you want to {isCanceling ? 'cancel' : 'end'} this
-          meeting? This action can not be undone.
+          Are you sure you want to {isCancelingForRender ? 'cancel' : 'end'}{' '}
+          this meeting? This action can not be undone.
         </DialogContentText>
       </DialogContent>
       <DialogActions>
