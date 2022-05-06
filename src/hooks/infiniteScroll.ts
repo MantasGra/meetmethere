@@ -1,13 +1,14 @@
+import type { ActionCreatorWithoutPayload, Action } from '@reduxjs/toolkit';
 import { useRef, useCallback, useState, useEffect } from 'react';
 import type { AppSelector } from 'src/modules/app/reducer';
-import type { ActionCreatorWithoutPayload, Action } from '@reduxjs/toolkit';
+
 import { useAppDispatch, useAppSelector } from './redux';
 
 interface InfiniteScrollHookReturn<T, E> {
   loading: boolean;
   list: T[];
   error: E;
-  lastElementRef: (node: Element) => void;
+  lastElementRef: (node: Element | null) => void;
 }
 
 export const useInfiniteScroll = <T, E, P>(
@@ -26,7 +27,7 @@ export const useInfiniteScroll = <T, E, P>(
 
   const observer = useRef<IntersectionObserver>();
   const lastElementRef = useCallback(
-    (node: Element) => {
+    (node: Element | null) => {
       if (loading) return;
       if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
@@ -48,7 +49,7 @@ export const useInfiniteScroll = <T, E, P>(
         dispatch(cancelAction());
       }
     };
-  }, [pageNumber]);
+  }, [pageNumber, fetchAction, cancelAction, dispatch]);
 
   return { loading, error, list, lastElementRef };
 };

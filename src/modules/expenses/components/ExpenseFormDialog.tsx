@@ -1,26 +1,38 @@
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import React from 'react';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import { useMemo } from 'react';
 import CloseableDialogTitle from 'src/components/CloseableDialogTitle';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
-import { expensesFormDialogExpenseIdentifierChangeRequest } from '../actions';
-import { expensesFormDialogExpenseIdentifierSelector } from '../selectors';
+import usePreviousConditional from 'src/hooks/usePreviousConditional';
+
+import { expensesEditExpenseIdChange } from '../actions';
+import {
+  expensesIsFormDialogOpenSelector,
+  expensesIsFormEditSelector,
+} from '../selectors';
+
 import ExpenseForm from './ExpenseForm';
 
 const ExpenseFormDialog: React.FC = () => {
-  const expenseIdentifier = useAppSelector(
-    expensesFormDialogExpenseIdentifierSelector,
+  const open = useAppSelector(expensesIsFormDialogOpenSelector);
+  const isFormEdit = useAppSelector(expensesIsFormEditSelector);
+
+  const titleText = useMemo(
+    () => `${isFormEdit ? 'Update' : 'Create'} Expense`,
+    [isFormEdit],
   );
+
+  const titleTextRendered = usePreviousConditional(titleText, !open);
 
   const dispatch = useAppDispatch();
 
   const onClose = () => {
-    dispatch(expensesFormDialogExpenseIdentifierChangeRequest(null));
+    dispatch(expensesEditExpenseIdChange(null, null));
   };
   return (
-    <Dialog open={expenseIdentifier?.meetingId != null} maxWidth="sm" fullWidth>
+    <Dialog open={open} maxWidth="sm" fullWidth>
       <CloseableDialogTitle onClose={onClose}>
-        {!expenseIdentifier?.expenseId ? 'Create Expense' : 'Edit Expense'}
+        {titleTextRendered}
       </CloseableDialogTitle>
       <DialogContent>
         <ExpenseForm />

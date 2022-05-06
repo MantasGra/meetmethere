@@ -1,126 +1,115 @@
-import {
-  Checkbox,
-  Divider,
-  FormControl,
-  FormGroup,
-  FormLabel,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-} from '@material-ui/core';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import React from 'react';
-import { useAppSelector } from 'src/hooks/redux';
+import Checkbox from '@mui/material/Checkbox';
+import Divider from '@mui/material/Divider';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormGroup from '@mui/material/FormGroup';
+import FormHelperText from '@mui/material/FormHelperText';
+import FormLabel from '@mui/material/FormLabel';
+import { useMemo, useCallback } from 'react';
 import type { IUser } from 'src/modules/auth/reducer';
-import { expensesMeetingParticipantSelector } from '../selectors';
-import classes from './ExpensesList.module.scss';
+import { getFullName } from 'src/modules/auth/selectors';
 
-export interface ExpenseFormUserListParams {
-  payeesList: IUser[];
-  onPayeesSelectedChange(users: IUser[]): void;
+import classes from './ExpenseFormUserList.styles';
+
+export interface ExpenseFormUserListProps {
+  userOptions: IUser[];
+  selectedUserIds: number[];
+  onSelectedUserIdsChange(users: number[]): void;
   error?: string;
 }
 
-enum SelectionType {
-  Full,
-  Partial,
-  Empty,
-}
+const transformUserToOption = (user: IUser) => ({
+  id: user.id,
+  label: getFullName(user),
+});
 
-const ExpenseFormUserList: React.FC<ExpenseFormUserListParams> = ({
-  payeesList,
-  onPayeesSelectedChange,
+const ExpenseFormUserList: React.FC<ExpenseFormUserListProps> = ({
+  userOptions,
+  selectedUserIds,
+  onSelectedUserIdsChange,
   error,
-}: ExpenseFormUserListParams) => {
-  const meetingParticipantList = useAppSelector(
-    expensesMeetingParticipantSelector,
+}) => {
+  // Derived values
+  const transformedUserOptions = useMemo(
+    () => userOptions.map(transformUserToOption),
+    [userOptions],
   );
-  const payeeIds = payeesList.map((p) => p.id);
-  const handleToggle = (user: IUser) => () => {
-    const currentIndex = payeeIds.indexOf(user.id);
-    const newChecked = [...payeesList];
 
-    if (currentIndex === -1) {
-      newChecked.push(user);
-    } else {
-      newChecked.splice(currentIndex, 1);
-    }
-    onPayeesSelectedChange(newChecked);
-  };
+  const allSelected = useMemo(
+    () => userOptions.length === selectedUserIds.length,
+    [userOptions, selectedUserIds],
+  );
 
-  const getSelectionType = () => {
-    if (payeeIds.length === 0) {
-      return SelectionType.Empty;
-    } else if (payeeIds.length === meetingParticipantList?.length) {
-      return SelectionType.Full;
-    } else {
-      return SelectionType.Partial;
-    }
-  };
+  const anySelected = useMemo(
+    () => !!selectedUserIds.length,
+    [selectedUserIds],
+  );
 
-  const selectAllToggle = () => {
-    if (getSelectionType() === SelectionType.Empty) {
-      onPayeesSelectedChange(
-        meetingParticipantList === null ? [] : meetingParticipantList,
-      );
-    } else {
-      onPayeesSelectedChange([]);
-    }
-  };
+  const isSelectedGetter = useCallback(
+    (userId: number) => selectedUserIds.includes(userId),
+    [selectedUserIds],
+  );
+
+  // Event handlers
+  const handleSelectUser = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>, userId: number) => {
+      const selected = event.target.checked;
+      if (selected) {
+        onSelectedUserIdsChange([...selectedUserIds, userId]);
+      } else {
+        onSelectedUserIdsChange(
+          selectedUserIds.filter((selectedId) => selectedId !== userId),
+        );
+      }
+    },
+    [onSelectedUserIdsChange, selectedUserIds],
+  );
+
+  const handleSelectAll = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const selected = event.target.checked;
+      if (selected) {
+        onSelectedUserIdsChange(
+          transformedUserOptions.map((option) => option.id),
+        );
+      } else {
+        onSelectedUserIdsChange([]);
+      }
+    },
+    [onSelectedUserIdsChange, transformedUserOptions],
+  );
 
   return (
-    <FormControl error={!!error} required component="fieldset">
+    <FormControl error={!!error} component="fieldset" fullWidth>
       <FormLabel component="legend">Select payees</FormLabel>
       <FormGroup>
-        <ListItem
-          key="checkAll"
-          role={undefined}
-          dense
-          button
-          onClick={selectAllToggle}
-        >
-          <ListItemIcon>
+        <FormControlLabel
+          control={
             <Checkbox
-              edge="start"
-              checked={getSelectionType() === SelectionType.Full}
-              tabIndex={-1}
-              indeterminate={getSelectionType() === SelectionType.Partial}
-              disableRipple
+              checked={allSelected}
+              indeterminate={!allSelected && anySelected}
+              onChange={handleSelectAll}
             />
-          </ListItemIcon>
-          <ListItemText primary="Select all" />
-        </ListItem>
+          }
+          label="Select All"
+        />
         <Divider />
-        <List className={classes.listRoot}>
-          {meetingParticipantList !== null &&
-            meetingParticipantList.map((user) => {
-              const labelId = `checkbox-user-label-${user.id}`;
-              const isSelected = payeeIds.indexOf(user.id) >= 0;
-              return (
-                <ListItem
-                  key={user.id}
-                  role={undefined}
-                  dense
-                  button
-                  onClick={handleToggle(user)}
-                >
-                  <ListItemIcon>
-                    <Checkbox
-                      edge="start"
-                      checked={isSelected}
-                      tabIndex={-1}
-                      disableRipple
-                      inputProps={{ 'aria-labelledby': labelId }}
-                    />
-                  </ListItemIcon>
-                  <ListItemText id={labelId} primary={user.name} />
-                </ListItem>
-              );
-            })}
-        </List>
+        {transformedUserOptions.map((option) => (
+          <FormControlLabel
+            key={option.id}
+            control={
+              <Checkbox
+                checked={isSelectedGetter(option.id)}
+                onChange={(event) => handleSelectUser(event, option.id)}
+              />
+            }
+            label={option.label}
+          />
+        ))}
       </FormGroup>
-      {error && <FormHelperText>{error}</FormHelperText>}
+      {error && (
+        <FormHelperText css={classes.errorText}>{error}</FormHelperText>
+      )}
     </FormControl>
   );
 };

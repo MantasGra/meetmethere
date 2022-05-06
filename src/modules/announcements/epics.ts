@@ -2,8 +2,10 @@ import { combineEpics } from 'redux-observable';
 import { of } from 'rxjs';
 import { mergeMap, map, pluck, catchError } from 'rxjs/operators';
 import { fromAxios, ofActionType } from 'src/utils/operators';
+
 import type { AppEpic } from '../app/epics';
 import { snackbarsEnqueue } from '../snackbars/actions';
+
 import {
   announcementsAddAnnouncement,
   announcementsCreateAnnouncementProposal,
@@ -68,7 +70,6 @@ const createAnnouncementEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Announcement posted!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'success',
               },
             }),
@@ -79,7 +80,6 @@ const createAnnouncementEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Announcement creation failed!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'error',
               },
             }),
@@ -96,7 +96,7 @@ const editAnnouncementEpic: AppEpic = (action$, _, { axios }) =>
     mergeMap(({ meetingId, announcementId, announcement }) =>
       fromAxios<IAnnouncement>(axios, {
         url: `/meeting/${meetingId}/announcements/${announcementId}`,
-        method: 'PUT',
+        method: 'PATCH',
         data: announcement,
         withCredentials: true,
       }).pipe(
@@ -107,7 +107,6 @@ const editAnnouncementEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Announcement updated!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'success',
               },
             }),
@@ -118,7 +117,6 @@ const editAnnouncementEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Failed to update announcement!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'error',
               },
             }),
@@ -144,7 +142,6 @@ const deleteAnnouncementEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Announcement deleted!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'success',
               },
             }),
@@ -155,7 +152,6 @@ const deleteAnnouncementEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Failed to delete activity!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'error',
               },
             }),

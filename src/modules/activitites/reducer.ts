@@ -1,5 +1,6 @@
 import { createReducer } from '@reduxjs/toolkit';
-import compareDesc from 'date-fns/compareDesc';
+import { keyBy } from 'lodash';
+
 import {
   activitiesAddActivity,
   activitiesDeleteActivityRequest,
@@ -19,7 +20,7 @@ export interface IActivity {
   endTime: Date;
 }
 
-interface ActivityState {
+export interface ActivityState {
   activitesLoading: boolean;
   activityIds: number[];
   activities: Record<number, IActivity>;
@@ -45,12 +46,8 @@ const activitiesReducer = createReducer(initialState, (builder) =>
       state.activities = {};
     })
     .addCase(activitiesLoadActivitiesSuccess, (state, action) => {
-      action.payload.forEach((activity) => {
-        state.activities[activity.id] = activity;
-        if (!state.activityIds.includes(activity.id)) {
-          state.activityIds.push(activity.id);
-        }
-      });
+      state.activities = keyBy(action.payload, 'id');
+      state.activityIds = action.payload.map((activity) => activity.id);
       state.activitiesLoadFailed = false;
       state.activitesLoading = false;
     })
@@ -64,7 +61,6 @@ const activitiesReducer = createReducer(initialState, (builder) =>
     .addCase(activitiesAddActivity, (state, action) => {
       state.activities[action.payload.id] = action.payload;
       state.activityIds.push(action.payload.id);
-      state.activityIds.sort(compareDesc);
     })
     .addCase(activitiesDeleteActivityRequest, (state, action) => {
       delete state.activities[action.payload];

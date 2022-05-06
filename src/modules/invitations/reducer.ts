@@ -1,6 +1,8 @@
 import { createReducer } from '@reduxjs/toolkit';
+
 import { meetingsChangeUserParticipationStatus } from '../meetings/actions';
 import type { IMeeting } from '../meetings/reducer';
+
 import {
   invitationsLoadInvitationsProposal,
   invitationsLoadInvitationsSuccess,
@@ -15,14 +17,8 @@ export enum ParticipationStatus {
   Declined = 'declined',
 }
 
-export interface IInvitation {
-  id: number;
-  userParticipationStatus: ParticipationStatus;
-  meeting: IMeeting;
-}
-
-interface InvitationState {
-  invitations: IInvitation[];
+export interface InvitationState {
+  invitations: IMeeting[];
   invitationsLoading: boolean;
   invitationsLoadingFailed: boolean;
   inviteUserDialogOpen: number | null;
@@ -50,9 +46,13 @@ const invitationsReducer = createReducer(initialState, (builder) =>
       state.invitationsLoadingFailed = true;
     })
     .addCase(meetingsChangeUserParticipationStatus, (state, action) => {
-      if (action.payload.newStatus !== ParticipationStatus.Invited) {
+      if (
+        ![ParticipationStatus.Invited, ParticipationStatus.Declined].includes(
+          action.payload.status,
+        )
+      ) {
         state.invitations.filter((invitation) => {
-          invitation.meeting.id !== action.payload.meetingId;
+          invitation.id !== action.payload.meetingId;
         });
       }
     })

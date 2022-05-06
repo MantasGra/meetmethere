@@ -1,15 +1,15 @@
-import React from 'react';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
 import CloseableDialogTitle from 'src/components/CloseableDialogTitle';
-import CreateMeetingForm from './CreateMeetingForm';
 import { useAppSelector, useAppDispatch } from 'src/hooks/redux';
-import { meetingsIsCreateDialogOpenSelector } from '../selectors';
+
 import { meetingsCreateDialogVisibleChangeRequest } from '../actions';
+import { meetingsIsCreateDialogOpenSelector } from '../selectors';
+
+import CreateMeetingForm from './CreateMeetingForm';
 
 const CreateMeetingDialog: React.FC = () => {
   const open = useAppSelector(meetingsIsCreateDialogOpenSelector);
-
   const dispatch = useAppDispatch();
   const onClose = () => {
     dispatch(meetingsCreateDialogVisibleChangeRequest(false));

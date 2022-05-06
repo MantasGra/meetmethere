@@ -1,14 +1,14 @@
 import { omit } from 'lodash';
-import React from 'react';
-import Button from '@material-ui/core/Button/Button';
 import { FieldError, useForm, Controller } from 'react-hook-form';
 import UserAutocomplete from 'src/components/UserAutocomplete';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
 import type { IUser } from 'src/modules/auth/reducer';
+import SubmitButton from 'src/modules/formSubmitBlocker/components/SubmitButton';
+
+import { invitationsInviteUsersToMeeting } from '../actions';
 import { invitationsInviteUserDialogMeetingIdSelector } from '../selectors';
 
-import classes from './InviteUserForm.module.scss';
-import { invitationsInviteUsersToMeeting } from '../actions';
+import classes from './InviteUserForm.styles';
 
 interface IInviteUserForm {
   users: IUser[];
@@ -39,7 +39,7 @@ const InviteUserForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form>
       <Controller
         render={({ field }) => (
           <UserAutocomplete
@@ -63,15 +63,16 @@ const InviteUserForm: React.FC = () => {
           validate: (value) => !!value.length,
         }}
       />
-      <div className={classes.submitContainer}>
-        <Button
-          type="submit"
+      <div css={classes.submitContainer}>
+        <SubmitButton
+          type="button"
           variant="contained"
           color="primary"
-          className={classes.submitButton}
+          css={classes.submitButton}
+          onClick={handleSubmit(onSubmit)}
         >
           Invite
-        </Button>
+        </SubmitButton>
       </div>
     </form>
   );

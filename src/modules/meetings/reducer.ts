@@ -1,6 +1,11 @@
 import { createReducer } from '@reduxjs/toolkit';
-import { sortedIndexBy } from 'lodash';
-import type { IUser, IUserInvitation } from '../auth/reducer';
+import { compareAsc } from 'date-fns';
+import { keyBy, uniq } from 'lodash';
+import { getComparerByGetter } from 'src/utils/sortUtils';
+import { toDate } from 'src/utils/transformators';
+
+import type { IParticipant, IUser } from '../auth/reducer';
+
 import {
   meetingsAddMeeting,
   meetingsCreateDialogVisibleChangeRequest,
@@ -8,6 +13,7 @@ import {
   meetingsLoadMeetingsProposal,
   meetingsLoadMeetingsSuccess,
   meetingsSwitchToTab,
+  meetingsLoadMeetingProposal,
   meetingsLoadMeetingFail,
   meetingsMeetingPollDialogVisibleChangeRequest,
   meetingsMeetingPollDatesResponseChangeSuccess,
@@ -34,26 +40,31 @@ export enum MeetingTabs {
   Expenses = 2,
 }
 
+export enum MeetingTypes {
+  Planned = 'planned',
+  Archived = 'archived',
+}
+
 export interface IMeetingDatesPollEntry {
   id: number;
   startDate: Date;
   endDate: Date;
-  userMeetingDatesPollEntries: Array<{ id: number; user: IUser }>;
+  users: IUser[];
 }
 
 export interface IMeeting {
   id: number;
   name: string;
   description: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: Date | null;
+  endDate: Date | null;
   locationId: string | null;
   locationString: string | null;
   status: MeetingStatus;
   isDatesPollActive: boolean;
   canUsersAddPollEntries: boolean;
   creator: IUser;
-  participants: IUserInvitation[];
+  participants: IParticipant[];
   meetingDatesPollEntries: IMeetingDatesPollEntry[];
 }
 
@@ -61,38 +72,43 @@ export declare const updateRequest: ReturnType<
   typeof meetingsUpdateMeetingRequest
 >;
 
-interface MeetingState {
-  plannedMeetingsLoading: boolean;
-  plannedMeetingIds: number[];
-  plannedMeetings: Record<number, IMeeting>;
-  plannedMeetingCount: number;
-  plannedMeetingLoadFailed: boolean;
-  historicMeetingsLoading: boolean;
-  historicMeetingIds: number[];
-  historicMeetings: Record<number, IMeeting>;
-  historicMeetingCount: number;
-  historicMeetingLoadFailed: boolean;
-  activeMeetingTab: MeetingTabs;
+interface MeetingStateData {
+  loading: boolean;
+  ids: number[];
+  count?: number; // could be undefined - it signifies unknown count
+  loadFailed: boolean;
+}
+
+export interface MeetingState {
+  meetings: Record<number, IMeeting>;
+  meetingLoading: boolean;
   meetingLoadFailed: boolean;
+  meetingListData: {
+    [MeetingTypes.Planned]: MeetingStateData;
+    [MeetingTypes.Archived]: MeetingStateData;
+  };
+  activeMeetingTab: MeetingTabs;
   isCreateDialogOpen: boolean;
   meetingPollFormId: number | null;
   editMode: number | null;
   cancelingMeeting: typeof updateRequest.payload | null;
 }
 
+const initialListDataState: MeetingStateData = {
+  loading: false,
+  ids: [],
+  loadFailed: false,
+};
+
 const initialState: MeetingState = {
-  plannedMeetingsLoading: false,
-  plannedMeetingIds: [],
-  plannedMeetings: {},
-  plannedMeetingCount: 0,
-  plannedMeetingLoadFailed: false,
-  historicMeetingsLoading: false,
-  historicMeetingIds: [],
-  historicMeetings: {},
-  historicMeetingCount: 0,
-  historicMeetingLoadFailed: false,
-  activeMeetingTab: MeetingTabs.Announcements,
+  meetings: {},
+  meetingLoading: false,
   meetingLoadFailed: false,
+  meetingListData: {
+    [MeetingTypes.Planned]: initialListDataState,
+    [MeetingTypes.Archived]: initialListDataState,
+  },
+  activeMeetingTab: MeetingTabs.Announcements,
   isCreateDialogOpen: false,
   meetingPollFormId: null,
   editMode: null,
@@ -105,99 +121,64 @@ const meetingsReducer = createReducer(initialState, (builder) =>
       state.isCreateDialogOpen = action.payload;
     })
     .addCase(meetingsLoadMeetingsProposal, (state, action) => {
-      if (action.payload.page === 1) {
-        state.plannedMeetings = {};
-        state.plannedMeetingCount = 0;
-        state.plannedMeetingIds = [];
-        state.historicMeetingIds = [];
-        state.historicMeetings = {};
-        state.historicMeetingCount = 0;
-      }
-      if (action.payload.typeOfMeeting == 'planned') {
-        state.plannedMeetingsLoading = true;
+      const { typeOfMeeting, page } = action.payload;
+      if (page === 1) {
+        state.meetingListData[typeOfMeeting] = {
+          ...initialListDataState,
+          loading: true,
+        };
       } else {
-        state.historicMeetingsLoading = true;
+        state.meetingListData[typeOfMeeting].loading = true;
       }
     })
     .addCase(meetingsLoadMeetingsSuccess, (state, action) => {
-      if (action.payload.typeOfMeeting == 'planned') {
-        action.payload.meetings.forEach((meeting) => {
-          state.plannedMeetings[meeting.id] = meeting;
-          if (!state.plannedMeetingIds.includes(meeting.id)) {
-            state.plannedMeetingIds.splice(
-              sortedIndexBy(
-                state.plannedMeetingIds,
-                meeting.id,
-                (id) => state.plannedMeetings[id].startDate,
-              ),
-              0,
-              meeting.id,
-            );
-          }
-        });
-        state.plannedMeetingCount = action.payload.meetingCount;
-        state.plannedMeetingsLoading = false;
-        state.plannedMeetingLoadFailed = false;
-      } else {
-        action.payload.meetings.forEach((meeting) => {
-          state.historicMeetings[meeting.id] = meeting;
-          if (!state.historicMeetingIds.includes(meeting.id)) {
-            state.historicMeetingIds.splice(
-              sortedIndexBy(
-                state.historicMeetingIds,
-                meeting.id,
-                (id) => state.historicMeetings[id].startDate,
-              ),
-              0,
-              meeting.id,
-            );
-          }
-        });
-        state.historicMeetingCount = action.payload.meetingCount;
-        state.historicMeetingsLoading = false;
-        state.historicMeetingLoadFailed = false;
-      }
+      const { meetings, meetingCount, typeOfMeeting } = action.payload;
+
+      state.meetings = {
+        ...state.meetings,
+        ...keyBy(meetings, 'id'),
+      };
+
+      state.meetingListData[typeOfMeeting].ids = uniq([
+        ...state.meetingListData[typeOfMeeting].ids,
+        ...meetings.map((meeting) => meeting.id),
+      ]).sort(
+        getComparerByGetter(
+          (id) => toDate(state.meetings[id].startDate),
+          compareAsc,
+        ),
+      );
+
+      state.meetingListData[typeOfMeeting].count = meetingCount;
+      state.meetingListData[typeOfMeeting].loading = false;
+      state.meetingListData[typeOfMeeting].loadFailed = false;
     })
-    .addCase(meetingsLoadMeetingsFail, (state) => {
-      state.plannedMeetingsLoading = false;
-      state.plannedMeetingLoadFailed = true;
+    .addCase(meetingsLoadMeetingsFail, (state, action) => {
+      state.meetingListData[action.payload].loading = false;
+      state.meetingListData[action.payload].loadFailed = true;
     })
     .addCase(meetingsAddMeeting, (state, action) => {
-      state.meetingLoadFailed = false;
-      if (
-        action.payload.status in
-        [
-          MeetingStatus.Planned,
-          MeetingStatus.Started,
-          MeetingStatus.Extended,
-          MeetingStatus.Postponed,
-        ]
-      ) {
-        state.plannedMeetings[action.payload.id] = action.payload;
-        state.plannedMeetingIds.splice(
-          sortedIndexBy(
-            state.plannedMeetingIds,
-            action.payload.id,
-            (id) => state.plannedMeetings[id].startDate,
+      const { meeting, typeOfMeeting } = action.payload;
+      state.meetings[meeting.id] = meeting;
+      state.meetingLoading = false;
+      if (typeOfMeeting) {
+        if (!state.meetingListData[typeOfMeeting].ids.includes(meeting.id)) {
+          state.meetingListData[typeOfMeeting].ids.push(meeting.id);
+          state.meetingListData[typeOfMeeting].count = undefined;
+        }
+        state.meetingListData[typeOfMeeting].ids.sort(
+          getComparerByGetter(
+            (id) => toDate(state.meetings[id].startDate),
+            compareAsc,
           ),
-          0,
-          action.payload.id,
-        );
-      } else {
-        state.historicMeetings[action.payload.id] = action.payload;
-        state.historicMeetingIds.splice(
-          sortedIndexBy(
-            state.historicMeetingIds,
-            action.payload.id,
-            (id) => state.historicMeetings[id].startDate,
-          ),
-          0,
-          action.payload.id,
         );
       }
     })
     .addCase(meetingsSwitchToTab, (state, action) => {
       state.activeMeetingTab = action.payload;
+    })
+    .addCase(meetingsLoadMeetingProposal, (state) => {
+      state.meetingLoading = true;
     })
     .addCase(meetingsLoadMeetingFail, (state) => {
       state.meetingLoadFailed = true;
@@ -206,22 +187,22 @@ const meetingsReducer = createReducer(initialState, (builder) =>
       state.meetingPollFormId = action.payload;
     })
     .addCase(meetingsMeetingPollDatesResponseChangeSuccess, (state, action) => {
-      state.plannedMeetings[action.payload.meetingId].meetingDatesPollEntries =
+      state.meetings[action.payload.meetingId].meetingDatesPollEntries =
         action.payload.entries;
     })
     .addCase(meetingsChangeUserParticipationStatus, (state, action) => {
-      state.plannedMeetings[action.payload.meetingId].participants.map(
-        (participant) => {
-          if (participant.email === action.payload.userEmail) {
-            participant.userParticipationStatus = action.payload.newStatus;
-          }
-        },
-      );
+      const { meetingId, userId, status } = action.payload;
+      state.meetings[meetingId].participants.some((participant) => {
+        if (participant.id === userId) {
+          participant.userParticipationStatus = status;
+          return true;
+        }
+        return false;
+      });
     })
     .addCase(meetingsAddUsersToMeeting, (state, action) => {
-      state.plannedMeetings[action.payload.meetingId].participants.push(
-        ...action.payload.newUsers,
-      );
+      const { meetingId, newUsers } = action.payload;
+      state.meetings[meetingId].participants.push(...newUsers);
     })
     .addCase(meetingsEditModeChange, (state, action) => {
       state.editMode = action.payload;
@@ -230,12 +211,8 @@ const meetingsReducer = createReducer(initialState, (builder) =>
       }
     })
     .addCase(meetingsModifyMeeting, (state, action) => {
-      if (action.payload.id) {
-        state.plannedMeetings[action.payload.id] = {
-          ...state.plannedMeetings[action.payload.id],
-          ...action.payload,
-        };
-      }
+      const { id, meeting } = action.payload;
+      state.meetings[id] = { ...state.meetings[id], ...meeting };
     })
     .addCase(meetingsChangeCancelingMeeting, (state, action) => {
       state.cancelingMeeting = action.payload;

@@ -1,14 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit';
+import Axios from 'axios-observable';
 import { createEpicMiddleware } from 'redux-observable';
 import type { EpicMiddleware } from 'redux-observable';
 import { responsiveStoreEnhancer } from 'redux-responsive';
-import Axios from 'axios-observable';
-import rootReducer from './reducer';
-import type { RootState } from './reducer';
+import getConfig from 'src/config/config';
+
+import { AppActions, appInit } from './actions';
 import rootEpic from './epics';
 import history from './history';
-import getConfig from 'src/config/config';
-import { AppActions, appInit } from './actions';
+import rootReducer from './reducer';
+import type { RootState } from './reducer';
 
 const configureAppStore = (preloadedState?: RootState) => {
   const config = getConfig();

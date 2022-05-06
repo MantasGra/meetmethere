@@ -1,38 +1,34 @@
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
-import React, { useEffect } from 'react';
+import { ClassNames } from '@emotion/react';
+import TextField from '@mui/material/TextField';
+import { useCallback, useEffect, useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
-import type { IUser } from 'src/modules/auth/reducer';
+import usePreviousConditional from 'src/hooks/usePreviousConditional';
+import SubmitButton from 'src/modules/formSubmitBlocker/components/SubmitButton';
+
 import {
   expensesCreateExpenseProposal,
   expensesEditExpenseProposal,
-  IExpenseCreateRequest,
-  IExpenseEditRequest,
 } from '../actions';
 import {
-  expensesFormDialogExpenseIdentifierSelector,
-  expensesFormDialogExpenseSelector,
+  expensesEditedExpenseSelector,
+  expensesFormDialogMeetingIdSelector,
+  expensesIsFormEditSelector,
+  expensesMeetingParticipantSelector,
 } from '../selectors';
-import classes from './ExpenseForm.module.scss';
+
+import classes from './ExpenseForm.styles';
 import ExpenseFormUserList from './ExpenseFormUserList';
 
-interface ExpenseCreateRequest {
+export interface IExpenseForm {
   name: string;
   description: string;
   amount: number;
-  users: IUser[];
-}
-
-interface ExpenseEditRequest {
-  id: number;
-  name: string;
-  description: string;
-  amount: number;
-  users: IUser[];
+  userIds: number[];
 }
 
 const ExpenseForm: React.FC = () => {
+  // Form
   const {
     control,
     register,
@@ -40,66 +36,65 @@ const ExpenseForm: React.FC = () => {
     watch,
     formState: { errors },
     reset,
-  } = useForm<ExpenseCreateRequest>();
-
+  } = useForm<IExpenseForm>();
   const description = watch('description', '');
 
-  const expenseIdentifier = useAppSelector(
-    expensesFormDialogExpenseIdentifierSelector,
+  // Selectors
+  const meetingId = useAppSelector(expensesFormDialogMeetingIdSelector);
+  const isEditForm = useAppSelector(expensesIsFormEditSelector);
+  const editedExpense = useAppSelector(expensesEditedExpenseSelector);
+  const expensesMeetingParticipants = useAppSelector(
+    expensesMeetingParticipantSelector,
   );
-  const expenseToBeEdited = useAppSelector(expensesFormDialogExpenseSelector);
-  const isEditMode =
-    expenseToBeEdited !== null && expenseIdentifier?.expenseId !== null;
+
   const dispatch = useAppDispatch();
 
+  // Derived values
+  const editedExpenseUserIds = useMemo(() => {
+    if (!editedExpense) {
+      return [];
+    }
+    return editedExpense.users.map((user) => user.id);
+  }, [editedExpense]);
+  const submitButtonText = useMemo(
+    () => (isEditForm ? 'Save' : 'Create'),
+    [isEditForm],
+  );
+  const submitButtonTextRendered = usePreviousConditional(
+    submitButtonText,
+    !meetingId,
+  );
+
+  // Effects
   useEffect(() => {
-    if (!!expenseToBeEdited) {
-      reset({ ...expenseToBeEdited, users: expenseToBeEdited.users });
+    if (isEditForm && editedExpense) {
+      reset({
+        name: editedExpense.name,
+        description: editedExpense.description,
+        amount: editedExpense.amount,
+        userIds: editedExpenseUserIds,
+      });
     }
-  }, []);
+  }, [isEditForm, editedExpense, editedExpenseUserIds, reset]);
 
-  const submitNewExpense = (data: ExpenseCreateRequest) => {
-    const postData: IExpenseCreateRequest = {
-      name: data.name,
-      description: data.description,
-      amount: data.amount,
-      userIds: data.users.map((u) => u.id),
-    };
-    if (expenseIdentifier?.meetingId) {
-      dispatch(
-        expensesCreateExpenseProposal(postData, expenseIdentifier.meetingId),
-      );
-    }
-  };
-
-  const submitEditExpense = (data: ExpenseEditRequest) => {
-    const postData: IExpenseEditRequest = {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      amount: data.amount,
-      userIds: data.users.map((u) => u.id),
-    };
-    if (expenseIdentifier?.meetingId) {
-      dispatch(
-        expensesEditExpenseProposal(postData, expenseIdentifier.meetingId),
-      );
-    }
-  };
-
-  const onSubmit = (data: ExpenseCreateRequest) => {
-    if (expenseToBeEdited !== null && expenseIdentifier?.expenseId !== null) {
-      submitEditExpense({ ...data, id: expenseIdentifier!.expenseId });
-    } else if (
-      expenseToBeEdited == null &&
-      expenseIdentifier?.meetingId !== null
-    ) {
-      submitNewExpense(data);
-    }
-  };
+  // Event handlers
+  const onSubmit = useCallback(
+    (data: IExpenseForm) => {
+      if (meetingId) {
+        if (isEditForm && editedExpense) {
+          dispatch(
+            expensesEditExpenseProposal(data, meetingId, editedExpense.id),
+          );
+        } else {
+          dispatch(expensesCreateExpenseProposal(data, meetingId));
+        }
+      }
+    },
+    [meetingId, isEditForm, editedExpense, dispatch],
+  );
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form>
       <TextField
         inputProps={{
           ...register('name', { required: 'Required' }),
@@ -114,7 +109,10 @@ const ExpenseForm: React.FC = () => {
       />
       <TextField
         inputProps={{
-          ...register('amount', { validate: (value) => value > 0 }),
+          ...register('amount', {
+            validate: (value) => value > 0,
+            valueAsNumber: true,
+          }),
           step: '0.01',
         }}
         helperText={
@@ -129,52 +127,60 @@ const ExpenseForm: React.FC = () => {
         type="number"
         fullWidth
       />
-      <TextField
-        inputProps={{
-          ...register('description'),
-          maxLength: 500,
-        }}
-        helperText={`${description.length}/500`}
-        FormHelperTextProps={{
-          className: classes.helperTextRight,
-        }}
-        margin="dense"
-        variant="outlined"
-        label="Description"
-        fullWidth
-        multiline
-        rows={4}
-      />
+      <ClassNames>
+        {({ css }) => (
+          <TextField
+            inputProps={{
+              ...register('description'),
+              maxLength: 500,
+            }}
+            helperText={`${description.length}/500`}
+            FormHelperTextProps={{
+              className: css`
+                ${classes.helperTextRight};
+              `,
+            }}
+            margin="dense"
+            variant="outlined"
+            label="Description"
+            fullWidth
+            multiline
+            rows={4}
+          />
+        )}
+      </ClassNames>
       <div>
         <Controller
           control={control}
-          defaultValue={
-            !!expenseToBeEdited?.users ? expenseToBeEdited.users : []
-          }
-          name="users"
+          defaultValue={editedExpenseUserIds}
+          name="userIds"
           rules={{
             validate: (value) => value.length !== 0,
           }}
           render={({ field }) => (
             <ExpenseFormUserList
-              payeesList={field.value}
-              onPayeesSelectedChange={(l) => field.onChange(l)}
+              userOptions={expensesMeetingParticipants}
+              selectedUserIds={field.value}
+              onSelectedUserIdsChange={(l) => field.onChange(l)}
               error={
-                !!errors.users ? 'At least one participant must pay' : undefined
+                !!errors.userIds
+                  ? 'At least one participant must pay'
+                  : undefined
               }
             />
           )}
         />
       </div>
-      <div className={classes.submitContainer}>
-        <Button
-          type="submit"
+      <div css={classes.submitContainer}>
+        <SubmitButton
+          type="button"
           variant="contained"
           color="primary"
-          className={classes.submitButton}
+          css={classes.submitButton}
+          onClick={handleSubmit(onSubmit)}
         >
-          {isEditMode ? 'Edit' : 'Create'}
-        </Button>
+          {submitButtonTextRendered}
+        </SubmitButton>
       </div>
     </form>
   );

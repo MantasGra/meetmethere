@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import Alert from '@mui/material/Alert';
+import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
+import IconButton from '@mui/material/IconButton';
+import Input from '@mui/material/Input';
+import InputAdornment from '@mui/material/InputAdornment';
+import InputLabel from '@mui/material/InputLabel';
+import Link from '@mui/material/Link';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import TextField from '@material-ui/core/TextField';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import Link from '@material-ui/core/Link';
-import Input from '@material-ui/core/Input';
-import InputLabel from '@material-ui/core/InputLabel';
-import FormControl from '@material-ui/core/FormControl';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import IconButton from '@material-ui/core/IconButton';
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import Alert from '@material-ui/lab/Alert';
-
-import { emailRegex } from 'src/utils/regex';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+import SubmitButton from 'src/modules/formSubmitBlocker/components/SubmitButton';
+import { emailRegex } from 'src/utils/regex';
+
 import {
   authLoginSubmitProposal,
   authSwitchToRegisterProposal,
 } from '../actions';
 import { authFormErrorsSelector } from '../selectors';
 
-import classes from './LoginForm.module.scss';
+import classes from './LoginForm.styles';
 
 export interface ILoginForm {
   email: string;
@@ -50,7 +50,7 @@ const LoginForm: React.FC = () => {
     if (storedErrors.password) {
       setError('password', { type: 'server', message: storedErrors.email });
     }
-  }, [storedErrors]);
+  }, [storedErrors, setError]);
 
   const onSubmit = (data: ILoginForm) => {
     dispatch(authLoginSubmitProposal(data));
@@ -71,7 +71,7 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form>
       {storedErrors.overall ? (
         <Alert severity="error">{storedErrors.overall}</Alert>
       ) : null}
@@ -85,6 +85,7 @@ const LoginForm: React.FC = () => {
             error={!!errors.email}
             inputProps={{ maxLength: 100 }}
             autoComplete="username"
+            variant="standard"
             fullWidth
           />
         )}
@@ -104,7 +105,7 @@ const LoginForm: React.FC = () => {
       />
       <Controller
         render={({ field }) => (
-          <FormControl fullWidth error={!!errors.password}>
+          <FormControl error={!!errors.password} variant="standard" fullWidth>
             <InputLabel htmlFor="password">Password</InputLabel>
             <Input
               {...field}
@@ -118,6 +119,7 @@ const LoginForm: React.FC = () => {
                     id="passwordVisibilityButton"
                     onClick={onShowPasswordToggle}
                     onMouseDown={onShowPasswordMouseDown}
+                    size="large"
                   >
                     {showPassword ? <Visibility /> : <VisibilityOff />}
                   </IconButton>
@@ -142,21 +144,22 @@ const LoginForm: React.FC = () => {
           },
         }}
       />
-      <Button
-        type="submit"
+      <SubmitButton
+        type="button"
         variant="contained"
         color="primary"
         fullWidth
-        className={classes.submitButton}
+        css={classes.submitButton}
+        onClick={handleSubmit(onSubmit)}
       >
         Login
-      </Button>
+      </SubmitButton>
       <Typography variant="caption" align="right" display="block">
         Not a member?{' '}
         <Link
           component="span"
           onClick={onRegisterClick}
-          className={classes.registerLink}
+          css={classes.registerLink}
         >
           Register
         </Link>

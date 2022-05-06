@@ -2,12 +2,21 @@ import type { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import { combineEpics } from 'redux-observable';
 import { EMPTY, from, of } from 'rxjs';
-import { mergeMap, withLatestFrom, catchError, pluck } from 'rxjs/operators';
+import {
+  mergeMap,
+  withLatestFrom,
+  catchError,
+  pluck,
+  map,
+  tap,
+} from 'rxjs/operators';
 import { Routes } from 'src/constants/enums';
 import { fromAxios, ofActionType } from 'src/utils/operators';
+
 import type { AppEpic } from '../app/epics';
 import { isMobileSelector } from '../app/selectors';
 import { snackbarsEnqueue } from '../snackbars/actions';
+
 import {
   authAuthorizeUserProposal,
   authAuthorizeUserRequest,
@@ -22,7 +31,10 @@ import {
   authLogoutProposal,
   authRegisterSubmitProposal,
   authSetAuthLoading,
+  authGetCsrfTokenRequest,
+  authSetCsrfTokenRequest,
 } from './actions';
+import type { IAccount } from './reducer';
 import { isAuthDialogOpenSelector } from './selectors';
 
 const openLoginEpic: AppEpic = (action$, state$, { history }) =>
@@ -67,20 +79,11 @@ const switchToRegisterEpic: AppEpic = (action$, state$, { history }) =>
     }),
   );
 
-interface IAuthorizeUserResponse {
-  id: number;
-  name: string;
-  lastName: string;
-  email: string;
-  createDate: Date;
-  color: string;
-}
-
 const authorizeUserEpic: AppEpic = (action$, _, { axios }) =>
   action$.pipe(
     ofActionType(authAuthorizeUserProposal),
     mergeMap(() =>
-      fromAxios<IAuthorizeUserResponse>(axios, {
+      fromAxios<IAccount>(axios, {
         url: '/user/self',
         withCredentials: true,
       }).pipe(
@@ -117,13 +120,12 @@ const registerSubmitEpic: AppEpic = (action$, state$, { axios, history }) =>
             snackbarsEnqueue({
               message: 'Account successfully created!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'success',
               },
             }),
           ]);
         }),
-        catchError((error: AxiosError) => {
+        catchError((error: AxiosError<string>) => {
           if (error.response?.status === StatusCodes.BAD_REQUEST) {
             return of(
               authChangeSubmitErrorRequest({ email: error.response?.data }),
@@ -182,6 +184,27 @@ const logoutEpic: AppEpic = (action$, _, { axios }) =>
     ),
   );
 
+interface IGetCsrfTokenResponse {
+  csrfToken: string;
+}
+
+const getCsrfTokenEpic: AppEpic = (action$, _, { axios }) =>
+  action$.pipe(
+    ofActionType(authGetCsrfTokenRequest),
+    mergeMap(() =>
+      fromAxios<IGetCsrfTokenResponse>(axios, {
+        url: '/csrf',
+        method: 'GET',
+        withCredentials: true,
+      }).pipe(
+        tap((response) => {
+          axios.defaults.headers.common['CSRF-Token'] = response.data.csrfToken;
+        }),
+        map((response) => authSetCsrfTokenRequest(response.data.csrfToken)),
+      ),
+    ),
+  );
+
 export default combineEpics(
   openLoginEpic,
   switchToLoginEpic,
@@ -190,4 +213,5 @@ export default combineEpics(
   registerSubmitEpic,
   loginSubmitEpic,
   logoutEpic,
+  getCsrfTokenEpic,
 );

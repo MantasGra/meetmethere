@@ -1,32 +1,35 @@
-import React, { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
-import { omit } from 'lodash';
-import isAfter from 'date-fns/isAfter';
+import { ClassNames } from '@emotion/react';
+import DateTimePicker from '@mui/lab/DateTimePicker';
+import TextField from '@mui/material/TextField';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
-import { DateTimePicker } from '@material-ui/pickers';
+import isAfter from 'date-fns/isAfter';
+import { omit } from 'lodash';
+import { useEffect, useMemo } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+import usePreviousConditional from 'src/hooks/usePreviousConditional';
+import SubmitButton from 'src/modules/formSubmitBlocker/components/SubmitButton';
+
+import {
+  activitiesCreateActivityProposal,
+  activitiesEditActivityProposal,
+} from '../actions';
 import {
   activitiesEditedActivitySelector,
   activitiesFormDialogMeetingIdSelector,
   activitiesIsFormEditSelector,
 } from '../selectors';
-import {
-  activitiesCreateActivityProposal,
-  activitiesEditActivityProposal,
-} from '../actions';
 
-import classes from './ActivityForm.module.scss';
+import classes from './ActivityForm.styles';
 
-interface IActivityForm {
+export interface IActivityForm {
   name: string;
   description: string;
   startTime: Date;
   endTime: Date;
 }
 
-const activityForm: React.FC = () => {
+const ActivityForm: React.FC = () => {
   const {
     register,
     handleSubmit,
@@ -44,6 +47,16 @@ const activityForm: React.FC = () => {
   const isEditForm = useAppSelector(activitiesIsFormEditSelector);
   const editedActivity = useAppSelector(activitiesEditedActivitySelector);
 
+  const submitButtonText = useMemo(
+    () => (isEditForm ? 'Save' : 'Create'),
+    [isEditForm],
+  );
+
+  const submitButtonTextRendered = usePreviousConditional(
+    submitButtonText,
+    !meetingId,
+  );
+
   useEffect(() => {
     if (isEditForm && editedActivity) {
       reset({
@@ -53,7 +66,7 @@ const activityForm: React.FC = () => {
         endTime: new Date(editedActivity.endTime),
       });
     }
-  }, [isEditForm, editedActivity]);
+  }, [isEditForm, editedActivity, reset]);
 
   const dispatch = useAppDispatch();
 
@@ -61,33 +74,16 @@ const activityForm: React.FC = () => {
     if (meetingId) {
       if (isEditForm && editedActivity) {
         dispatch(
-          activitiesEditActivityProposal(
-            {
-              ...data,
-              startTime: data.startTime.toISOString(),
-              endTime: data.endTime.toISOString(),
-            },
-            meetingId,
-            editedActivity.id,
-          ),
+          activitiesEditActivityProposal(data, meetingId, editedActivity.id),
         );
       } else {
-        dispatch(
-          activitiesCreateActivityProposal(
-            {
-              ...data,
-              startTime: data.startTime.toISOString(),
-              endTime: data.endTime.toISOString(),
-            },
-            meetingId,
-          ),
-        );
+        dispatch(activitiesCreateActivityProposal(data, meetingId));
       }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form>
       <TextField
         inputProps={{
           ...register('name', { required: 'Required' }),
@@ -100,31 +96,38 @@ const activityForm: React.FC = () => {
         label="Title"
         fullWidth
       />
-      <TextField
-        inputProps={{
-          ...register('description'),
-          maxLength: 255,
-        }}
-        helperText={`${description.length}/255`}
-        FormHelperTextProps={{
-          className: classes.helperTextRight,
-        }}
-        margin="dense"
-        variant="outlined"
-        label="Description"
-        fullWidth
-        multiline
-        rows={4}
-      />
-      <div className={classes.dateFields}>
+      <ClassNames>
+        {({ css }) => (
+          <TextField
+            inputProps={{
+              ...register('description'),
+              maxLength: 255,
+            }}
+            helperText={`${description.length}/255`}
+            FormHelperTextProps={{
+              className: css`
+                ${classes.helperTextRight};
+              `,
+            }}
+            margin="dense"
+            variant="outlined"
+            label="Description"
+            fullWidth
+            multiline
+            rows={4}
+          />
+        )}
+      </ClassNames>
+      <div css={classes.dateFields}>
         <Controller
           render={({ field }) => (
             <DateTimePicker
               {...omit(field, 'ref')}
               label="Start Time"
-              margin="dense"
               disablePast
-              inputVariant="outlined"
+              renderInput={(props) => (
+                <TextField {...props} margin="dense" variant="outlined" />
+              )}
             />
           )}
           name={'startTime'}
@@ -135,16 +138,21 @@ const activityForm: React.FC = () => {
           render={({ field }) => (
             <DateTimePicker
               {...omit(field, 'ref')}
-              helperText={
-                errors.endTime?.type === 'validate'
-                  ? 'End time must be after start time'
-                  : undefined
-              }
-              error={!!errors.endTime}
-              margin="dense"
               label="End Time"
               disablePast
-              inputVariant="outlined"
+              renderInput={(props) => (
+                <TextField
+                  {...props}
+                  helperText={
+                    errors.endTime?.type === 'validate'
+                      ? 'End time must be after start time'
+                      : undefined
+                  }
+                  error={!!errors.endTime}
+                  margin="dense"
+                  variant="outlined"
+                />
+              )}
             />
           )}
           name={'endTime'}
@@ -157,18 +165,19 @@ const activityForm: React.FC = () => {
           defaultValue={new Date()}
         />
       </div>
-      <div className={classes.submitContainer}>
-        <Button
-          type="submit"
+      <div css={classes.submitContainer}>
+        <SubmitButton
+          type="button"
           variant="contained"
           color="primary"
-          className={classes.submitButton}
+          css={classes.submitButton}
+          onClick={handleSubmit(onSubmit)}
         >
-          {isEditForm ? 'Save' : 'Create'}
-        </Button>
+          {submitButtonTextRendered}
+        </SubmitButton>
       </div>
     </form>
   );
 };
 
-export default activityForm;
+export default ActivityForm;

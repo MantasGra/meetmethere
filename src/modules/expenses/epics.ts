@@ -2,16 +2,18 @@ import { combineEpics } from 'redux-observable';
 import { of } from 'rxjs';
 import { catchError, map, mergeMap, pluck } from 'rxjs/operators';
 import { fromAxios, ofActionType } from 'src/utils/operators';
+
 import type { AppEpic } from '../app/epics';
 import { snackbarsEnqueue } from '../snackbars/actions';
+
 import {
   expensesAddExpense,
-  expensesChangeExpense,
+  expensesEditExpenseRequest,
   expensesCreateExpenseProposal,
-  expensesDeleteExpense,
+  expensesDeleteExpenseRequest,
   expensesDeleteExpenseProposal,
   expensesEditExpenseProposal,
-  expensesFormDialogExpenseIdentifierChangeRequest,
+  expensesEditExpenseIdChange,
   expensesFormDialogMeetingIdChangeRequest,
   expensesLoadExpensesFail,
   expensesLoadExpensesProposal,
@@ -23,16 +25,13 @@ const loadExpensesEpic: AppEpic = (action$, _, { axios }) =>
   action$.pipe(
     ofActionType(expensesLoadExpensesProposal),
     pluck('payload'),
-    mergeMap(({ page, meetingId }) =>
+    mergeMap((meetingId) =>
       fromAxios<IExpense[]>(axios, {
         url: `/meeting/${meetingId}/expenses`,
         method: 'GET',
-        params: { page },
         withCredentials: true,
       }).pipe(
-        map((response) =>
-          expensesLoadExpensesSuccess(response.data, response.data.length),
-        ),
+        map((response) => expensesLoadExpensesSuccess(response.data)),
         catchError(() => of(expensesLoadExpensesFail())),
       ),
     ),
@@ -56,7 +55,6 @@ const createExpenseEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Expense created!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'success',
               },
             }),
@@ -67,7 +65,6 @@ const createExpenseEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Expense creation failed!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'error',
               },
             }),
@@ -81,21 +78,20 @@ const editExpenseEpic: AppEpic = (action$, _, { axios }) =>
   action$.pipe(
     ofActionType(expensesEditExpenseProposal),
     pluck('payload'),
-    mergeMap(({ expense, meetingId }) =>
+    mergeMap(({ expense, expenseId, meetingId }) =>
       fromAxios<IExpense>(axios, {
-        url: `/meeting/${meetingId}/expenses/${expense.id}`,
-        method: 'PUT',
+        url: `/meeting/${meetingId}/expenses/${expenseId}`,
+        method: 'PATCH',
         data: expense,
         withCredentials: true,
       }).pipe(
         mergeMap((response) =>
           of(
-            expensesChangeExpense(response.data),
-            expensesFormDialogExpenseIdentifierChangeRequest(null),
+            expensesEditExpenseRequest(response.data),
+            expensesEditExpenseIdChange(null, null),
             snackbarsEnqueue({
               message: 'Expense changed!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'success',
               },
             }),
@@ -106,7 +102,6 @@ const editExpenseEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Expense edit failed!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'error',
               },
             }),
@@ -120,20 +115,18 @@ const deleteExpenseEpic: AppEpic = (action$, _, { axios }) =>
   action$.pipe(
     ofActionType(expensesDeleteExpenseProposal),
     pluck('payload'),
-    mergeMap(({ expense, meetingId }) =>
-      fromAxios<void>(axios, {
-        url: `/meeting/${meetingId}/expenses/${expense.id}`,
+    mergeMap(({ expenseId, meetingId }) =>
+      fromAxios<never>(axios, {
+        url: `/meeting/${meetingId}/expenses/${expenseId}`,
         method: 'DELETE',
-        data: expense,
         withCredentials: true,
       }).pipe(
         mergeMap(() =>
           of(
-            expensesDeleteExpense(expense),
+            expensesDeleteExpenseRequest(expenseId),
             snackbarsEnqueue({
               message: 'Expense deleted!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'success',
               },
             }),
@@ -144,7 +137,6 @@ const deleteExpenseEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Expense deletion failed!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'error',
               },
             }),

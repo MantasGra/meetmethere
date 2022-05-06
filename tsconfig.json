@@ -4,14 +4,17 @@
     "module": "esnext",
     "target": "esnext",
     "moduleResolution": "node",
-    "jsx": "preserve",
+    "jsx": "react-jsx",
+    "jsxImportSource": "@emotion/react",
     "baseUrl": "./",
     /* paths - import rewriting/resolving */
     "paths": {
       // If you configured any Snowpack aliases, add them here.
+      "src": ["./src"],
       // Add this line to get types for streaming imports (packageOptions.source="remote"):
-      //     "*": [".snowpack/types/*"]
+      // "*": [".snowpack/types/*"],
       // More info: https://www.snowpack.dev/guides/streaming-imports
+
     },
     /* noEmit - Snowpack builds (emits) files, not tsc. */
     "noEmit": true,
@@ -21,6 +24,6 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "importsNotUsedAsValues": "error"
+    // "importsNotUsedAsValues": "error"
   }
 }

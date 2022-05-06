@@ -1,44 +1,47 @@
-import React, { useEffect } from 'react';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import DateTimePicker from '@mui/lab/DateTimePicker';
+import Button from '@mui/material/Button';
+import Fab from '@mui/material/Fab';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { differenceInMinutes, isAfter, min } from 'date-fns';
 import format from 'date-fns/format';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
-import FormControl from '@material-ui/core/FormControl';
-import Fab from '@material-ui/core/Fab';
-import EditIcon from '@material-ui/icons/Edit';
-import SaveIcon from '@material-ui/icons/Save';
-import Select from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
+import { omit } from 'lodash';
+import { useEffect, useMemo, Fragment } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import PlacesAutocomplete, { IValue } from 'src/components/PlacesAutocomplete';
-import MeetingStatusChip, {
-  MeetingStatusDisplayNames,
-} from './MeetingStatusChip';
+import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
+import { authCurrentUserIdSelector } from 'src/modules/auth/selectors';
+import { invitationsInviteUserDialogOpenRequest } from 'src/modules/invitations/actions';
+import { ParticipationStatus } from 'src/modules/invitations/reducer';
 import getDirectionsURL from 'src/utils/getDirectionsURL';
 import openInNewTab from 'src/utils/openInNewTab';
-import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
-import { useForm, Controller } from 'react-hook-form';
+import { toDate } from 'src/utils/transformators';
+
 import {
   meetingsMeetingPollDialogVisibleChangeRequest,
   meetingsChangeParticipantStatusProposal,
   meetingsUpdateMeetingRequest,
   meetingsEditModeChange,
 } from '../actions';
-import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+import { MeetingStatus } from '../reducer';
 import {
-  invitationMeetingByIdSelector,
+  meetingsCurrentUserAsMeetingParticipantSelector,
   meetingsIsEditMode,
   meetingsIsUserCreator,
   meetingsMeetingByIdSelector,
 } from '../selectors';
-import { ParticipationStatus } from 'src/modules/invitations/reducer';
-import { accountEmailSelector } from 'src/modules/auth/selectors';
-import { invitationsInviteUserDialogOpenRequest } from 'src/modules/invitations/actions';
-import { MeetingStatus } from '../reducer';
-import { omit } from 'lodash';
-import { DateTimePicker } from '@material-ui/pickers';
-import { differenceInMinutes, isAfter, min } from 'date-fns';
-import classes from './MeetingPageHeader.module.scss';
+
+import classes from './MeetingPageHeader.styles';
+import MeetingStatusChip, {
+  MeetingStatusDisplayNames,
+} from './MeetingStatusChip';
 
 interface IProps {
   id: number;
@@ -60,6 +63,9 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
     meetingsMeetingByIdSelector(state, props.id),
   );
 
+  const startDate = useMemo(() => toDate(meeting.startDate), [meeting]);
+  const endDate = useMemo(() => toDate(meeting.endDate), [meeting]);
+
   const {
     control,
     register,
@@ -69,12 +75,10 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
     formState: { errors },
   } = useForm<IMeetingEditForm>();
 
-  const invitation = useAppSelector((state) =>
-    invitationMeetingByIdSelector(state, props.id),
+  const participant = useAppSelector((state) =>
+    meetingsCurrentUserAsMeetingParticipantSelector(state, props.id),
   );
-  const currentUserEmail = useAppSelector((state) =>
-    accountEmailSelector(state),
-  );
+  const currentUserId = useAppSelector(authCurrentUserIdSelector);
 
   const formStartDate = watch('startDate', new Date());
 
@@ -83,7 +87,6 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
   );
 
   const onEditSubmit = (formData: IMeetingEditForm) => {
-    console.log('formData', formData);
     dispatch(
       meetingsUpdateMeetingRequest(meeting.id, {
         name: formData.name,
@@ -116,11 +119,11 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
         name: meeting.name,
         description: meeting.description,
         location: { input: meeting.locationString || '', place: null },
-        startDate: new Date(meeting.startDate),
-        endDate: new Date(meeting.endDate),
+        startDate,
+        endDate,
       });
     }
-  }, [isEditMode]);
+  }, [isEditMode, meeting, startDate, endDate, reset]);
 
   const onGetDirectionsClick = () => {
     if (meeting.locationString) {
@@ -140,16 +143,16 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
   const onInviteClick = () => {
     dispatch(invitationsInviteUserDialogOpenRequest(props.id));
   };
-  const onStatusChange = (
-    e: React.ChangeEvent<{ name?: string; value: unknown }>,
-  ) => {
-    dispatch(
-      meetingsChangeParticipantStatusProposal({
-        status: e.target.value as ParticipationStatus,
-        id: meeting.id,
-        userEmail: currentUserEmail,
-      }),
-    );
+  const onStatusChange = (e: SelectChangeEvent<ParticipationStatus>) => {
+    if (currentUserId) {
+      dispatch(
+        meetingsChangeParticipantStatusProposal(
+          meeting.id,
+          currentUserId,
+          e.target.value as ParticipationStatus,
+        ),
+      );
+    }
   };
 
   const isCreatorUser = useAppSelector((state) =>
@@ -166,27 +169,27 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
   };
 
   return (
-    <div className={classes.meetingPageHeader}>
+    <div css={classes.meetingPageHeader}>
       {isCreatorUser && !isHistoricMeeting ? (
         <Fab
           color="primary"
-          className={classes.meetingEditButton}
+          css={classes.meetingEditButton}
           onClick={isEditMode ? handleSubmit(onEditSubmit) : onEditModeClick}
         >
           {isEditMode ? <SaveIcon /> : <EditIcon />}
         </Fab>
       ) : null}
-      <div className={classes.meetingTitleRow}>
-        <div className={classes.meetingTitle}>
+      <div css={classes.meetingTitleRow}>
+        <div css={classes.meetingTitle}>
           {!isEditMode ? (
-            <>
-              <Typography variant="h4" className={classes.meetingTitleText}>
+            <Fragment>
+              <Typography variant="h4" css={classes.meetingTitleText}>
                 {meeting.name}
               </Typography>
               <MeetingStatusChip meetingStatus={meeting.status} />
-            </>
+            </Fragment>
           ) : (
-            <>
+            <Fragment>
               <TextField
                 inputProps={{
                   ...register('name', {
@@ -197,10 +200,7 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
                 variant="filled"
                 defaultValue={meeting.name}
               />
-              <FormControl
-                variant="filled"
-                className={classes.meetingStatusSelect}
-              >
+              <FormControl variant="filled" css={classes.meetingStatusSelect}>
                 <InputLabel id="meetingStatusLabel">Meeting Status</InputLabel>
                 <Controller
                   render={({ field }) => (
@@ -208,9 +208,7 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
                       {...omit(field, 'value', 'onChange', 'ref')}
                       labelId="meetingStatusLabel"
                       value={field.value}
-                      onChange={(
-                        event: React.ChangeEvent<{ value: unknown }>,
-                      ) => field.onChange(event.target.value)}
+                      onChange={(event) => field.onChange(event.target.value)}
                     >
                       <MenuItem value={MeetingStatus.Planned}>
                         {MeetingStatusDisplayNames[MeetingStatus.Planned]}
@@ -237,37 +235,41 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
                   defaultValue={meeting.status}
                 />
               </FormControl>
-            </>
+            </Fragment>
           )}
         </div>
-        <div className={classes.userParticipationStatus}>
-          <FormControl
-            variant="outlined"
-            className={classes.statusSelect}
-            size="small"
-            disabled={isHistoricMeeting}
-          >
-            <InputLabel id="demo-simple-select-outlined-label">
-              Status
-            </InputLabel>
-            <Select
-              labelId="demo-simple-select-outlined-label"
-              id="demo-simple-select-outlined"
-              label="Status"
-              value={invitation.userParticipationStatus}
-              onChange={onStatusChange}
+        <div css={classes.userParticipationStatus}>
+          {participant && (
+            <FormControl
+              variant="outlined"
+              css={classes.statusSelect}
+              size="small"
+              disabled={isHistoricMeeting}
             >
-              {invitation.userParticipationStatus ===
-              ParticipationStatus.Invited ? (
-                <MenuItem value="invited">
-                  <em>Invited</em>
+              <InputLabel id="demo-simple-select-outlined-label">
+                Status
+              </InputLabel>
+              <Select
+                labelId="demo-simple-select-outlined-label"
+                id="demo-simple-select-outlined"
+                label="Status"
+                value={participant.userParticipationStatus}
+                onChange={onStatusChange}
+              >
+                {participant.userParticipationStatus ===
+                ParticipationStatus.Invited ? (
+                  <MenuItem value="invited">
+                    <em>Invited</em>
+                  </MenuItem>
+                ) : null}
+                <MenuItem value={ParticipationStatus.Going}>Going</MenuItem>
+                <MenuItem value={ParticipationStatus.Maybe}>Maybe</MenuItem>
+                <MenuItem value={ParticipationStatus.Declined}>
+                  Declined
                 </MenuItem>
-              ) : null}
-              <MenuItem value={ParticipationStatus.Going}>Going</MenuItem>
-              <MenuItem value={ParticipationStatus.Maybe}>Maybe</MenuItem>
-              <MenuItem value={ParticipationStatus.Declined}>Declined</MenuItem>
-            </Select>
-          </FormControl>
+              </Select>
+            </FormControl>
+          )}
         </div>
       </div>
       <div>
@@ -275,14 +277,14 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
           <Typography
             variant="body2"
             color="textSecondary"
-            className={classes.meetingDescription}
+            css={classes.meetingDescription}
           >
             {meeting.description}
           </Typography>
         ) : (
           <TextField
             inputProps={{ ...register('description'), maxLength: 255 }}
-            className={classes.meetingDescriptionInput}
+            css={classes.meetingDescriptionInput}
             multiline
             label="Description"
             rows={4}
@@ -292,7 +294,7 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
           />
         )}
       </div>
-      <div className={classes.meetingInfoRow}>
+      <div css={classes.meetingInfoRow}>
         <div>
           {meeting.isDatesPollActive ? (
             <Button
@@ -303,30 +305,31 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
               Open Dates Poll
             </Button>
           ) : !isEditMode ? (
-            <>
-              <div className={classes.meetingDateEntry}>
+            <Fragment>
+              <div css={classes.meetingDateEntry}>
                 <Typography variant="subtitle2">From:</Typography>
                 <Typography variant="subtitle2">
-                  {format(new Date(meeting.startDate), 'yyyy-MM-dd HH:mm')}
+                  {format(startDate, 'yyyy-MM-dd HH:mm')}
                 </Typography>
               </div>
-              <div className={classes.meetingDateEntry}>
+              <div css={classes.meetingDateEntry}>
                 <Typography variant="subtitle2">To:</Typography>
                 <Typography variant="subtitle2">
-                  {format(new Date(meeting.endDate), 'yyyy-MM-dd HH:mm')}
+                  {format(endDate, 'yyyy-MM-dd HH:mm')}
                 </Typography>
               </div>
-            </>
+            </Fragment>
           ) : (
-            <div className={classes.meetingDateInputs}>
+            <div css={classes.meetingDateInputs}>
               <Controller
                 render={({ field }) => (
                   <DateTimePicker
                     {...omit(field, 'ref')}
                     label="Start Date"
-                    margin="dense"
-                    minDate={min([new Date(), meeting.startDate])}
-                    inputVariant="filled"
+                    minDate={min([new Date(), startDate])}
+                    renderInput={(props) => (
+                      <TextField {...props} margin="dense" variant="filled" />
+                    )}
                   />
                 )}
                 name="startDate"
@@ -337,23 +340,27 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
                 render={({ field }) => (
                   <DateTimePicker
                     {...omit(field, 'ref')}
-                    helperText={
-                      errors.endDate?.type === 'validate'
-                        ? 'End date must be after start date'
-                        : undefined
-                    }
-                    error={!!errors.endDate}
-                    margin="dense"
                     label="End Date"
-                    minDate={min([new Date(), meeting.endDate])}
-                    inputVariant="filled"
+                    minDate={min([new Date(), endDate])}
+                    renderInput={(props) => (
+                      <TextField
+                        {...props}
+                        helperText={
+                          errors.endDate?.type === 'validate'
+                            ? 'End date must be after start date'
+                            : undefined
+                        }
+                        error={!!errors.endDate}
+                        margin="dense"
+                        variant="filled"
+                      />
+                    )}
                   />
                 )}
                 name="endDate"
                 control={control}
                 rules={{
                   validate: (value) => {
-                    console.log(value, formStartDate);
                     return (
                       isAfter(value, formStartDate) &&
                       differenceInMinutes(value, formStartDate) > 0
@@ -365,11 +372,11 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
             </div>
           )}
         </div>
-        <div className={classes.meetingLocation}>
+        <div css={classes.meetingLocation}>
           {!isEditMode ? (
-            <>
+            <Fragment>
               <Typography
-                className={classes.meetingLocationText}
+                css={classes.meetingLocationText}
                 variant="subtitle2"
               >{`Location: ${meeting.locationString}`}</Typography>
               <Button
@@ -379,7 +386,7 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
               >
                 Get Directions
               </Button>
-            </>
+            </Fragment>
           ) : (
             <Controller
               render={({ field }) => {
@@ -391,21 +398,21 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
                       field.onChange(newLocation)
                     }
                     variant="filled"
-                    className={classes.meetingPlaceSelect}
+                    css={classes.meetingPlaceSelect}
                   />
                 );
               }}
               name="location"
               control={control}
               defaultValue={{
-                input: meeting.locationString,
+                input: meeting.locationString || '',
                 place: null,
               }}
             />
           )}
         </div>
       </div>
-      <div className={classes.meetingMemberList}>
+      <div css={classes.meetingMemberList}>
         <Typography variant="subtitle2">Members:</Typography>
         {meeting.participants.map((participant) => (
           <AccountAvatar
@@ -414,7 +421,7 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
               0,
             )}${participant.lastName.charAt(0)}`}
             color={participant.color}
-            className={classes.memberListAvatar}
+            css={classes.memberListAvatar}
           />
         ))}
         <Button color="primary" onClick={onInviteClick}>

@@ -1,14 +1,16 @@
 import { combineReducers, createReducer, Selector } from '@reduxjs/toolkit';
 import { responsiveStateReducer } from 'redux-responsive';
 
-import { appInitSuccess, openMobileMenu } from './actions';
-import authReducer from '../auth/reducer';
-import snackbarsReducer from '../snackbars/reducer';
-import meetingsReducer from '../meetings/reducer';
-import announcementsReducer from '../announcements/reducer';
 import activitiesReducer from '../activitites/reducer';
+import announcementsReducer from '../announcements/reducer';
+import authReducer from '../auth/reducer';
 import expensesReducer from '../expenses/reducer';
+import formSubmitBlockerReducer from '../formSubmitBlocker/reducer';
 import invitationsReducer from '../invitations/reducer';
+import meetingsReducer from '../meetings/reducer';
+import snackbarsReducer from '../snackbars/reducer';
+
+import { appInitSuccess, openMobileMenu } from './actions';
 
 interface ApplicationState {
   initialized: boolean;
@@ -40,6 +42,7 @@ const rootReducer = combineReducers({
   meetings: meetingsReducer,
   activities: activitiesReducer,
   invitations: invitationsReducer,
+  formSubmitBlocker: formSubmitBlockerReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

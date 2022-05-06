@@ -1,19 +1,20 @@
-import React from 'react';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import type { IUserInvitation } from 'src/modules/auth/reducer';
+import { ClassNames } from '@emotion/react';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import ListItemText from '@mui/material/ListItemText';
 import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
-import classes from './UsersList.module.scss';
+import type { IParticipant } from 'src/modules/auth/reducer';
+
+import classes from './UsersList.styles';
 
 interface IUsersListProps {
-  users: IUserInvitation[];
+  users: IParticipant[];
 }
 
 const UsersList: React.FC<IUsersListProps> = (props) => (
-  <List className={classes.userList}>
+  <List css={classes.userList}>
     {props.users.map((user) => (
       <ListItem key={user.id}>
         <ListItemAvatar>
@@ -22,10 +23,18 @@ const UsersList: React.FC<IUsersListProps> = (props) => (
             color={user.color}
           />
         </ListItemAvatar>
-        <ListItemText
-          primary={`${user.name} ${user.lastName}`}
-          primaryTypographyProps={{ className: classes.userListName }}
-        />
+        <ClassNames>
+          {({ css }) => (
+            <ListItemText
+              primary={`${user.name} ${user.lastName}`}
+              primaryTypographyProps={{
+                className: css`
+                  ${classes.userListName};
+                `,
+              }}
+            />
+          )}
+        </ClassNames>
         <ListItemSecondaryAction>
           {`${user.userParticipationStatus
             .charAt(0)

@@ -1,13 +1,19 @@
 import { createAction } from '@reduxjs/toolkit';
+
 import { withPayloadType } from '../app/actions';
-import type { IAccount, IFormError } from './reducer';
+
 import type { ILoginForm } from './components/LoginForm';
 import type { IRegisterForm } from './components/RegisterForm';
+import type { IAccount, IFormError } from './reducer';
 
 export const authAuthorizeUserProposal = createAction(
   'auth/authorizeUserProposal',
 );
-
+export const authGetCsrfTokenRequest = createAction('auth/getCsrfTokenRequest');
+export const authSetCsrfTokenRequest = createAction(
+  'auth/setCsrfTokenRequest',
+  withPayloadType<string>(),
+);
 export const authSetAuthLoading = createAction(
   'auth/setAuthLoading',
   withPayloadType<boolean>(),
@@ -48,6 +54,8 @@ export const authLogoutRequest = createAction('auth/logoutRequest');
 
 export type AuthActions =
   | ReturnType<typeof authAuthorizeUserProposal>
+  | ReturnType<typeof authGetCsrfTokenRequest>
+  | ReturnType<typeof authSetCsrfTokenRequest>
   | ReturnType<typeof authSetAuthLoading>
   | ReturnType<typeof authAuthorizeUserRequest>
   | ReturnType<typeof authLoginDialogVisibleChangeRequest>

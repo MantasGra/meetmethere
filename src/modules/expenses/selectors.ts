@@ -1,67 +1,87 @@
+import { createSelector } from '@reduxjs/toolkit';
+import { toOrderedList } from 'src/utils/transformators';
+
 import type { RootState } from '../app/reducer';
-import type { IUser } from '../auth/reducer';
-import type { IExpense, IExpenseIdentifier } from './reducer';
+import type { IAccount } from '../auth/reducer';
+import { authStateAccountSelector } from '../auth/selectors';
+import { meetingsMapSelector } from '../meetings/selectors';
 
-export const expensesLoadingSelector = (state: RootState): boolean =>
-  state.expenses.expensesLoading;
+import type { IExpense, ExpensesState } from './reducer';
 
-export const expensesHasMoreSelector = (state: RootState): boolean =>
-  state.expenses.expensesIds.length < state.expenses.expensesCount;
+export const expensesStateSelector = (state: RootState): ExpensesState =>
+  state.expenses;
 
-export const expensesListSelector = (state: RootState): IExpense[] =>
-  state.expenses.expensesIds.map((value) => state.expenses.expenses[value]);
+export const expensesLoadingSelector = createSelector(
+  expensesStateSelector,
+  (expensesState) => expensesState.expensesLoading,
+);
 
-export const expensesLoadFailedSelector = (state: RootState): boolean =>
-  state.expenses.expensesLoadFailed;
+export const expensesIdsSelector = createSelector(
+  expensesStateSelector,
+  (expensesState) => expensesState.expensesIds,
+);
 
-export const expensesFormDialogMeetingIdSelector = (
-  state: RootState,
-): null | number =>
-  state.expenses.formDialogExpenseIdentifier
-    ? state.expenses.formDialogExpenseIdentifier.meetingId
-    : null;
+export const expensesMapSelector = createSelector(
+  expensesStateSelector,
+  (expensesState) => expensesState.expenses,
+);
 
-export const expensesFormDialogExpenseIdentifierSelector = (
-  state: RootState,
-): IExpenseIdentifier | null => state.expenses.formDialogExpenseIdentifier;
+export const expensesListSelector = createSelector(
+  expensesIdsSelector,
+  expensesMapSelector,
+  (ids, activities) => toOrderedList(ids, activities),
+);
 
-export const expensesFormDialogExpenseSelector = (
-  state: RootState,
-): IExpense | null => {
-  if (
-    !state.expenses.formDialogExpenseIdentifier ||
-    state.expenses.formDialogExpenseIdentifier.expenseId == null
-  ) {
-    return null;
+export const expensesLoadFailedSelector = createSelector(
+  expensesStateSelector,
+  (expensesState) => expensesState.expensesLoadFailed,
+);
+
+export const expensesFormDialogMeetingIdSelector = createSelector(
+  expensesStateSelector,
+  (expensesState) => expensesState.formDialogMeetingId,
+);
+
+export const expensesFormDialogExpenseIdSelector = createSelector(
+  expensesStateSelector,
+  (expensesState) => expensesState.formDialogExpenseId,
+);
+
+export const expensesIsFormDialogOpenSelector = createSelector(
+  expensesFormDialogMeetingIdSelector,
+  (meetingId) => !!meetingId,
+);
+
+export const expensesIsFormEditSelector = createSelector(
+  expensesFormDialogExpenseIdSelector,
+  (expenseId) => !!expenseId,
+);
+
+export const expensesEditedExpenseSelector = createSelector(
+  expensesFormDialogExpenseIdSelector,
+  expensesMapSelector,
+  (expenseId, expenses) => (expenseId ? expenses[expenseId] : null),
+);
+
+export const expensesMeetingParticipantSelector = createSelector(
+  meetingsMapSelector,
+  expensesFormDialogMeetingIdSelector,
+  (meetings, meetingId) => (meetingId ? meetings[meetingId].participants : []),
+);
+
+const getTotalExpenses = (expenses: IExpense[], account?: IAccount) => {
+  if (!account) {
+    return 0;
   }
-  const expense =
-    state.expenses.expenses[
-      state.expenses.formDialogExpenseIdentifier.expenseId
-    ];
-  if (!!expense) {
-    return expense;
-  }
-  return null;
-};
-
-export const expensesIsFormDialogOpenSelector = (state: RootState): boolean =>
-  !!state.expenses.formDialogExpenseIdentifier;
-
-export const expensesMeetingParticipantSelector = (
-  state: RootState,
-): IUser[] | null =>
-  state.expenses.formDialogExpenseIdentifier
-    ? state.meetings.plannedMeetings[
-        state.expenses.formDialogExpenseIdentifier.meetingId
-      ].participants
-    : null;
-
-export const expensesTotalSelector = (state: RootState): number => {
-  return Object.values(state.expenses.expenses)
-    .filter(
-      (expense) =>
-        state.auth.account &&
-        expense.users.map((user) => user.id).includes(state.auth.account?.id),
+  return expenses
+    .filter((expense) =>
+      expense.users.map((user) => user.id).includes(account.id),
     )
-    .reduce((prev, curr) => prev + curr.amount / curr.users.length, 0);
+    .reduce((sum, expense) => sum + expense.amount / expense.users.length, 0);
 };
+
+export const expensesTotalSelector = createSelector(
+  expensesListSelector,
+  authStateAccountSelector,
+  getTotalExpenses,
+);

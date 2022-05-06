@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
 import { SnackbarKey, useSnackbar } from 'notistack';
+import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
-import { notificationsSelector } from '../selectors';
+
 import { snackbarsRemove } from '../actions';
+import { notificationsSelector } from '../selectors';
 
 let displayed: SnackbarKey[] = [];
 

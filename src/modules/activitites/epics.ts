@@ -2,8 +2,10 @@ import { combineEpics } from 'redux-observable';
 import { of } from 'rxjs';
 import { mergeMap, map, pluck, catchError } from 'rxjs/operators';
 import { fromAxios, ofActionType } from 'src/utils/operators';
+
 import type { AppEpic } from '../app/epics';
 import { snackbarsEnqueue } from '../snackbars/actions';
+
 import {
   activitiesAddActivity,
   activitiesCreateActivityProposal,
@@ -19,7 +21,7 @@ import {
 } from './actions';
 import type { IActivity } from './reducer';
 
-const loadActivitysEpic: AppEpic = (action$, _, { axios }) =>
+const loadActivitiesEpic: AppEpic = (action$, _, { axios }) =>
   action$.pipe(
     ofActionType(activitiesLoadActivitiesProposal),
     pluck('payload'),
@@ -53,7 +55,6 @@ const createActivityEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Activity created!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'success',
               },
             }),
@@ -64,7 +65,6 @@ const createActivityEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Activity creation failed!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'error',
               },
             }),
@@ -90,7 +90,6 @@ const deleteActivityEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Activity deleted!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'success',
               },
             }),
@@ -101,7 +100,6 @@ const deleteActivityEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Failed to delete activity!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'error',
               },
             }),
@@ -118,7 +116,7 @@ const editActivityEpic: AppEpic = (action$, _, { axios }) =>
     mergeMap(({ meetingId, activityId, activity }) =>
       fromAxios<IActivity>(axios, {
         url: `/meeting/${meetingId}/activities/${activityId}`,
-        method: 'PUT',
+        method: 'PATCH',
         data: activity,
         withCredentials: true,
       }).pipe(
@@ -129,7 +127,6 @@ const editActivityEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Activity updated!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'success',
               },
             }),
@@ -140,7 +137,6 @@ const editActivityEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Failed to update activity!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'error',
               },
             }),
@@ -151,7 +147,7 @@ const editActivityEpic: AppEpic = (action$, _, { axios }) =>
   );
 
 export default combineEpics(
-  loadActivitysEpic,
+  loadActivitiesEpic,
   createActivityEpic,
   deleteActivityEpic,
   editActivityEpic,

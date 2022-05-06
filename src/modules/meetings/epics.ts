@@ -14,13 +14,15 @@ import {
   ofActionType,
   filterNotNullOrUndefined,
 } from 'src/utils/operators';
+
 import type { AppEpic } from '../app/epics';
 import { snackbarsEnqueue } from '../snackbars/actions';
+
 import {
   meetingsAddMeeting,
   meetingsCreateDialogVisibleChangeRequest,
   meetingsCreateMeetingProposal,
-  meetingsLoadMeetingRequest,
+  meetingsLoadMeetingProposal,
   meetingsLoadMeetingsFail,
   meetingsLoadMeetingsProposal,
   meetingsLoadMeetingsSuccess,
@@ -31,13 +33,17 @@ import {
   meetingsChangeParticipantStatusProposal,
   meetingsChangeUserParticipationStatus,
   meetingsUpdateMeetingRequest,
-  IUpdateMeetingRequest,
   meetingsModifyMeeting,
   meetingsEditModeChange,
   meetingsRespondToCancelingMeeting,
   meetingsChangeCancelingMeeting,
 } from './actions';
-import { IMeeting, IMeetingDatesPollEntry, MeetingStatus } from './reducer';
+import {
+  IMeeting,
+  IMeetingDatesPollEntry,
+  MeetingStatus,
+  MeetingTypes,
+} from './reducer';
 import { meetingsCancelingMeetingSelector } from './selectors';
 
 interface ICreateMeetingResponse {
@@ -57,12 +63,14 @@ const createMeetingEpic: AppEpic = (action$, _, { axios }) =>
       }).pipe(
         mergeMap((response) =>
           of(
-            meetingsAddMeeting(response.data.createdMeeting),
+            meetingsAddMeeting(
+              response.data.createdMeeting,
+              MeetingTypes.Planned,
+            ),
             meetingsCreateDialogVisibleChangeRequest(false),
             snackbarsEnqueue({
               message: 'Meeting successfully created!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'success',
               },
             }),
@@ -72,10 +80,7 @@ const createMeetingEpic: AppEpic = (action$, _, { axios }) =>
           of(
             snackbarsEnqueue({
               message: 'Meeting creation failed!',
-              options: {
-                key: new Date().getTime() + Math.random(),
-                variant: 'error',
-              },
+              options: { variant: 'error' },
             }),
           ),
         ),
@@ -104,7 +109,6 @@ const addPollResponseEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Thank you for your vote!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'success',
               },
             }),
@@ -115,7 +119,6 @@ const addPollResponseEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Voting failed!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'error',
               },
             }),
@@ -142,28 +145,21 @@ const loadMeetingsEpic: AppEpic = (action$, _, { axios }) =>
         withCredentials: true,
       }).pipe(
         mergeMap((response) => {
-          if (!response.data.meetings.length) {
+          const { meetings, count } = response.data;
+          if (!meetings.length) {
             return of(
-              meetingsLoadMeetingsSuccess(
-                response.data.meetings,
-                response.data.count,
-                typeOfMeeting,
-              ),
+              meetingsLoadMeetingsSuccess(meetings, count, typeOfMeeting),
             );
           }
           return forkJoin(
-            response.data.meetings.map((meeting) => geocodeIfPlaceId$(meeting)),
+            meetings.map((meeting) => geocodeIfPlaceId$(meeting)),
           ).pipe(
             map((meetings) =>
-              meetingsLoadMeetingsSuccess(
-                meetings,
-                response.data.count,
-                typeOfMeeting,
-              ),
+              meetingsLoadMeetingsSuccess(meetings, count, typeOfMeeting),
             ),
           );
         }),
-        catchError(() => of(meetingsLoadMeetingsFail())),
+        catchError(() => of(meetingsLoadMeetingsFail(typeOfMeeting))),
       ),
     ),
   );
@@ -191,9 +187,9 @@ interface ILoadMeetingResponse {
 
 const loadMeetingEpic: AppEpic = (action$, _, { axios }) =>
   action$.pipe(
-    ofActionType(meetingsLoadMeetingRequest),
+    ofActionType(meetingsLoadMeetingProposal),
     pluck('payload'),
-    mergeMap(({ id }) =>
+    mergeMap((id) =>
       fromAxios<ILoadMeetingResponse>(axios, {
         url: `/meeting/${id}`,
         method: 'GET',
@@ -213,26 +209,21 @@ const changeParticipationStatusEpic: AppEpic = (action$, _, { axios }) =>
   action$.pipe(
     ofActionType(meetingsChangeParticipantStatusProposal),
     pluck('payload'),
-    mergeMap((participationStatusData) =>
+    mergeMap(({ meetingId, userId, status }) =>
       fromAxios(axios, {
-        url: `/meeting/${participationStatusData.id}/status`,
+        url: `/meeting/${meetingId}/status`,
         method: 'POST',
         data: {
-          status: participationStatusData.status,
+          status,
         },
         withCredentials: true,
       }).pipe(
         mergeMap(() =>
           of(
-            meetingsChangeUserParticipationStatus(
-              participationStatusData.id,
-              participationStatusData.status,
-              participationStatusData.userEmail,
-            ),
+            meetingsChangeUserParticipationStatus(meetingId, userId, status),
             snackbarsEnqueue({
               message: 'Successfully updated participation status!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'success',
               },
             }),
@@ -243,7 +234,6 @@ const changeParticipationStatusEpic: AppEpic = (action$, _, { axios }) =>
             snackbarsEnqueue({
               message: 'Status change error!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'error',
               },
             }),
@@ -253,11 +243,8 @@ const changeParticipationStatusEpic: AppEpic = (action$, _, { axios }) =>
     ),
   );
 
-interface IMeetingUpdateResponse
-  extends Omit<IUpdateMeetingRequest, 'startDate' | 'endDate'> {
-  id: number;
-  startDate?: Date;
-  endDate?: Date;
+interface IMeetingUpdateResponse {
+  updatedMeeting: IMeeting;
 }
 
 const updateMeetingEpic: AppEpic = (action$, state$, { axios }) =>
@@ -287,15 +274,14 @@ const updateMeetingEpic: AppEpic = (action$, state$, { axios }) =>
         withCredentials: true,
       }).pipe(
         mergeMap((response) =>
-          geocodeIfPlaceId$(response.data).pipe(
+          geocodeIfPlaceId$(response.data.updatedMeeting).pipe(
             mergeMap((meeting) =>
               of(
-                meetingsModifyMeeting(meeting),
+                meetingsModifyMeeting(meetingId, meeting),
                 meetingsEditModeChange(null),
                 snackbarsEnqueue({
                   message: 'Meeting updated!',
                   options: {
-                    key: new Date().getTime() + Math.random(),
                     variant: 'success',
                   },
                 }),
@@ -308,7 +294,6 @@ const updateMeetingEpic: AppEpic = (action$, state$, { axios }) =>
             snackbarsEnqueue({
               message: 'Something went wrong. Meeting update failed!',
               options: {
-                key: new Date().getTime() + Math.random(),
                 variant: 'error',
               },
             }),

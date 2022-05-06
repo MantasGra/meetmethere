@@ -1,9 +1,10 @@
-import React from 'react';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import { useMemo } from 'react';
 import CloseableDialogTitle from 'src/components/CloseableDialogTitle';
-import ActivityForm from './ActivityForm';
 import { useAppSelector, useAppDispatch } from 'src/hooks/redux';
+import usePreviousConditional from 'src/hooks/usePreviousConditional';
+
 import {
   activitiesEditActivityIdChange,
   activitiesFormDialogMeetingIdChangeRequest,
@@ -13,10 +14,19 @@ import {
   activitiesIsFormEditSelector,
 } from '../selectors';
 
+import ActivityForm from './ActivityForm';
+
 const ActivityFormDialog: React.FC = () => {
   const open = useAppSelector(activitiesIsFormDialogOpenSelector);
 
   const isEditForm = useAppSelector(activitiesIsFormEditSelector);
+
+  const titleText = useMemo(
+    () => `${isEditForm ? 'Update' : 'Create'} Activity`,
+    [isEditForm],
+  );
+
+  const titleTextRendered = usePreviousConditional(titleText, !open);
 
   const dispatch = useAppDispatch();
 
@@ -31,7 +41,7 @@ const ActivityFormDialog: React.FC = () => {
   return (
     <Dialog open={open} maxWidth="md">
       <CloseableDialogTitle onClose={onClose}>
-        {isEditForm ? 'Update' : 'Create'} Activity
+        {titleTextRendered}
       </CloseableDialogTitle>
       <DialogContent>
         <ActivityForm />
