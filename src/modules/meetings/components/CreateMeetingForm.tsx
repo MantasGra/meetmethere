@@ -22,6 +22,7 @@ import PlacesAutocomplete, { IValue } from 'src/components/PlacesAutocomplete';
 import UserAutocomplete, { IUser } from 'src/components/UserAutocomplete';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
 import { isMobileSelector } from 'src/modules/app/selectors';
+import SubmitButton from 'src/modules/formSubmitBlocker/components/SubmitButton';
 
 import { meetingsCreateMeetingProposal } from '../actions';
 
@@ -93,7 +94,7 @@ const CreateMeetingForm: React.FC = () => {
   }, [showPollOptions, setValue, getValues]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form>
       <TextField
         inputProps={{
           ...register('meetingName', {
@@ -273,14 +274,15 @@ const CreateMeetingForm: React.FC = () => {
         </div>
       )}
       <div css={classes.submitContainer}>
-        <Button
-          type="submit"
+        <SubmitButton
+          type="button"
           variant="contained"
           color="primary"
           css={classes.submitButton}
+          onClick={handleSubmit(onSubmit)}
         >
           Create
-        </Button>
+        </SubmitButton>
       </div>
     </form>
   );

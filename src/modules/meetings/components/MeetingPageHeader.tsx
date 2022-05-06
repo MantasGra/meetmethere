@@ -361,7 +361,6 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
                 control={control}
                 rules={{
                   validate: (value) => {
-                    console.log(value, formStartDate);
                     return (
                       isAfter(value, formStartDate) &&
                       differenceInMinutes(value, formStartDate) > 0

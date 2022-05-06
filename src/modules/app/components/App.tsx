@@ -30,7 +30,17 @@ import AppBar from './AppBar';
 import Dialogs from './Dialogs';
 import Navigation from './Navigation';
 
-const theme = createTheme();
+const theme = createTheme({
+  components: {
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          wordBreak: 'break-word',
+        },
+      },
+    },
+  },
+});
 
 const App: React.FC = () => {
   const isAuthLoading = useAppSelector(authLoadingSelector);

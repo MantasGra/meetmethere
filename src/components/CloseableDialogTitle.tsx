@@ -14,7 +14,9 @@ const CloseableDialogTitle: React.FC<ICloseableDialogTitleProps> = (props) => {
   const { children, onClose, ...rest } = props;
   return (
     <DialogTitle {...rest}>
-      <Typography variant="h6">{children}</Typography>
+      <Typography variant="h6" component="span">
+        {children}
+      </Typography>
       <IconButton onClick={onClose} css={classes.closeButton} size="large">
         <CloseIcon />
       </IconButton>

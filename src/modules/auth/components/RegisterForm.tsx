@@ -1,7 +1,6 @@
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import IconButton from '@mui/material/IconButton';
@@ -14,6 +13,7 @@ import Typography from '@mui/material/Typography';
 import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+import SubmitButton from 'src/modules/formSubmitBlocker/components/SubmitButton';
 import { emailRegex } from 'src/utils/regex';
 
 import {
@@ -73,7 +73,7 @@ const RegisterForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form>
       {storedErrors.overall ? (
         <Alert severity="error">{storedErrors.overall}</Alert>
       ) : null}
@@ -202,15 +202,16 @@ const RegisterForm: React.FC = () => {
           },
         }}
       />
-      <Button
-        type="submit"
+      <SubmitButton
+        type="button"
         variant="contained"
         color="primary"
         fullWidth
         css={classes.submitButton}
+        onClick={handleSubmit(onSubmit)}
       >
         Register
-      </Button>
+      </SubmitButton>
       <Typography variant="caption" align="right" display="block">
         Already have an account?{' '}
         <Link component="span" onClick={onLoginClick} css={classes.loginLink}>

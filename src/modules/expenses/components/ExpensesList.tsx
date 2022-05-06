@@ -39,7 +39,6 @@ interface IActiveMenuState {
 
 const getExpenseAmountString = (expense: IExpense) => {
   const amount = expense.amount || 0;
-  console.log(expense.amount);
   return `${amount.toFixed(2)}€ (${(
     expense.amount / expense.users.length
   ).toFixed(2)}€ each)`;

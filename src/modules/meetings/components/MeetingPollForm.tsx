@@ -14,14 +14,17 @@ import { omit } from 'lodash';
 import { useEffect, useMemo } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { useAppSelector, useAppDispatch } from 'src/hooks/redux';
+import usePreviousConditional from 'src/hooks/usePreviousConditional';
 import { isMobileSelector } from 'src/modules/app/selectors';
 import { authCurrentUserIdSelector } from 'src/modules/auth/selectors';
+import SubmitButton from 'src/modules/formSubmitBlocker/components/SubmitButton';
 import { toDate } from 'src/utils/transformators';
 
 import { meetingsMeetingPollDatesResponseChangeRequest } from '../actions';
 import type { IMeetingDatesPollEntry } from '../reducer';
 import {
   meetingsDatesPollEntriesSelector,
+  meetingsIsMeetingArchived,
   meetingsMeetingDatesPollFormIdSelector,
   meetingsMeetingHasUserPollEntryAdditionsEnabledSelector,
 } from '../selectors';
@@ -59,6 +62,17 @@ const MeetingPollForm: React.FC = () => {
       ),
   );
 
+  const isMeetingHistoric = useAppSelector(
+    (state) =>
+      meetingDatesPollFormId &&
+      meetingsIsMeetingArchived(state, meetingDatesPollFormId),
+  );
+
+  const isMeetingHistoricRendered = usePreviousConditional(
+    isMeetingHistoric,
+    !meetingDatesPollFormId,
+  );
+
   const currentUserId = useAppSelector(authCurrentUserIdSelector);
 
   const meetingDatesPollEntries = useAppSelector((state) =>
@@ -78,8 +92,6 @@ const MeetingPollForm: React.FC = () => {
     [meetingDatesPollEntries],
   );
 
-  console.log(meetingDatesPollEntriesMap);
-
   const { fields: selections } = useFieldArray({
     control,
     name: 'selections',
@@ -97,7 +109,6 @@ const MeetingPollForm: React.FC = () => {
         })),
       );
     }
-    console.log('effect');
   }, [meetingDatesPollEntries, currentUserId, setValue]);
 
   const dispatch = useAppDispatch();
@@ -122,10 +133,9 @@ const MeetingPollForm: React.FC = () => {
 
   const isMobile = useAppSelector(isMobileSelector);
 
-  console.log(selections);
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <FormControl component="fieldset">
+    <form>
+      <FormControl component="fieldset" disabled={!!isMeetingHistoricRendered}>
         <FormGroup>
           {selections.map((entry, index) => {
             return (
@@ -164,90 +174,95 @@ const MeetingPollForm: React.FC = () => {
           })}
         </FormGroup>
       </FormControl>
-      {fields.map((item, index) => {
-        return (
-          <div css={classes.dateFields} key={item.id}>
-            <Controller
-              render={({ field }) => (
-                <DateTimePicker
-                  {...omit(field, 'ref')}
-                  label="Start Date"
-                  disablePast
-                  renderInput={(props) => (
-                    <TextField {...props} margin="dense" variant="outlined" />
-                  )}
-                />
+      {!isMeetingHistoricRendered &&
+        fields.map((item, index) => {
+          return (
+            <div css={classes.dateFields} key={item.id}>
+              <Controller
+                render={({ field }) => (
+                  <DateTimePicker
+                    {...omit(field, 'ref')}
+                    label="Start Date"
+                    disablePast
+                    renderInput={(props) => (
+                      <TextField {...props} margin="dense" variant="outlined" />
+                    )}
+                  />
+                )}
+                name={`newOptions.${index}.startDate` as const}
+                control={control}
+                defaultValue={new Date()}
+              />
+              <Controller
+                render={({ field }) => (
+                  <DateTimePicker
+                    {...omit(field, 'ref')}
+                    label="End Date"
+                    disablePast
+                    renderInput={(props) => (
+                      <TextField
+                        {...props}
+                        helperText={
+                          errors.newOptions?.[index]?.endDate?.type ===
+                          'validate'
+                            ? 'End date must be after start date'
+                            : undefined
+                        }
+                        error={!!errors.newOptions?.[index]?.endDate}
+                        margin="dense"
+                        variant="outlined"
+                      />
+                    )}
+                  />
+                )}
+                name={`newOptions.${index}.endDate` as const}
+                control={control}
+                rules={{
+                  validate: (value) =>
+                    isAfter(value, item.startDate) &&
+                    differenceInMinutes(value, item.startDate) > 0,
+                }}
+                defaultValue={new Date()}
+              />
+              <Button
+                color="primary"
+                startIcon={<DeleteIcon />}
+                onClick={() => remove(index)}
+              >
+                Remove
+              </Button>
+              <Divider css={classes.divider} />
+              {isMobile && fields.length - 1 !== index && (
+                <Divider css={classes.divider} />
               )}
-              name={`newOptions.${index}.startDate` as const}
-              control={control}
-              defaultValue={new Date()}
-            />
-            <Controller
-              render={({ field }) => (
-                <DateTimePicker
-                  {...omit(field, 'ref')}
-                  label="End Date"
-                  disablePast
-                  renderInput={(props) => (
-                    <TextField
-                      {...props}
-                      helperText={
-                        errors.newOptions?.[index]?.endDate?.type === 'validate'
-                          ? 'End date must be after start date'
-                          : undefined
-                      }
-                      error={!!errors.newOptions?.[index]?.endDate}
-                      margin="dense"
-                      variant="outlined"
-                    />
-                  )}
-                />
-              )}
-              name={`newOptions.${index}.endDate` as const}
-              control={control}
-              rules={{
-                validate: (value) =>
-                  isAfter(value, item.startDate) &&
-                  differenceInMinutes(value, item.startDate) > 0,
-              }}
-              defaultValue={new Date()}
-            />
+            </div>
+          );
+        })}
+
+      {!isMeetingHistoricRendered && (
+        <div css={classes.submitContainer}>
+          <SubmitButton
+            type="button"
+            variant="contained"
+            color="primary"
+            css={classes.submitButton}
+            onClick={handleSubmit(onSubmit)}
+          >
+            Submit
+          </SubmitButton>
+          {meetingCanUsersCreatePollEntries && (
             <Button
               color="primary"
-              startIcon={<DeleteIcon />}
-              onClick={() => remove(index)}
+              startIcon={<AddIcon />}
+              onClick={() =>
+                append({ startDate: new Date(), endDate: new Date() })
+              }
             >
-              Remove
+              Add Option
             </Button>
-            <Divider css={classes.divider} />
-            {isMobile && fields.length - 1 !== index && (
-              <Divider css={classes.divider} />
-            )}
-          </div>
-        );
-      })}
-
-      <div css={classes.submitContainer}>
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          css={classes.submitButton}
-        >
-          Submit
-        </Button>
-        {meetingCanUsersCreatePollEntries && (
-          <Button
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={() =>
-              append({ startDate: new Date(), endDate: new Date() })
-            }
-          >
-            Add Option
-          </Button>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </form>
   );
 };

@@ -55,7 +55,7 @@ const meetingListItemAvatars = css`
 `;
 
 const listItemAvatar = css`
-  &:not(:first-child) {
+  &:not(:first-of-type) {
     margin-right: -20px;
   }
 `;

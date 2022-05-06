@@ -39,12 +39,16 @@ const loadInvitationsEpic: AppEpic = (action$, _, { axios }) =>
     ),
   );
 
+interface IInviteToMeetingResponse {
+  newParticipants: IParticipant[];
+}
+
 const inviteToMeetingEpic: AppEpic = (action$, _, { axios }) =>
   action$.pipe(
     ofActionType(invitationsInviteUsersToMeeting),
     pluck('payload'),
     mergeMap(({ meetingId, newUserIds }) =>
-      fromAxios<IParticipant[]>(axios, {
+      fromAxios<IInviteToMeetingResponse>(axios, {
         url: `/meeting/${meetingId}/invite`,
         method: 'POST',
         withCredentials: true,
@@ -54,7 +58,7 @@ const inviteToMeetingEpic: AppEpic = (action$, _, { axios }) =>
       }).pipe(
         mergeMap((response) =>
           of(
-            meetingsAddUsersToMeeting(meetingId, response.data),
+            meetingsAddUsersToMeeting(meetingId, response.data.newParticipants),
             invitationsInviteUserDialogOpenRequest(null),
             snackbarsEnqueue({
               message: 'Invitations sent!',

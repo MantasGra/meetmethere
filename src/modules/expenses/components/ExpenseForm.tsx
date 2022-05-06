@@ -1,9 +1,10 @@
 import { ClassNames } from '@emotion/react';
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
+import usePreviousConditional from 'src/hooks/usePreviousConditional';
+import SubmitButton from 'src/modules/formSubmitBlocker/components/SubmitButton';
 
 import {
   expensesCreateExpenseProposal,
@@ -55,6 +56,14 @@ const ExpenseForm: React.FC = () => {
     }
     return editedExpense.users.map((user) => user.id);
   }, [editedExpense]);
+  const submitButtonText = useMemo(
+    () => (isEditForm ? 'Save' : 'Create'),
+    [isEditForm],
+  );
+  const submitButtonTextRendered = usePreviousConditional(
+    submitButtonText,
+    !meetingId,
+  );
 
   // Effects
   useEffect(() => {
@@ -85,7 +94,7 @@ const ExpenseForm: React.FC = () => {
   );
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form>
       <TextField
         inputProps={{
           ...register('name', { required: 'Required' }),
@@ -154,7 +163,7 @@ const ExpenseForm: React.FC = () => {
               selectedUserIds={field.value}
               onSelectedUserIdsChange={(l) => field.onChange(l)}
               error={
-                errors.userIds?.length
+                !!errors.userIds
                   ? 'At least one participant must pay'
                   : undefined
               }
@@ -163,14 +172,15 @@ const ExpenseForm: React.FC = () => {
         />
       </div>
       <div css={classes.submitContainer}>
-        <Button
-          type="submit"
+        <SubmitButton
+          type="button"
           variant="contained"
           color="primary"
           css={classes.submitButton}
+          onClick={handleSubmit(onSubmit)}
         >
-          {isEditForm ? 'Edit' : 'Create'}
-        </Button>
+          {submitButtonTextRendered}
+        </SubmitButton>
       </div>
     </form>
   );
