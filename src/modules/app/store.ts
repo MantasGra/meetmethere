@@ -1,4 +1,4 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, PreloadedState } from '@reduxjs/toolkit';
 import Axios from 'axios-observable';
 import { createEpicMiddleware } from 'redux-observable';
 import type { EpicMiddleware } from 'redux-observable';
@@ -11,7 +11,7 @@ import history from './history';
 import rootReducer from './reducer';
 import type { RootState } from './reducer';
 
-const configureAppStore = (preloadedState?: RootState) => {
+const configureAppStore = (preloadedState?: PreloadedState<RootState>) => {
   const config = getConfig();
   const axiosInstance = Axios.create({
     baseURL: config.backendBaseUrl,

@@ -37,7 +37,7 @@ import {
 import type { IAccount } from './reducer';
 import { isAuthDialogOpenSelector } from './selectors';
 
-const openLoginEpic: AppEpic = (action$, state$, { history }) =>
+export const openLoginEpic: AppEpic = (action$, state$, { history }) =>
   action$.pipe(
     ofActionType(authOpenLoginProposal),
     withLatestFrom(state$),
@@ -51,7 +51,7 @@ const openLoginEpic: AppEpic = (action$, state$, { history }) =>
     }),
   );
 
-const switchToLoginEpic: AppEpic = (action$, state$, { history }) =>
+export const switchToLoginEpic: AppEpic = (action$, state$, { history }) =>
   action$.pipe(
     ofActionType(authSwitchToLoginProposal),
     withLatestFrom(state$),
@@ -65,7 +65,7 @@ const switchToLoginEpic: AppEpic = (action$, state$, { history }) =>
     }),
   );
 
-const switchToRegisterEpic: AppEpic = (action$, state$, { history }) =>
+export const switchToRegisterEpic: AppEpic = (action$, state$, { history }) =>
   action$.pipe(
     ofActionType(authSwitchToRegisterProposal),
     withLatestFrom(state$),
