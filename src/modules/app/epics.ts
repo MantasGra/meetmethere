@@ -21,7 +21,7 @@ import type { AppDeps } from './store';
 
 export type AppEpic = Epic<AppActions, AppActions, RootState, AppDeps>;
 
-const appInitEpic: AppEpic = (action$) =>
+export const appInitEpic: AppEpic = (action$) =>
   action$.pipe(
     ofActionType(appInit),
     mergeMap(() =>

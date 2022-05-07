@@ -80,7 +80,9 @@ const isSubmitAction = (action: AppActions) =>
 const isEndAction = (action: AppActions) =>
   isAnyOf(submitEndActions[0], ...submitEndActions.slice(1))(action) ||
   (snackbarsEnqueue.match(action) &&
-    action.payload.message === 'Account successfully created!');
+    action.payload.message === 'Account successfully created!') ||
+  (snackbarsEnqueue.match(action) &&
+    action.payload.options.variant === 'error');
 
 const formSubmitBlockerReducer = createReducer(initialState, (builder) =>
   builder
