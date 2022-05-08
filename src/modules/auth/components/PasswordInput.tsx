@@ -1,4 +1,3 @@
-import { ReactJSXElement } from '@emotion/react/types/jsx-namespace';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import FormControl from '@mui/material/FormControl';
@@ -18,7 +17,7 @@ interface IProps<T> extends UseControllerProps<T> {
   error?: string;
 }
 
-function PasswordInput<T>(props: IProps<T>): ReactJSXElement {
+function PasswordInput<T>(props: IProps<T>): React.ReactElement {
   const { error, id, label, autoComplete, ...controllerProps } = props;
 
   const [visible, toggleVisible] = useToggle(false);
