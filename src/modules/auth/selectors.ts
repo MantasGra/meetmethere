@@ -1,7 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from 'src/modules/app/reducer';
 
-import type { AuthState } from './reducer';
+import { AuthDialogType, AuthState } from './reducer';
 
 export const authStateSelector = (state: RootState): AuthState => state.auth;
 
@@ -10,9 +10,14 @@ export const isAuthDialogOpenSelector = createSelector(
   (authState) => authState.isAuthDialogOpen,
 );
 
-export const isAuthDialogRegisterSelector = createSelector(
+export const authDialogTypeSelector = createSelector(
   authStateSelector,
-  (authState) => authState.isDialogRegister,
+  (authState) => authState.authDialogType,
+);
+
+export const isAuthDialogRegisterSelector = createSelector(
+  authDialogTypeSelector,
+  (authDialogType) => authDialogType === AuthDialogType.Register,
 );
 
 export const authStateAccountSelector = createSelector(
@@ -75,4 +80,19 @@ export const accountAvatarDataSelector = createSelector(
   accountColorSelector,
   accountInitialsSelector,
   (color, accountInitials) => ({ color, accountInitials }),
+);
+
+export const isChangePasswordDialogOpenSelector = createSelector(
+  authStateSelector,
+  (authState) => authState.isChangePasswordDialogOpen,
+);
+
+export const authChangePasswordErrorsSelector = createSelector(
+  authStateSelector,
+  (authState) => authState.changePasswordErrors,
+);
+
+export const authResetPasswordErrorsSelector = createSelector(
+  authStateSelector,
+  (authState) => authState.resetPasswordErrors,
 );

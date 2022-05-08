@@ -12,6 +12,8 @@ import { useAppSelector } from 'src/hooks/redux';
 import { MeetingIcon } from 'src/icons';
 import LoginPage from 'src/modules/auth/components/LoginPage';
 import RegisterPage from 'src/modules/auth/components/RegisterPage';
+import RequestPasswordResetPage from 'src/modules/auth/components/RequestPasswordResetPage';
+import ResetPasswordPage from 'src/modules/auth/components/ResetPasswordPage';
 import {
   authLoadingSelector,
   isUserLoggedInSelector,
@@ -79,6 +81,28 @@ const App: React.FC = () => {
                     guardSelector={(state) => !isUserLoggedInSelector(state)}
                   >
                     <RegisterPage />
+                  </GuardedComponent>
+                }
+              />
+              <Route
+                path={AppRoutes.RequestPasswordReset}
+                element={
+                  <GuardedComponent
+                    loading={isAuthLoading}
+                    guardSelector={(state) => !isUserLoggedInSelector(state)}
+                  >
+                    <RequestPasswordResetPage />
+                  </GuardedComponent>
+                }
+              />
+              <Route
+                path={AppRoutes.ResetPassword}
+                element={
+                  <GuardedComponent
+                    loading={isAuthLoading}
+                    guardSelector={(state) => !isUserLoggedInSelector(state)}
+                  >
+                    <ResetPasswordPage />
                   </GuardedComponent>
                 }
               />

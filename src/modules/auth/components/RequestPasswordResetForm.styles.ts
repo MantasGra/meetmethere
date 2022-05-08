@@ -4,8 +4,4 @@ const submitButton = css`
   margin: 15px 0;
 `;
 
-const link = css`
-  cursor: pointer;
-`;
-
-export default { submitButton, link };
+export default { submitButton };
