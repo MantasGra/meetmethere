@@ -22,7 +22,7 @@ export interface IResetPasswordForm {
   passwordRepeat: string;
 }
 
-const ResetPasswordForm = () => {
+const ResetPasswordForm: React.FC = () => {
   // Router
   const { hash } = useLocation();
   const navigate = useNavigate();
