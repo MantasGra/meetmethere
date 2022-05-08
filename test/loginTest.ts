@@ -41,9 +41,7 @@ it('close Login', async () => {
   // Click button:has-text("Login")
   await page.click('button:has-text("Login")');
   // Click text=LoginEmailPasswordLoginNot a member? Register >> button
-  await page.click(
-    'text=LoginEmailPasswordLoginNot a member? Register >> button',
-  );
+  await page.click('button > [data-testId="CloseIcon"]');
 });
 
 // 2.2
@@ -216,4 +214,14 @@ it('user wants to register', async () => {
   // Click text=Register
   await page.click('text=Register');
   expect(await page.textContent('text=Register')).equal('Register');
+});
+
+// 2.12
+it('user wants to reset password', async () => {
+  await page.goto('http://localhost:8080');
+  await page.click('button:has-text("Login")');
+  await page.click('text="Forgot password?"');
+  expect(await page.textContent('text="Request password reset"')).equal(
+    'Request password reset',
+  );
 });
