@@ -27,6 +27,8 @@ const MeetingTabs: React.FC = () => {
       value={selectedTab}
       onChange={handleChange}
       variant="fullWidth"
+      textColor="inherit"
+      indicatorColor="secondary"
     >
       <Tab
         label={!isMobile && 'Announcements'}

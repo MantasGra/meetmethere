@@ -15,9 +15,14 @@ import {
 import { AppActions } from '../app/actions';
 import {
   authAuthorizeUserProposal,
+  authChangePasswordChangeErrors,
+  authChangePasswordSubmitProposal,
   authChangeSubmitErrorRequest,
   authLoginSubmitProposal,
   authRegisterSubmitProposal,
+  authRequestPasswordResetProposal,
+  authResetPasswordErrorsChange,
+  authResetPasswordProposal,
 } from '../auth/actions';
 import {
   expensesAddExpense,
@@ -52,6 +57,9 @@ const submitActions = [
   announcementsCreateAnnouncementProposal,
   authLoginSubmitProposal,
   authRegisterSubmitProposal,
+  authChangePasswordSubmitProposal,
+  authRequestPasswordResetProposal,
+  authResetPasswordProposal,
   expensesEditExpenseProposal,
   expensesCreateExpenseProposal,
   invitationsInviteUsersToMeeting,
@@ -66,6 +74,8 @@ const submitEndActions = [
   announcementsEditAnnouncementRequest,
   authChangeSubmitErrorRequest,
   authAuthorizeUserProposal,
+  authChangePasswordChangeErrors,
+  authResetPasswordErrorsChange,
   expensesAddExpense,
   expensesEditExpenseRequest,
   meetingsAddUsersToMeeting,
@@ -80,9 +90,12 @@ const isSubmitAction = (action: AppActions) =>
 const isEndAction = (action: AppActions) =>
   isAnyOf(submitEndActions[0], ...submitEndActions.slice(1))(action) ||
   (snackbarsEnqueue.match(action) &&
-    action.payload.message === 'Account successfully created!') ||
-  (snackbarsEnqueue.match(action) &&
-    action.payload.options.variant === 'error');
+    (action.payload.message === 'Account successfully created!' ||
+      action.payload.message === 'Password successfully changed!' ||
+      action.payload.message ===
+        'If the account is registered with us a password reset email was sent.' ||
+      action.payload.message === 'Your password was reset.' ||
+      action.payload.options.variant === 'error'));
 
 const formSubmitBlockerReducer = createReducer(initialState, (builder) =>
   builder

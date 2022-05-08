@@ -18,6 +18,7 @@ import { emailRegex } from 'src/utils/regex';
 
 import {
   authLoginSubmitProposal,
+  authSwitchToPasswordResetProposal,
   authSwitchToRegisterProposal,
 } from '../actions';
 import { authFormErrorsSelector } from '../selectors';
@@ -68,6 +69,10 @@ const LoginForm: React.FC = () => {
 
   const onRegisterClick = () => {
     dispatch(authSwitchToRegisterProposal());
+  };
+
+  const onForgotPasswordClick = () => {
+    dispatch(authSwitchToPasswordResetProposal());
   };
 
   return (
@@ -155,12 +160,17 @@ const LoginForm: React.FC = () => {
         Login
       </SubmitButton>
       <Typography variant="caption" align="right" display="block">
-        Not a member?{' '}
         <Link
           component="span"
-          onClick={onRegisterClick}
-          css={classes.registerLink}
+          css={classes.link}
+          onClick={onForgotPasswordClick}
         >
+          Forgot password?
+        </Link>
+      </Typography>
+      <Typography variant="caption" align="right" display="block">
+        Not a member?{' '}
+        <Link component="span" onClick={onRegisterClick} css={classes.link}>
           Register
         </Link>
       </Typography>

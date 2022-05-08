@@ -6,7 +6,7 @@ import { Epic, StateObservable } from 'redux-observable';
 import { TestScheduler } from 'rxjs/testing';
 
 import {
-  authIsDialogRegisterChangeRequest,
+  authDialogTypeChangeRequest,
   authLoginDialogVisibleChangeRequest,
   authOpenLoginProposal,
   authSwitchToLoginProposal,
@@ -17,6 +17,7 @@ import {
   switchToLoginEpic,
   switchToRegisterEpic,
 } from './epics';
+import { AuthDialogType } from './reducer';
 
 const testScheduler = new TestScheduler((actual, expected) => {
   expect(actual).deep.equal(expected);
@@ -92,7 +93,7 @@ describe('auth epics', () => {
         const expected = '--a';
 
         expectObservable(output$).toBe(expected, {
-          a: authIsDialogRegisterChangeRequest(false),
+          a: authDialogTypeChangeRequest(AuthDialogType.Login),
         });
       });
     });
@@ -138,7 +139,7 @@ describe('auth epics', () => {
         const expected = '--a';
 
         expectObservable(output$).toBe(expected, {
-          a: authIsDialogRegisterChangeRequest(true),
+          a: authDialogTypeChangeRequest(AuthDialogType.Register),
         });
       });
     });

@@ -6,7 +6,11 @@ import Typography from '@mui/material/Typography';
 import { useState, Fragment } from 'react';
 import { useAppDispatch, useAppSelector } from 'src/hooks/redux';
 
-import { authOpenLoginProposal, authLogoutProposal } from '../actions';
+import {
+  authOpenLoginProposal,
+  authLogoutProposal,
+  authChangePasswordDialogVisibleChangeRequest,
+} from '../actions';
 import {
   accountAvatarDataSelector,
   accountEmailSelector,
@@ -33,6 +37,11 @@ const AccountInfo: React.FC = () => {
 
   const onLogoutClick = () => {
     dispatch(authLogoutProposal());
+    setAnchorEl(null);
+  };
+
+  const onChangePasswordClick = () => {
+    dispatch(authChangePasswordDialogVisibleChangeRequest(true));
     setAnchorEl(null);
   };
 
@@ -73,6 +82,9 @@ const AccountInfo: React.FC = () => {
             {accountEmail}
           </Typography>
           <Divider />
+          <Button fullWidth size="small" onClick={onChangePasswordClick}>
+            Change password
+          </Button>
           <Button fullWidth size="small" onClick={onLogoutClick}>
             Logout
           </Button>

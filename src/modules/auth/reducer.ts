@@ -5,7 +5,7 @@ import type { ParticipationStatus } from '../invitations/reducer';
 import {
   authAuthorizeUserRequest,
   authChangeSubmitErrorRequest,
-  authIsDialogRegisterChangeRequest,
+  authDialogTypeChangeRequest,
   authLoginDialogVisibleChangeRequest,
   authOpenLoginProposal,
   authSwitchToLoginProposal,
@@ -14,6 +14,9 @@ import {
   authSetAuthLoading,
   authAuthorizeUserProposal,
   authSetCsrfTokenRequest,
+  authChangePasswordDialogVisibleChangeRequest,
+  authChangePasswordChangeErrors,
+  authResetPasswordErrorsChange,
 } from './actions';
 
 export interface IAccount {
@@ -36,20 +39,40 @@ export interface IFormError {
   password?: string;
 }
 
+export interface IChangePasswordError {
+  oldPassword?: string;
+}
+
+export interface IResetPasswordError {
+  overall?: string;
+}
+
+export enum AuthDialogType {
+  Login = 'login',
+  Register = 'register',
+  ResetPassword = 'resetPassword',
+}
+
 export interface AuthState {
   account?: IAccount;
   authLoading: boolean;
   csrfToken?: string;
   formErrors: IFormError;
+  changePasswordErrors: IChangePasswordError;
+  resetPasswordErrors: IResetPasswordError;
   isAuthDialogOpen: boolean;
-  isDialogRegister: boolean;
+  authDialogType: AuthDialogType;
+  isChangePasswordDialogOpen: boolean;
 }
 
 const initialState: AuthState = {
   formErrors: {},
+  changePasswordErrors: {},
+  resetPasswordErrors: {},
   authLoading: false,
   isAuthDialogOpen: false,
-  isDialogRegister: false,
+  authDialogType: AuthDialogType.Login,
+  isChangePasswordDialogOpen: false,
 };
 
 const authReducer = createReducer(initialState, (builder) =>
@@ -62,12 +85,12 @@ const authReducer = createReducer(initialState, (builder) =>
     })
     .addCase(authLoginDialogVisibleChangeRequest, (state, action) => {
       if (action.payload) {
-        state.isDialogRegister = false;
+        state.authDialogType = AuthDialogType.Login;
       }
       state.isAuthDialogOpen = action.payload;
     })
-    .addCase(authIsDialogRegisterChangeRequest, (state, action) => {
-      state.isDialogRegister = action.payload;
+    .addCase(authDialogTypeChangeRequest, (state, action) => {
+      state.authDialogType = action.payload;
       state.formErrors = {};
     })
     .addCase(authAuthorizeUserRequest, (state, action) => {
@@ -91,6 +114,18 @@ const authReducer = createReducer(initialState, (builder) =>
     })
     .addCase(authSetCsrfTokenRequest, (state, action) => {
       state.csrfToken = action.payload;
+    })
+    .addCase(authChangePasswordDialogVisibleChangeRequest, (state, action) => {
+      if (!action.payload) {
+        state.changePasswordErrors = {};
+      }
+      state.isChangePasswordDialogOpen = action.payload;
+    })
+    .addCase(authChangePasswordChangeErrors, (state, action) => {
+      state.changePasswordErrors = action.payload;
+    })
+    .addCase(authResetPasswordErrorsChange, (state, action) => {
+      state.resetPasswordErrors = action.payload;
     }),
 );
 
