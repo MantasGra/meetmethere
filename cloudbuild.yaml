@@ -5,18 +5,5 @@
  # Push the container image to Container Registry
  - name: 'gcr.io/cloud-builders/docker'
    args: ['push', 'gcr.io/$PROJECT_ID/meetmethere-app:$COMMIT_SHA']
- # Deploy container image to Cloud Run
- - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-   entrypoint: gcloud
-   args:
-   - 'run'
-   - 'deploy'
-   - 'meetmethere-app'
-   - '--image'
-   - 'gcr.io/$PROJECT_ID/meetmethere-app:$COMMIT_SHA'
-   - '--region'
-   - 'europe-north1'
-   - '--platform'
-   - 'managed'
  images:
  - 'gcr.io/$PROJECT_ID/meetmethere-app:$COMMIT_SHA'
