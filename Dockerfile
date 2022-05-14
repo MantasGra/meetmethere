@@ -1,5 +1,5 @@
 # Build environment
-FROM node:14-alpine as react-build
+FROM node:16-alpine as react-build
 ARG SNOWPACK_PUBLIC_GOOGLE_API_KEY
 ENV SNOWPACK_PUBLIC_GOOGLE_API_KEY=${SNOWPACK_PUBLIC_GOOGLE_API_KEY}
 WORKDIR /usr/src/app
