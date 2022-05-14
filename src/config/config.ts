@@ -7,7 +7,7 @@ const devConfig: IAppConfig = {
 };
 
 const prodConfig: IAppConfig = {
-  backendBaseUrl: 'https://meetmethere-app-be-2k4cznjtna-lz.a.run.app',
+  backendBaseUrl: 'https://meetmethere-be-6kdockezdq-lm.a.run.app',
 };
 
 const getConfig = (): IAppConfig =>
