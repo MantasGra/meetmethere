@@ -8,8 +8,11 @@ RUN npm install && npm run build
 
 # Server environment
 FROM nginx:alpine
+ARG BASIC_AUTH_PW
 COPY nginx.conf /etc/nginx/conf.d/configfile.template
 COPY --from=react-build /usr/src/app/build /usr/share/nginx/html
+RUN apk add --update apache2-utils
+RUN htpasswd -Bbn meetmethere ${BASIC_AUTH_PW} > /etc/nginx/conf.d/.htpasswd
 
 ENV PORT 8080
 ENV HOST 0.0.0.0
