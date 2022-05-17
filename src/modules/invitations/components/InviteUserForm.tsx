@@ -69,7 +69,7 @@ const InviteUserForm: React.FC = () => {
           variant="contained"
           color="primary"
           css={classes.submitButton}
-          onClick={handleSubmit(onSubmit)}
+          onSubmit={handleSubmit(onSubmit)}
         >
           Invite
         </SubmitButton>

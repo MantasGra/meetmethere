@@ -52,7 +52,7 @@ const InviteUserDialog: React.FC = () => {
   };
 
   return (
-    <Dialog open={open} maxWidth="md">
+    <Dialog open={open} fullWidth>
       <CloseableDialogTitle onClose={onClose}>Members</CloseableDialogTitle>
       <DialogContent>
         <UsersList users={users} />

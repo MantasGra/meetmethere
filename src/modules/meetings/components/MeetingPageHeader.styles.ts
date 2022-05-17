@@ -84,10 +84,6 @@ const meetingMemberList = css`
   align-items: center;
 `;
 
-const memberListAvatar = css`
-  margin: 0 5px;
-`;
-
 const meetingStatusSelect = css`
   margin-left: 10px;
   min-width: 120px;
@@ -145,7 +141,6 @@ export default {
   meetingLocation,
   meetingLocationText,
   meetingMemberList,
-  memberListAvatar,
   meetingStatusSelect,
   meetingDescriptionInput,
   meetingPlaceSelect,

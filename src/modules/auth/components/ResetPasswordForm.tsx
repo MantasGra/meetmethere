@@ -106,9 +106,10 @@ const ResetPasswordForm: React.FC = () => {
         type="button"
         variant="contained"
         color="primary"
-        onClick={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(onSubmit)}
         css={classes.submitButton}
         fullWidth
+        submitOnEnter
       >
         Save
       </SubmitButton>

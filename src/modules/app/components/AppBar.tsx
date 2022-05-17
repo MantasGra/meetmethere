@@ -11,7 +11,7 @@ import AccountInfo from 'src/modules/auth/components/AccountInfo';
 import { isUserLoggedInSelector } from 'src/modules/auth/selectors';
 import getAppTitle from 'src/utils/getAppTitle';
 
-import { openMobileMenu } from '../actions';
+import { toggleMobileMenu } from '../actions';
 import { isMobileSelector } from '../selectors';
 
 import classes from './AppBar.styles';
@@ -23,7 +23,7 @@ const AppBar: React.FC = () => {
 
   const dispatch = useAppDispatch();
   const onMobileMenuOpen = () => {
-    dispatch(openMobileMenu(true));
+    dispatch(toggleMobileMenu());
   };
 
   const hideAccountInfo = useMatchRoutes(Routes.Login, Routes.Register);

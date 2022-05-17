@@ -61,7 +61,9 @@ const InvitationsList: React.FC = () => {
           ))}
         </Fragment>
       ) : (
-        <NoContent text="You have no invitations!" />
+        <div css={classes.noContentContainer}>
+          <NoContent text="You have no invitations!" />
+        </div>
       )}
     </div>
   );

@@ -208,7 +208,8 @@ const RegisterForm: React.FC = () => {
         color="primary"
         fullWidth
         css={classes.submitButton}
-        onClick={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(onSubmit)}
+        submitOnEnter
       >
         Register
       </SubmitButton>

@@ -1,6 +1,7 @@
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import DateTimePicker from '@mui/lab/DateTimePicker';
+import AvatarGroup from '@mui/material/AvatarGroup';
 import Button from '@mui/material/Button';
 import Fab from '@mui/material/Fab';
 import FormControl from '@mui/material/FormControl';
@@ -414,16 +415,17 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
       </div>
       <div css={classes.meetingMemberList}>
         <Typography variant="subtitle2">Members:</Typography>
-        {meeting.participants.map((participant) => (
-          <AccountAvatar
-            key={participant.id}
-            initials={`${participant.name.charAt(
-              0,
-            )}${participant.lastName.charAt(0)}`}
-            color={participant.color}
-            css={classes.memberListAvatar}
-          />
-        ))}
+        <AvatarGroup max={5}>
+          {meeting.participants.map((participant) => (
+            <AccountAvatar
+              key={participant.id}
+              initials={`${participant.name.charAt(
+                0,
+              )}${participant.lastName.charAt(0)}`}
+              color={participant.color}
+            />
+          ))}
+        </AvatarGroup>
         <Button color="primary" onClick={onInviteClick}>
           View all
         </Button>

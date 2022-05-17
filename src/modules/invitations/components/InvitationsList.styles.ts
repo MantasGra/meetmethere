@@ -38,8 +38,13 @@ const invitationListItemContent = css`
   }
 `;
 
+const noContentContainer = css`
+  padding-top: 30px;
+`;
+
 export default {
   invitationsList,
   invitationListItem,
   invitationListItemContent,
+  noContentContainer,
 };

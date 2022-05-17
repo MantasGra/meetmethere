@@ -155,7 +155,8 @@ const LoginForm: React.FC = () => {
         color="primary"
         fullWidth
         css={classes.submitButton}
-        onClick={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(onSubmit)}
+        submitOnEnter
       >
         Login
       </SubmitButton>

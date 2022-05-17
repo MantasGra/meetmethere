@@ -171,7 +171,7 @@ const ActivityForm: React.FC = () => {
           variant="contained"
           color="primary"
           css={classes.submitButton}
-          onClick={handleSubmit(onSubmit)}
+          onSubmit={handleSubmit(onSubmit)}
         >
           {submitButtonTextRendered}
         </SubmitButton>

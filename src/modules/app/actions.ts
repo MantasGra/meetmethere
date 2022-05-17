@@ -34,10 +34,13 @@ export const openMobileMenu = createAction(
   withPayloadType<boolean>(),
 );
 
+export const toggleMobileMenu = createAction('app/toggleMobileMenu');
+
 export type AppActions =
   | ReturnType<typeof appInit>
   | ReturnType<typeof appInitSuccess>
   | ReturnType<typeof openMobileMenu>
+  | ReturnType<typeof toggleMobileMenu>
   | AuthActions
   | SnackbarsActions
   | MeetingsActions
