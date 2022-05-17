@@ -3,11 +3,12 @@ import { css } from '@emotion/react';
 const container = css`
   width: 80%;
   max-width: 500px;
+  margin: auto;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  padding-top: 30px;
 `;
 
 const icon = css`

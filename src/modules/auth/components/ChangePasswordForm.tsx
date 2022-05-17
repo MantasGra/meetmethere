@@ -106,8 +106,9 @@ const ChangePasswordForm: React.FC = () => {
         type="button"
         variant="contained"
         color="primary"
-        onClick={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(onSubmit)}
         css={classes.submitButton}
+        submitOnEnter
         fullWidth
       >
         Save

@@ -10,7 +10,7 @@ import invitationsReducer from '../invitations/reducer';
 import meetingsReducer from '../meetings/reducer';
 import snackbarsReducer from '../snackbars/reducer';
 
-import { appInitSuccess, openMobileMenu } from './actions';
+import { appInitSuccess, openMobileMenu, toggleMobileMenu } from './actions';
 
 interface ApplicationState {
   initialized: boolean;
@@ -29,6 +29,9 @@ const appReducer = createReducer(initialState, (buildier) =>
     })
     .addCase(openMobileMenu, (state, action) => {
       state.isMobileMenuOpen = action.payload;
+    })
+    .addCase(toggleMobileMenu, (state) => {
+      state.isMobileMenuOpen = !state.isMobileMenuOpen;
     }),
 );
 

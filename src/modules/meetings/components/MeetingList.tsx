@@ -1,4 +1,5 @@
 import EventIcon from '@mui/icons-material/Event';
+import AvatarGroup from '@mui/material/AvatarGroup';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
@@ -81,53 +82,52 @@ const MeetingList: React.FC<IProps> = ({ typeOfMeeting }) => {
   );
 
   return (
-    <Fragment>
-      <div css={classes.meetingList}>
-        {meetings.length || loading ? (
-          <Fragment>
-            {meetings.map((meeting, index) => (
-              <Card
-                key={meeting.id}
-                css={typeOfMeetingClass}
-                raised
-                ref={meetings.length - 1 === index ? lastElementRef : undefined}
-                onClick={() => openMeetingPage(meeting.id.toString())}
-              >
-                <CardHeader
-                  avatar={<EventIcon />}
-                  title={meeting.name}
-                  titleTypographyProps={{ variant: 'h5' }}
-                  subheader={
-                    meeting.isDatesPollActive
-                      ? 'Date poll is active'
-                      : toDate(meeting.startDate).toLocaleString()
-                  }
-                  action={<MeetingStatusChip meetingStatus={meeting.status} />}
-                />
-                <CardContent css={classes.meetingListItemContent}>
-                  <div css={classes.description}>{meeting.description}</div>
-                  <div css={classes.meetingListItemAvatars}>
-                    {meeting.participants.map((participant) => (
-                      <AccountAvatar
-                        key={participant.id}
-                        initials={`${participant.name.charAt(
-                          0,
-                        )}${participant.lastName.charAt(0)}`}
-                        color={participant.color}
-                        css={classes.listItemAvatar}
-                      />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {loading && (
-              <div css={classes.loading}>
-                <CircularProgress size={140} />
-              </div>
-            )}
-          </Fragment>
-        ) : (
+    <div css={classes.meetingList}>
+      {meetings.length || loading ? (
+        <Fragment>
+          {meetings.map((meeting, index) => (
+            <Card
+              key={meeting.id}
+              css={typeOfMeetingClass}
+              raised
+              ref={meetings.length - 1 === index ? lastElementRef : undefined}
+              onClick={() => openMeetingPage(meeting.id.toString())}
+            >
+              <CardHeader
+                avatar={<EventIcon />}
+                title={meeting.name}
+                titleTypographyProps={{ variant: 'h5' }}
+                subheader={
+                  meeting.isDatesPollActive
+                    ? 'Date poll is active'
+                    : toDate(meeting.startDate).toLocaleString()
+                }
+                action={<MeetingStatusChip meetingStatus={meeting.status} />}
+              />
+              <CardContent css={classes.meetingListItemContent}>
+                <div css={classes.description}>{meeting.description}</div>
+                <AvatarGroup max={4}>
+                  {meeting.participants.map((participant) => (
+                    <AccountAvatar
+                      key={participant.id}
+                      initials={`${participant.name.charAt(
+                        0,
+                      )}${participant.lastName.charAt(0)}`}
+                      color={participant.color}
+                    />
+                  ))}
+                </AvatarGroup>
+              </CardContent>
+            </Card>
+          ))}
+          {loading && (
+            <div css={classes.loading}>
+              <CircularProgress size={140} />
+            </div>
+          )}
+        </Fragment>
+      ) : (
+        <div css={classes.noContentContainer}>
           <NoContent
             text={`You have no ${
               location.pathname === '/history'
@@ -135,9 +135,9 @@ const MeetingList: React.FC<IProps> = ({ typeOfMeeting }) => {
                 : 'planned meetings'
             }!`}
           />
-        )}
-      </div>
-    </Fragment>
+        </div>
+      )}
+    </div>
   );
 };
 

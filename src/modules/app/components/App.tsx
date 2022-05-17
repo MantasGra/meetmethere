@@ -1,4 +1,4 @@
-import { CircularProgress, Toolbar } from '@mui/material';
+import { CircularProgress } from '@mui/material';
 import {
   ThemeProvider,
   StyledEngineProvider,
@@ -7,6 +7,7 @@ import {
 import { Fragment } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import GuardedComponent from 'src/components/Router/GuardedComponent';
+import iconClasses from 'src/components/StatusIcons/StatusIcon.styles';
 import { Routes as AppRoutes } from 'src/constants/enums';
 import { useAppSelector } from 'src/hooks/redux';
 import { MeetingIcon } from 'src/icons';
@@ -59,8 +60,7 @@ const App: React.FC = () => {
           <Dialogs />
           <AppBar />
           {isLoggedIn && <Navigation />}
-          <main css={classes.Content}>
-            <Toolbar />
+          <main css={classes.content(!isLoggedIn)}>
             <Routes>
               <Route
                 path={AppRoutes.Login}
@@ -155,17 +155,8 @@ const App: React.FC = () => {
                 element={
                   <Fragment>
                     {isLoggedIn && <Navigate to={AppRoutes.Meetings} replace />}
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        justifyContent: 'center',
-                        marginLeft: '50px',
-                        marginTop: '100px',
-                        width: '100%',
-                      }}
-                    >
-                      <MeetingIcon />
+                    <div css={[iconClasses.container, classes.homePageIcon]}>
+                      <MeetingIcon css={iconClasses.icon} />
                     </div>
                   </Fragment>
                 }

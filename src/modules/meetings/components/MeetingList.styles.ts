@@ -54,10 +54,8 @@ const meetingListItemAvatars = css`
   flex-direction: row-reverse;
 `;
 
-const listItemAvatar = css`
-  &:not(:first-of-type) {
-    margin-right: -20px;
-  }
+const noContentContainer = css`
+  padding-top: 30px;
 `;
 
 const loading = css`
@@ -73,6 +71,6 @@ export default {
   meetingListItemContent,
   description,
   meetingListItemAvatars,
-  listItemAvatar,
+  noContentContainer,
   loading,
 };
