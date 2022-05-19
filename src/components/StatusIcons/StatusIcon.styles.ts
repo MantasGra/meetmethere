@@ -7,12 +7,13 @@ const container = css`
   max-height: 100%;
   display: flex;
   flex-direction: column;
+  align-items: center;
   flex: 1;
   min-height: 0;
 `;
 
 const icon = css`
-  width: 100%;
+  width: calc(100% - 20px);
   height: auto;
   max-height: 100%;
   flex: 1;
@@ -20,7 +21,7 @@ const icon = css`
 `;
 
 const text = css`
-  margin-top: 20px;
+  padding: 20px;
 `;
 
 export default { container, icon, text };

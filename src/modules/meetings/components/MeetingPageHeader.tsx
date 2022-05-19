@@ -415,7 +415,7 @@ const MeetingPageHeader: React.FC<IProps> = (props) => {
       </div>
       <div css={classes.meetingMemberList}>
         <Typography variant="subtitle2">Members:</Typography>
-        <AvatarGroup max={5}>
+        <AvatarGroup css={classes.meetingMemberListAvatars} max={5}>
           {meeting.participants.map((participant) => (
             <AccountAvatar
               key={participant.id}

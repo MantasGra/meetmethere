@@ -49,6 +49,10 @@ const addButtonContainerWithContent = css`
   justify-content: space-between;
   align-items: center;
 
+  & > * {
+    margin: 5px;
+  }
+
   @media (max-width: 768px) {
     flex-direction: column;
   }
