@@ -84,6 +84,10 @@ const meetingMemberList = css`
   align-items: center;
 `;
 
+const meetingMemberListAvatars = css`
+  margin-left: 10px;
+`;
+
 const meetingStatusSelect = css`
   margin-left: 10px;
   min-width: 120px;
@@ -147,4 +151,5 @@ export default {
   meetingEditButton,
   meetingDateInputs,
   meetingDescription,
+  meetingMemberListAvatars,
 };

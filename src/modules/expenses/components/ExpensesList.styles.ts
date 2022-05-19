@@ -14,13 +14,18 @@ const expenseMembers = css`
   align-items: center;
 `;
 
-const memberListAvatar = css`
-  margin: 0 5px;
+const expenseMemberAvatars = css`
+  margin-left: 10px;
+`;
+
+const dividerSpacing = css`
+  margin: 10px 0;
 `;
 
 export default {
   expenseList,
   expenseListItem,
   expenseMembers,
-  memberListAvatar,
+  expenseMemberAvatars,
+  dividerSpacing,
 };

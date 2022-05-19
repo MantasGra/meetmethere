@@ -72,11 +72,14 @@ const ActivityList: React.FC = () => {
           />
           {isEditMode && (
             <ListItemSecondaryAction>
-              <IconButton size="large">
-                <EditIcon onClick={() => onEditClick(activity.id)} />
+              <IconButton size="large" onClick={() => onEditClick(activity.id)}>
+                <EditIcon />
               </IconButton>
-              <IconButton size="large">
-                <DeleteIcon onClick={() => onDeleteClick(activity.id)} />
+              <IconButton
+                size="large"
+                onClick={() => onDeleteClick(activity.id)}
+              >
+                <DeleteIcon />
               </IconButton>
             </ListItemSecondaryAction>
           )}

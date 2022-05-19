@@ -1,12 +1,17 @@
 import { MoreVert } from '@mui/icons-material';
-import { IconButton, Menu, MenuItem } from '@mui/material';
+import AvatarGroup from '@mui/material/AvatarGroup';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import { useState, useCallback, useEffect, Fragment } from 'react';
 import { useParams } from 'react-router';
 import NoContent from 'src/components/StatusIcons/NoContent';
+import { isMobileSelector } from 'src/modules/app/selectors';
 import AccountAvatar from 'src/modules/auth/components/AccountAvatar';
 import {
   authCurrentUserIdSelector,
@@ -60,6 +65,7 @@ const ExpensesList: React.FC = () => {
   const meetingStatus = useAppSelector((state) =>
     meetingsStatusByIdSelector(state, id),
   );
+  const isMobile = useAppSelector(isMobileSelector);
 
   const dispatch = useAppDispatch();
 
@@ -146,18 +152,22 @@ const ExpensesList: React.FC = () => {
             />
             <CardContent>
               <Typography variant="body2">{expense.description}</Typography>
-              <hr />
+              <Divider css={classes.dividerSpacing} />
               <div>
                 <span css={classes.expenseMembers}>
                   <Typography variant="subtitle2">For:</Typography>
-                  {expense.users.map((participant) => (
-                    <AccountAvatar
-                      key={participant.id}
-                      initials={getUserInitials(participant)}
-                      color={participant.color}
-                      css={classes.memberListAvatar}
-                    />
-                  ))}
+                  <AvatarGroup
+                    css={classes.expenseMemberAvatars}
+                    max={isMobile ? 5 : 10}
+                  >
+                    {expense.users.map((participant) => (
+                      <AccountAvatar
+                        key={participant.id}
+                        initials={getUserInitials(participant)}
+                        color={participant.color}
+                      />
+                    ))}
+                  </AvatarGroup>
                 </span>
               </div>
             </CardContent>
