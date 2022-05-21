@@ -62,18 +62,19 @@ const createMeetingEpic: AppEpic = (action$, _, { axios }) =>
         withCredentials: true,
       }).pipe(
         mergeMap((response) =>
-          of(
-            meetingsAddMeeting(
-              response.data.createdMeeting,
-              MeetingTypes.Planned,
+          geocodeIfPlaceId$(response.data.createdMeeting).pipe(
+            mergeMap((meeting) =>
+              of(
+                meetingsAddMeeting(meeting, MeetingTypes.Planned),
+                meetingsCreateDialogVisibleChangeRequest(false),
+                snackbarsEnqueue({
+                  message: 'Meeting successfully created!',
+                  options: {
+                    variant: 'success',
+                  },
+                }),
+              ),
             ),
-            meetingsCreateDialogVisibleChangeRequest(false),
-            snackbarsEnqueue({
-              message: 'Meeting successfully created!',
-              options: {
-                variant: 'success',
-              },
-            }),
           ),
         ),
         catchError(() =>
